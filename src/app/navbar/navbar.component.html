@@ -1,0 +1,32 @@
+<div class="d-flex flex-column flex-shrink-0 p-3 bg-dark sidebar">
+  <div class="sidebar-header text-center mb-5">
+    <span class="fs-2 fw-bold text-gradient" *ngIf="isOpen">MatchPlaner</span>
+  </div>
+  
+  <ul class="nav nav-pills flex-column">
+    <li class="nav-item">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="nav-link my-2">
+        <i class="fa-solid fa-trophy me-3"></i>
+        Turniej
+      </a>
+    </li>
+    <li>
+      <a routerLink="/teams" routerLinkActive="active" class="nav-link my-2">
+        <i class="fa-solid fa-people-group me-3"></i>
+        Drużyny
+      </a>
+    </li>
+    <li>
+      <a routerLink="/tables" routerLinkActive="active" class="nav-link my-2">
+        <i class="fa-solid fa-table-list me-3"></i>
+        Tabele
+      </a>
+    </li>
+    <li>
+      <a routerLink="/calendar" routerLinkActive="active" class="nav-link my-2">
+        <i class="fa-solid fa-calendar-days me-3"></i>
+        Terminarz
+      </a>
+    </li>
+  </ul>
+</div>
