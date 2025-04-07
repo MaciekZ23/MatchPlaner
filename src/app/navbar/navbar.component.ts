@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, HostListener, OnInit, } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
@@ -10,34 +10,25 @@ import { RouterModule } from '@angular/router';
   styleUrls: ['./navbar.component.scss']
 })
 
-export class NavbarComponent {
+export class NavbarComponent implements OnInit {
   @Input() isOpen: boolean = true;
   @Output() toggleSidebar = new EventEmitter<void>();
 
-  onToggleSidebar() {
-    this.toggleSidebar.emit();
-  }
-
-  isMobile() {
-    return window.innerWidth < 768;
-  }
-
   ngOnInit() {
-    if (this.isMobile()) {
-      setTimeout(() => {
-        this.isOpen = false;
-        this.onToggleSidebar();
-      }, 900);
-    }
+    this.setInitialSidebarState();
+  }
 
-    const navigationLink = document.querySelector('.nav');
-    if (navigationLink) {
-      navigationLink.addEventListener('click', () => {
-        if (this.isMobile()) {
-          this.isOpen = !this.isOpen;
-          this.onToggleSidebar();
-        }
-      });
-    }
+  @HostListener('window:resize')
+  onWindowResize() {
+    this.setInitialSidebarState();
+  }
+
+  setInitialSidebarState() {
+    this.isOpen = window.innerWidth >= 768;
+  }
+
+  onToggleSidebar() {
+    this.isOpen = !this.isOpen;
+    this.toggleSidebar.emit(); // emitujesz do rodzica jeśli trzeba
   }
 }

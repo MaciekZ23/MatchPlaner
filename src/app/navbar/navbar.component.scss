@@ -1,28 +1,39 @@
 .sidebar {
   width: 300px;
   height: 100vh;
-  background-color: #1c1c1d !important;
+  background-color: #1C1C1C !important;
   color: #DEDEDE;
-  padding: 20px;
+  padding: 15px;
   position: fixed;
   z-index: 1000;
+  transition: width 0.3s ease-in-out;
+  overflow: hidden;
 
-  .sidebar-header {
-    color: #0A58CA; 
-    font-weight: bold;
+  .logo-img {
+    max-height: 40px;
+    transition: all 0.3s ease-in-out;
+  }
+
+  .sidebar-toggle {
+    font-size: 1.3rem;
+    color: #DEDEDE;
+    border: none;
+    background: none;
   }
 
   .nav-link {
     color: #DEDEDE;
     display: flex;
     align-items: center;
-    padding: 1rem 0.75rem;
-    margin-bottom: 1.2rem;
-    border-radius: 8px;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    border-radius: 10px;
     transition: background-color 0.3s;
+    font-size: 1rem;
 
     i {
-      font-size: 1.5em;
+      font-size: 1.3em;
+      width: 1.25em;
     }
 
     &.active {
@@ -33,6 +44,94 @@
     &:hover {
       background-color: #004080;
       color: #FFFFFF;
+    }
+  }
+
+  .sectionTitle {
+    font-size: 1rem;
+    font-weight: bold;
+    margin: 1.5rem auto 1rem auto;
+    color: #ADADAD;
+    margin-top: 1rem;
+  }
+
+  &.collapsed {
+    width: 100px;
+
+
+    .logo-img {
+      margin: 0 auto;
+    }
+
+    .sidebar-header,
+    .nav-link span .sectionTitle {
+      display: none;
+    }
+
+    .sidebar-toggle {
+      margin-left: auto;
+      margin-right: 0;
+    }
+
+    .nav-link {
+      justify-content: center;
+      align-items: center;
+      padding: 0 !important;
+      border-radius: 8px;
+      max-width: 48px;
+      margin: 0 auto;
+      display: flex;
+      width: 48px;
+      height: 48px;
+
+      i {
+        margin: 0;
+        width: auto;
+        font-size: 1.4em;
+        padding: 0;
+        margin-left: 1.5rem;
+      }
+
+      &.active {
+        background-color: #004080;
+        height: 48px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    }
+
+    .nav-link span {
+      display: none;
+    }
+  }
+
+  @media (max-width: 767.98px) {
+    .sidebar {
+      width: 100px;
+    }
+
+    .sidebar:not(.collapsed) {
+      width: 300px;
+
+      .nav-link {
+        justify-content: flex-start;
+        padding: 0.75rem;
+        width: 100%;
+
+        i {
+          margin-right: 1rem;
+        }
+
+        span {
+          display: inline;
+        }
+      }
+
+      .sectionTitle span {
+        display: inline;
+      }
     }
   }
 }

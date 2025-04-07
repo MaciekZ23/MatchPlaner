@@ -1,7 +1,7 @@
 .layout {
   display: flex;
   min-height: 100vh;
-  background-color: #6C6A6A;
+  background-color: #004080;
   color: #FFFFFF;
 }
 
@@ -9,4 +9,17 @@
   flex-grow: 1;
   padding: 2rem;
   margin-left: 300px;
+  transition: margin-left 0.3s ease-in-out;
+
+  &.collapsed {
+    margin-left: 100px;
+  }
+
+  @media (max-width: 767.98px) {
+    margin-left: 100px !important;
+
+    &.collapsed {
+      margin-left: 100px !important;
+    }
+  }
 }

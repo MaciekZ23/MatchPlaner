@@ -1,7 +1,54 @@
+/* Kolory */
 $primary-dark: #004080;
 $primary-blue: #0A58CA;
 $text-gray: #DEDEDE;
+$menu-text: #ADADAD;
+$white: #FFFFFF;
+$table-highlight: #007BFE;
 
 $primary: $primary-blue;
 $secondary: $primary-dark;
 $body-color: $text-gray;
+
+/* Styl dla scrollbara */
+::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+}
+
+::-webkit-scrollbar-button {
+    width: 0px;
+    height: 0px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #696969;
+    border: 0px none #FFFFFF;
+    border-radius: 50px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #CCCCCC;
+}
+
+::-webkit-scrollbar-thumb:active {
+    background: #ADADAD98;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+    border: 0px none #FFFFFF;
+    border-radius: 50px;
+}
+
+::-webkit-scrollbar-track:hover {
+    background: #666666;
+}
+
+::-webkit-scrollbar-track:active {
+    background: #333333;
+}
+
+::-webkit-scrollbar-corner {
+    background: transparent;
+}
