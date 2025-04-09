@@ -13,9 +13,15 @@
                         <th>#</th>
                         <th>Zawodnik</th>
                         <th>Drużyna</th>
-                        <th>Gole</th>
-                        <th>Asysty</th>
-                        <th>Punktacja Kanadyjska</th>
+                        <th class="sortable" (click)="sortData('goals')">Gole
+                            <i [class]="sortColumn === 'goals' ? 'fa fa-sort-' + sortDirection: 'fa fa-sort'"></i>
+                        </th>
+                        <th class="sortable" (click)="sortData('assists')">Asysty
+                            <i [class]="sortColumn === 'assists' ? 'fa fa-sort-' + sortDirection : 'fa fa-sort'"></i>
+                        </th>
+                        <th class="sortable" (click)="sortData('points')">Punktacja Kanadyjska
+                            <i [class]="sortColumn === 'points' ? 'fa fa-sort-' + sortDirection : 'fa fa-sort'"></i>
+                        </th>
                     </tr>
                 </thead>
             </table>

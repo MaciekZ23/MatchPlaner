@@ -20,5 +20,10 @@ export class TablesComponent implements OnInit {
 
   ngOnInit(): void {
     this.tableData = this.tableService.getTable();
+    this.sortTableByPoints();
+  }
+
+  sortTableByPoints() {
+    this.tableData.sort((a, b) => b.pkt - a.pkt)
   }
 }
