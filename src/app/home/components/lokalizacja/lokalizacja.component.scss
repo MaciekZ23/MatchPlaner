@@ -1,0 +1,60 @@
+.card {
+    background-color: #1F1F1F;
+    color: #FFFFFF;
+    border-radius: 10px;
+    box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3 ease;
+
+    &:hover {
+        .card-body {
+            background-color: #2A2A2A;
+            border-radius: 10px;
+        }
+    }
+
+    .card-header {
+        background-color: #292929;
+        color: #FFFFFF;
+        font-weight: bold;
+        font-size: 1.4rem;
+
+        button {
+            background: none;
+            border: none;
+            color: #FFFFFF;
+            font-size: 1.4rem;
+            cursor: pointer;
+        }
+    }
+
+    .card-body {
+        font-size: 1.2rem;
+        transition: background-color 0.3s ease;
+
+        p {
+            font-weight: normal;
+        }
+
+        small {
+            color: #A0A0A0;
+        }
+    }
+
+    .image-container {
+        width: 180px;
+        height: 130px;
+        overflow: hidden;
+        border-radius: 8px;
+        border: 2px solid #007BFE;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: border-color 0.3s ease;
+
+        .image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    }
+}

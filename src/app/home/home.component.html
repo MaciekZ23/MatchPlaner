@@ -1,38 +1,22 @@
-<div class="container mt-4">
-  <!-- Tytuł turnieju -->
-  <div class="card text-center shadow-sm border-0">
-    <div class="card-body py-4">
-      <h1 class="card-title fw-bold mb-2">Halowa Liga Piłki Nożnej Tuliszków 2025</h1>
-      <p class="card-text fs-5 text-muted">
-        Piątek 10 stycznia 2025 – Sobota 22 lutego 2025
-      </p>
+<div class="container-fluid">
+  <!-- Tytul turnieju -->
+  <app-tournament-title></app-tournament-title>
+  <div class="row g-0 mt-3">
+    <div class="col-12">
+      <!-- Zawartosc glowna -->
+      <app-league-description></app-league-description>
     </div>
   </div>
 
-  <!-- Zawartość główna -->
-  <div class="row g-4 mt-4">
-    <!-- Informacje ogólne -->
-    <div class="col-md-8">
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <p class="card-text">
-            Halowa Liga Piłki Nożnej Tuliszków to coroczne wydarzenie sportowe, które gromadzi drużyny z całego regionu.
-            Edycja 2025 zapowiada się wyjątkowo emocjonująco – ponad 20 zespołów, setki kibiców i pasja, która napędza
-            każdą akcję na boisku.
-          </p>
-          <p class="card-text">
-            Wyniki, strzelcy bramek oraz szczegóły meczów będą uzupełniane na bieżąco po zakończeniu każdego meczu.
-          </p>
-          <p class="card-text mb-0">
-            Do zobaczenia na hali sportowej!
-          </p>
-        </div>
-      </div>
+  <div class="row g-2 mt-2">
+    <!-- Lokalizacja -->
+    <div class="col-md-6">
+      <app-lokalizacja></app-lokalizacja>
     </div>
 
-    <!-- Lokalizacja -->
-    <div class="col-md-4">
-      <app-lokalizacja></app-lokalizacja>
+    <!--Timer-->
+    <div class="col-md-6">
+      <app-match-timer></app-match-timer>
     </div>
   </div>
 </div>

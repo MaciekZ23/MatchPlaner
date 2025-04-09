@@ -9,4 +9,10 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./lokalizacja.component.scss']
 })
 
-export class LokalizacjaComponent {}
+export class LokalizacjaComponent {
+  isLocationOpen = false;
+
+  toggleLocation(): void {
+    this.isLocationOpen = !this.isLocationOpen;
+  }
+}

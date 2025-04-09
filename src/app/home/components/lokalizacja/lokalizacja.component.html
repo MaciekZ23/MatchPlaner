@@ -1,0 +1,21 @@
+<div class="card bg-dark text-white shadow-sm">
+  <div class="card-header bg-dark text-white bg-opacity-10 d-flex align-items-center">
+    <i class="fa-solid fa-location-dot me-2"></i>
+    <strong>LOKALIZACJA</strong>
+    <button class="btn btn-link text-white ms-auto" (click)="toggleLocation()">
+      <i class="fas" [ngClass]="{'fa-chevron-down': !isLocationOpen, 'fa-chevron-up': isLocationOpen}"></i>
+    </button>
+  </div>
+  <div class="card-body" *ngIf="isLocationOpen">
+    <div class="d-flex align-items-center">
+      <div class="text-content">
+        <p class="mb-1">Arena Toruń</p>
+        <small>ul. Józefa Bema 73/89, 87-100 Toruń</small>
+      </div>
+      <div class="image-container ms-5">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/c/c3/Hala_sportowa_Torun_09_2014.JPG" alt="Arena Toruń"
+          class="image">
+      </div>
+    </div>
+  </div>
+</div>
