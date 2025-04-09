@@ -9,4 +9,5 @@ export interface TeamStats {
     bz: number;
     bs: number;
     diff: number;
+    logo?: string;
 }

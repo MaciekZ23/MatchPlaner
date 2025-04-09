@@ -12,6 +12,7 @@
 .table-header th {
     padding: 12px;
     text-align: center;
+    vertical-align: middle;
     font-weight: 600;
     color: #FFFFFF;
     font-size: 0.95rem;
@@ -21,7 +22,6 @@
     background-color: #007BFE !important;
     color: #FFFFFF;
 }
-
 
 .table-body-container {
     max-height: 400px;
@@ -37,6 +37,7 @@ table {
 
     thead {
         background-color: #2C2C2C;
+        text-align: center;
     }
 
     tbody {
@@ -53,43 +54,26 @@ table {
                 vertical-align: middle;
                 padding: 10px;
                 white-space: nowrap;
-
+                /*
                 &:first-child {
-                    width: 80px;
+                    width: 115px;
+                    text-align: center;
                 }
 
                 &:nth-child(2) {
                     text-align: center;
-                    width: 132px;
+                    width: 100px;
                 }
 
                 &:nth-child(n+3) {
-                    width: 105px;
-                }
-            }
+                    width: 100px;
+                    text-align: center;
+                }*/
 
-            .badge {
-                font-size: 0.95rem;
+                .badge {
+                    font-size: 0.95rem;
+                }
             }
         }
     }
-}
-
-.team-logo-container {
-    display: flex;
-    align-items: center;
-    justify-content: left;
-}
-
-.team-logo {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    margin-right: 10px;
-}
-
-.fas.fa-tshirt.team-logo {
-    font-size: 20px;
-    color: #007BFE;
-    margin-right: 10px;
 }

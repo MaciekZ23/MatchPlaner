@@ -18,24 +18,39 @@
                     <th>+/-</th>
                 </tr>
             </thead>
-            <tbody>
-                <tr *ngFor="let team of tableData; let i = index">
-                    <td>{{ i + 1 }}</td>
-                    <td class="text-start">{{ team.name }}</td>
-                    <td>{{ team.rm }}</td>
-                    <td>{{ team.w }}</td>
-                    <td>{{ team.r }}</td>
-                    <td>{{ team.p }}</td>
-                    <td>
-                        <span class="badge bg-primary text-white px-3 py-2">{{ team.pkt }}</span>
-                    </td>
-                    <td>{{ team.bz }}</td>
-                    <td>{{ team.bs }}</td>
-                    <td [ngClass]="{ 'text-success': team.diff >= 0, 'text-danger': team.diff < 0 }">
-                        {{ team.diff >= 0 ? '+' : '' }}{{ team.diff }}
-                    </td>
-                </tr>
-            </tbody>
         </table>
+        <div class="table-body-container">
+            <table class="table table-dark table-hover align-middle w-100">
+                <tbody>
+                    <tr *ngFor="let team of tableData; let i = index">
+                        <td>{{ i + 1 }}</td>
+                        <td class="text-start">
+                            <div class="team-logo-container">
+                                <img *ngIf="team.logo; else defaultLogo" [src]="team.logo" alt="{{ team.name }}"
+                                    class="team-logo">
+                                <ng-template #defaultLogo>
+                                    <i class="fas fa-tshirt team-logo"></i>
+                                </ng-template>
+                                {{ team.name }}
+                            </div>
+                        </td>
+                        <td>{{ team.rm }}</td>
+                        <td>{{ team.w }}</td>
+                        <td>{{ team.r }}</td>
+                        <td>{{ team.p }}</td>
+                        <td>
+                            <span class="badge bg-primary text-white px-3 py-2">{{ team.pkt }}</span>
+                        </td>
+                        <td>{{ team.bz }}</td>
+                        <td>{{ team.bs }}</td>
+                        <td [ngClass]="{ 'text-success': team.diff >= 0, 'text-danger': team.diff < 0 }">
+                            {{ team.diff >= 0 ? '+' : '' }}{{ team.diff }}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
+
+<app-top-scorers></app-top-scorers>
