@@ -1,0 +1,36 @@
+.card {
+    background-color: #343a40;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-bottom: 1rem;
+    transition: transform 0.3s ease;
+  
+    &:hover {
+      transform: scale(1.05);
+    }
+  
+    .team-logo-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 15px;
+    }
+  
+    .team-logo {
+      max-width: 50px;
+      height: auto;
+    }
+  
+    .fa-tshirt {
+      font-size: 24px;
+      color: #cccccc;
+    }
+  
+    .card-body {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+  }
+  

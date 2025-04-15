@@ -1,0 +1,11 @@
+<div class="card bg-dark text-white m-1" (click)="toggleTable()">
+  <div class="card-body d-flex align-items-center">
+    <div class="team-logo-container">
+      <img *ngIf="team.logo; else defaultLogo" [src]="team.logo" alt="{{ team.name }}" class="team-logo">
+      <ng-template #defaultLogo>
+        <i class="fas fa-tshirt team-logo"></i>
+      </ng-template>
+    </div>
+    <span class="ms-3">{{ team.name }}</span>
+  </div>
+</div>

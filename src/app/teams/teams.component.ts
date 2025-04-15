@@ -1,11 +1,33 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { TeamCardComponent } from './components/team-card/team-card.component';
+import { TeamTableComponent } from './components/team-table/team-table.component';
+import { TeamService } from './services/team.service';
+import { Team } from './models/team';
 
 @Component({
   selector: 'app-teams',
-  imports: [],
+  imports: [CommonModule, TeamCardComponent, TeamTableComponent],
   templateUrl: './teams.component.html',
-  styleUrl: './teams.component.scss'
+  styleUrls: ['./teams.component.scss'],
+  standalone: true
 })
-export class TeamsComponent {
 
+export class TeamsComponent implements OnInit {
+  teams: Team[] = []; 
+  selectedTeam: Team | null = null;
+
+  constructor(private teamService: TeamService) {}
+
+  ngOnInit(): void {
+    this.teams = this.teamService.getTeams(); // Pobranie danych drużyn
+  }
+
+  onTeamClick(team: Team): void {
+    this.selectedTeam = team;
+  }
+
+  onBackClick(): void {
+    this.selectedTeam = null;
+  }
 }

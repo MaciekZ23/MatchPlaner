@@ -1,0 +1,35 @@
+<div class="card bg-dark text-white m-1">
+  <h6 class="fs-5 text p-4 card-title card-header bg-transparent d-flex justify-content-between">
+    <span>{{ teamName }} - Tabela Graczy</span>
+    <button class="btn btn-link text-white" (click)="onBackClick()">
+      <i class="fas fa-arrow-left"></i> Powrót
+    </button>
+  </h6>
+
+  <div class="table-responsive card-body">
+    <table class="table table-dark table-hover align-middle w-100">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th class="sortable" (click)="sortData('name')">Imię i nazwisko
+            <i [class]="sortColumn === 'name' ? 'fa fa-sort-' + sortDirection : 'fa fa-sort'"></i>
+          </th>
+          <th>Pozycja</th>
+          <th>Nr Koszulki</th>
+          <th class="sortable" (click)="sortData('status')">Stan zdrowia
+            <i [class]="sortColumn === 'status' ? 'fa fa-sort-' + sortDirection : 'fa fa-sort'"></i>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let player of players; let i = index">
+          <td>{{ i + 1 }}</td>
+          <td>{{ player.name }}</td>
+          <td>{{ player.position }}</td>
+          <td>{{ player.shirtNumber }}</td>
+          <td [ngClass]="getStatusClass(player)">{{ player.status | titlecase }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

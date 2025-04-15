@@ -1,0 +1,18 @@
+.container {
+  margin-top: 30px;
+}
+
+.row.g-4 {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+}
+
+.card {
+  width: 100%;
+  max-width: 300px;
+}
+
+button {
+  margin-top: 20px;
+}
