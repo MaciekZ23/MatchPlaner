@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, EventEmitter, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Team } from '../../models/team';
 
@@ -13,6 +13,8 @@ import { Team } from '../../models/team';
 export class TeamTableComponent {
   @Input() players: any[] = [];
   @Input() teamName: string = '';
+  @Input() teamLogo?: string;
+  @Output() backClick = new EventEmitter<void>();
 
   isCollapsed: boolean = true;
 
@@ -45,10 +47,10 @@ export class TeamTableComponent {
   }
 
   getStatusClass(player: any): string {
-    return player.status === 'healthy' ? 'text-success' : 'text-danger';
+    return player.healthStatus === 'Zdrowy' ? 'text-success' : 'text-danger';
   }
 
   onBackClick(): void {
-    window.history.back();
+    this.backClick.emit();
   }
 }

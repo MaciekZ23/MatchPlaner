@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TeamService } from '../../services/team.service';
 import { Team } from '../../models/team';
@@ -13,17 +13,13 @@ import { TeamTableService } from '../../../tables/services/team-table.service';
   standalone: true
 })
 
-export class TeamCardComponent implements OnInit {
+export class TeamCardComponent {
   @Input() team!: Team;
-  isTableVisible: boolean = false;
+  @Output() teamClick = new EventEmitter<Team>();
 
   constructor(private teamService: TeamService) { }
 
-  ngOnInit(): void {
-    
-  }
-
-  toggleTable(): void {
-    this.isTableVisible = !this.isTableVisible;
+  onClick(): void {
+    this.teamClick.emit(this.team);
   }
 }

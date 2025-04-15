@@ -1,22 +1,16 @@
 <div class="container mt-4">
-  <div *ngIf="!selectedTeam" class="row g-4">
-    <!-- Wyświetlanie kart drużyn, które będą widoczne tylko jeśli nie jest wybrana żadna drużyna -->
-    <div *ngFor="let team of teams" class="col-md-4">
-      <app-team-card
-        [team]="team"
-        (teamClick)="onTeamClick(team)"
-      ></app-team-card>
+  <div class="row g-4">
+    <!-- Wyświetlanie kart drużyn, widocznych tylko jeśli nie kliknięto żadnej drużyny -->
+    <div *ngIf="!selectedTeam">
+      <div *ngFor="let team of teams" class="col-md-4">
+        <app-team-card [team]="team" (teamClick)="onTeamClick(team)"></app-team-card>
+      </div>
     </div>
   </div>
 
-  <!-- Tabela zawodników drużyny po kliknięciu karty -->
+  <!-- Zawodnicy drużyny po kliknięciu karty, widoczna tylko jeśli drużyna została wybrana -->
   <div *ngIf="selectedTeam" class="mt-4">
-    <app-team-table
-      [teamName]="selectedTeam.name"
-      [players]="selectedTeam.players"
-    ></app-team-table>
-    <button class="btn btn-link text-white" (click)="onBackClick()">
-      <i class="fas fa-arrow-left"></i> Powrót
-    </button>
+    <app-team-table [teamName]="selectedTeam.name" [players]="selectedTeam.players" [teamLogo]="selectedTeam.logo"
+      (backClick)="onBackClick()"></app-team-table>
   </div>
 </div>

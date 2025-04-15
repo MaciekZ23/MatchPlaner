@@ -9,6 +9,6 @@ export interface Player {
     name: string;
     position: string;
     shirtNumber: number;
-    healthStatus: 'healthy' | 'injured';
+    healthStatus: 'Zdrowy' | 'Kontuzjowany';
 }
 

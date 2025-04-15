@@ -1,6 +1,15 @@
 <div class="card bg-dark text-white m-1">
   <h6 class="fs-5 text p-4 card-title card-header bg-transparent d-flex justify-content-between">
-    <span>{{ teamName }} - Tabela Graczy</span>
+    <!-- Dodanie logo drużyny lub koszulki, jeśli brak logo -->
+    <div class="team-logo-container">
+      <!-- Sprawdź, czy logo jest dostępne. Jeśli tak, wyświetl obraz, jeśli nie, wyświetl koszulkę -->
+      <img *ngIf="teamLogo; else defaultLogo" [src]="teamLogo" alt="{{ teamName }} Logo" class="team-logo">
+      <ng-template #defaultLogo>
+        <!-- Domyślna koszulka, gdy brak logo -->
+        <i class="fas fa-tshirt team-logo"></i>
+      </ng-template>
+    </div>
+    <span>{{ teamName }}</span>
     <button class="btn btn-link text-white" (click)="onBackClick()">
       <i class="fas fa-arrow-left"></i> Powrót
     </button>
@@ -27,7 +36,7 @@
           <td>{{ player.name }}</td>
           <td>{{ player.position }}</td>
           <td>{{ player.shirtNumber }}</td>
-          <td [ngClass]="getStatusClass(player)">{{ player.status | titlecase }}</td>
+          <td [ngClass]="getStatusClass(player)">{{ player.healthStatus}}</td>
         </tr>
       </tbody>
     </table>

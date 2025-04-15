@@ -14,17 +14,18 @@ import { Team } from './models/team';
 })
 
 export class TeamsComponent implements OnInit {
-  teams: Team[] = []; 
+  teams: Team[] = [];
   selectedTeam: Team | null = null;
 
-  constructor(private teamService: TeamService) {}
+  constructor(private teamService: TeamService) { }
 
   ngOnInit(): void {
-    this.teams = this.teamService.getTeams(); // Pobranie danych drużyn
+    this.teams = this.teamService.getTeams();
   }
 
   onTeamClick(team: Team): void {
     this.selectedTeam = team;
+    this.selectedTeam.logo = this.selectedTeam.logo || undefined;
   }
 
   onBackClick(): void {
