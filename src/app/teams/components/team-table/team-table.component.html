@@ -25,9 +25,7 @@
           </th>
           <th>Pozycja</th>
           <th>Nr Koszulki</th>
-          <th class="sortable" (click)="sortData('status')">Stan zdrowia
-            <i [class]="sortColumn === 'status' ? 'fa fa-sort-' + sortDirection : 'fa fa-sort'"></i>
-          </th>
+          <th>Stan zdrowia</th>
         </tr>
       </thead>
       <tbody>
@@ -36,7 +34,7 @@
           <td>{{ player.name }}</td>
           <td>{{ player.position }}</td>
           <td>{{ player.shirtNumber }}</td>
-          <td [ngClass]="getStatusClass(player)">{{ player.healthStatus}}</td>
+          <td [ngClass]="getHealthStatusClass(player)">{{ player.healthStatus }}</td>
         </tr>
       </tbody>
     </table>

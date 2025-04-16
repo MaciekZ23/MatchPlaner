@@ -46,8 +46,14 @@ export class TeamTableComponent {
     });
   }
 
-  getStatusClass(player: any): string {
-    return player.healthStatus === 'Zdrowy' ? 'text-success' : 'text-danger';
+  getHealthStatusClass(player: any): string {
+    if (player.healthStatus === 'Zdrowy') {
+      return 'text-success';
+    }
+    else if (player.healthStatus === 'Kontuzjowany') {
+      return 'text-warning';
+    }
+    return "";
   }
 
   onBackClick(): void {
