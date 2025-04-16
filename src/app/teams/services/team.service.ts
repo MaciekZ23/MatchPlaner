@@ -57,6 +57,14 @@ export class TeamService {
           { name: 'Dariusz Piotrowski', position: 'Napastnik', shirtNumber: 7, healthStatus: 'Zdrowy' },
           { name: 'Sebastian Nowak', position: 'Bramkarz', shirtNumber: 3, healthStatus: 'Kontuzjowany' },
           { name: 'Maciej Zieliński', position: 'Pomocnik', shirtNumber: 9, healthStatus: 'Zdrowy' },
+          { name: 'Łukasz Wójcik', position: 'Obrońca', shirtNumber: 4, healthStatus: 'Zdrowy' },
+          { name: 'Maciej Zieliński', position: 'Pomocnik', shirtNumber: 9, healthStatus: 'Zdrowy' },
+          { name: 'Łukasz Wójcik', position: 'Obrońca', shirtNumber: 4, healthStatus: 'Zdrowy' },
+          { name: 'Maciej Zieliński', position: 'Pomocnik', shirtNumber: 9, healthStatus: 'Zdrowy' },
+          { name: 'Łukasz Wójcik', position: 'Obrońca', shirtNumber: 4, healthStatus: 'Zdrowy' },
+          { name: 'Maciej Zieliński', position: 'Pomocnik', shirtNumber: 9, healthStatus: 'Zdrowy' },
+          { name: 'Łukasz Wójcik', position: 'Obrońca', shirtNumber: 4, healthStatus: 'Zdrowy' },
+          { name: 'Maciej Zieliński', position: 'Pomocnik', shirtNumber: 9, healthStatus: 'Zdrowy' },
           { name: 'Łukasz Wójcik', position: 'Obrońca', shirtNumber: 4, healthStatus: 'Zdrowy' }
         ]
       },

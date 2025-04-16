@@ -1,11 +1,8 @@
 <div class="card bg-dark text-white m-1">
   <h6 class="fs-5 text p-4 card-title card-header bg-transparent d-flex justify-content-between">
-    <!-- Dodanie logo drużyny lub koszulki, jeśli brak logo -->
     <div class="team-logo-container">
-      <!-- Sprawdź, czy logo jest dostępne. Jeśli tak, wyświetl obraz, jeśli nie, wyświetl koszulkę -->
       <img *ngIf="teamLogo; else defaultLogo" [src]="teamLogo" alt="{{ teamName }} Logo" class="team-logo">
       <ng-template #defaultLogo>
-        <!-- Domyślna koszulka, gdy brak logo -->
         <i class="fas fa-tshirt team-logo"></i>
       </ng-template>
     </div>
@@ -34,10 +31,13 @@
           <td>{{ player.name }}</td>
           <td>{{ player.position }}</td>
           <td>{{ player.shirtNumber }}</td>
-          <td class=" 
-            {{ player.healthStatus === 'Zdrowy' ? 'bg-success text-white rounded-pill px-1 py-1 fs-6' : '' }}
-            {{ player.healthStatus === 'Kontuzjowany' ? 'bg-warning text-dark rounded-pill px-1 py-1 fs-6' : '' }}">
-            {{ player.healthStatus }}
+          <td class="badge-container">
+            <span
+              class="badge 
+              {{ player.healthStatus === 'Zdrowy' ? 'bg-info text-white rounded-pill px-1 py-1 fs-6' : '' }} 
+              {{ player.healthStatus === 'Kontuzjowany' ? 'bg-info-subtle rounded-pill text-dark px-1 py-1 fs-6' : '' }}">
+              {{ player.healthStatus }}
+            </span>
           </td>
         </tr>
       </tbody>

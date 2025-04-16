@@ -13,20 +13,17 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    //margin-right: 50px;
   }
 
   .team-logo {
     width: 50px;
     height: 50px;
     border-radius: 50%;
-    //margin-right: 10px;
   }
 
   .fa-tshirt {
-    font-size: 40px;
+    font-size: 30px;
     color: #007BFE;
-    //margin-right: 10px;
     line-height: 35px;
   }
 
@@ -36,7 +33,6 @@
     align-items: center;
   }
 
-  /* Stylizacja przycisku Powrót */
   button {
     background-color: #007BFE;
     border: none;
@@ -54,7 +50,8 @@
     width: 100%;
     border-collapse: collapse;
 
-    th, td {
+    th,
+    td {
       text-align: center;
       vertical-align: middle;
     }
