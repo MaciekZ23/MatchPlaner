@@ -34,7 +34,10 @@
           <td>{{ player.name }}</td>
           <td>{{ player.position }}</td>
           <td>{{ player.shirtNumber }}</td>
-          <td [ngClass]="getHealthStatusClass(player)">{{ player.healthStatus }}</td>
+          <td [ngClass]="{'bg-success text-white': player.healthStatus === 'Zdrowy', 
+                          'bg-warning text-dark': player.healthStatus === 'Kontuzjowany'}">
+            {{ player.healthStatus }}
+          </td>
         </tr>
       </tbody>
     </table>
