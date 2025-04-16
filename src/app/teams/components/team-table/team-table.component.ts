@@ -46,7 +46,7 @@ export class TeamTableComponent {
     });
   }
 
-  getHealthStatusClass(player: any): string {
+  /*getHealthStatusClass(player: any): string {
     if (player.healthStatus === 'Zdrowy') {
       return 'text-success';
     }
@@ -54,7 +54,7 @@ export class TeamTableComponent {
       return 'text-warning';
     }
     return "";
-  }
+  }*/
 
   onBackClick(): void {
     this.backClick.emit();

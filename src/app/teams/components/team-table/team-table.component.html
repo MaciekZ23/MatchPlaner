@@ -10,13 +10,13 @@
       </ng-template>
     </div>
     <span>{{ teamName }}</span>
-    <button class="btn btn-link text-white" (click)="onBackClick()">
+    <button class="btn text-white" (click)="onBackClick()">
       <i class="fas fa-arrow-left"></i> Powrót
     </button>
   </h6>
 
   <div class="table-responsive card-body">
-    <table class="table table-dark table-hover align-middle w-100">
+    <table class="table table-dark align-middle w-100">
       <thead>
         <tr>
           <th>#</th>
@@ -29,13 +29,14 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let player of players; let i = index">
+        <tr *ngFor="let player of players; let i = index" class="text-center">
           <td>{{ i + 1 }}</td>
           <td>{{ player.name }}</td>
           <td>{{ player.position }}</td>
           <td>{{ player.shirtNumber }}</td>
-          <td [ngClass]="{'bg-success text-white': player.healthStatus === 'Zdrowy', 
-                          'bg-warning text-dark': player.healthStatus === 'Kontuzjowany'}">
+          <td class=" 
+            {{ player.healthStatus === 'Zdrowy' ? 'bg-success text-white rounded-pill px-1 py-1 fs-6' : '' }}
+            {{ player.healthStatus === 'Kontuzjowany' ? 'bg-warning text-dark rounded-pill px-1 py-1 fs-6' : '' }}">
             {{ player.healthStatus }}
           </td>
         </tr>

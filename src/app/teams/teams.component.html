@@ -1,7 +1,7 @@
 <div class="container mt-4">
-  <div class="row g-4">
+  <div class="g-4">
     <!-- Wyświetlanie kart drużyn, widocznych tylko jeśli nie kliknięto żadnej drużyny -->
-    <div *ngIf="!selectedTeam">
+    <div *ngIf="!selectedTeam" class="row">
       <div *ngFor="let team of teams" class="col-md-4">
         <app-team-card [team]="team" (teamClick)="onTeamClick(team)"></app-team-card>
       </div>
