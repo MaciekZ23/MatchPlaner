@@ -1,6 +1,5 @@
 <div class="container mt-4">
   <div class="g-4">
-    <!-- Wyświetlanie kart drużyn, widocznych tylko jeśli nie kliknięto żadnej drużyny -->
     <div *ngIf="!selectedTeam" class="row">
       <div *ngFor="let team of teams" class="col-md-4">
         <app-team-card [team]="team" (teamClick)="onTeamClick(team)"></app-team-card>
@@ -8,8 +7,7 @@
     </div>
   </div>
 
-  <!-- Zawodnicy drużyny po kliknięciu karty, widoczna tylko jeśli drużyna została wybrana -->
-  <div *ngIf="selectedTeam" class="mt-4">
+  <div *ngIf="selectedTeam" class="mt-1">
     <app-team-table [teamName]="selectedTeam.name" [players]="selectedTeam.players" [teamLogo]="selectedTeam.logo"
       (backClick)="onBackClick()"></app-team-table>
   </div>
