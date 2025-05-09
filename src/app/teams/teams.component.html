@@ -1,7 +1,7 @@
 <div class="container mt-4">
   <div class="g-4">
     <div *ngIf="!selectedTeam" class="row">
-      <div *ngFor="let team of teams" class="col-md-4">
+      <div *ngFor="let team of teams" class="col-12 col-md-4">
         <app-team-card [team]="team" (teamClick)="onTeamClick(team)"></app-team-card>
       </div>
     </div>

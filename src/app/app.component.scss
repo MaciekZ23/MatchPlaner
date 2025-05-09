@@ -1,8 +1,18 @@
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: #004080;
+  overflow-x: hidden;
+}
+
 .layout {
   display: flex;
   min-height: 100vh;
+  width: 100%;
   background-color: #004080;
   color: #FFFFFF;
+  overflow-x: hidden;
 }
 
 .content {
@@ -17,7 +27,7 @@
 
   @media (max-width: 767.98px) {
     margin-left: 100px !important;
-
+    
     &.collapsed {
       margin-left: 100px !important;
     }
