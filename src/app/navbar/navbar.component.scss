@@ -134,4 +134,23 @@
       }
     }
   }
+
+  @media (max-width: 767.98px) {
+    :host ::ng-deep .sidebar {
+      height: 100vh !important;
+      position: fixed;
+      top: 0;
+      left: 0;
+      overflow-y: auto;
+    }
+  
+    :host ::ng-deep .sidebar.collapsed {
+      width: 100px !important;
+    }
+  
+    :host ::ng-deep .sidebar:not(.collapsed) {
+      width: 300px !important;
+    }
+  }
+  
 }

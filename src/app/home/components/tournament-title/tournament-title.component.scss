@@ -13,3 +13,21 @@
     font-size: 1.3rem;
     color: #B0B0B0;
 }
+
+@media (max-width: 767.98px) {
+    .card {
+        border-radius: 10px;
+        background-color: #1F1F1F;
+        color: #FFFFFF;
+        width: 100%;
+    }
+    
+    .card-title {
+        font-size: 1rem;
+    }
+    
+    .card-text {
+        font-size: 0.8rem;
+        color: #B0B0B0;
+    }
+}

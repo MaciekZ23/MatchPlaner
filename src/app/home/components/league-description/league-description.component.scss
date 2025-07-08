@@ -16,3 +16,24 @@
     font-size: 1.3rem;
     color: #B0B0B0;
 }
+
+@media (max-width: 767.98px) {
+    .card {
+        border-radius: 10px;
+        background-color: #1F1F1F;
+        color: #FFFFFF;
+        width: 100%;
+    
+        &:hover {
+            .card-body {
+                background-color: #2A2A2A;
+                border-radius: 10px;
+            }
+        }
+    }
+    
+    .card-text {
+        font-size: 0.8rem;
+        color: #B0B0B0;
+    }    
+}
