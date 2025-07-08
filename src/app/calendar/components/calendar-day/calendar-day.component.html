@@ -1,0 +1,16 @@
+<div class="accordion-item">
+    <h2 class="accordion-header">
+        <button class="accordion-button" type="button" (click)="toggle()">
+            {{ date }}
+        </button>
+    </h2>
+    <div class="accordion-collapse collapse" [class.show]="expanded">
+        <div class="accordion-body">
+            <div class="row g-3">
+                <div class="col-md-4" *ngFor="let match of matches">
+                    <app-match-card [match]="match" (openDetails)="onMatchClick(match)"></app-match-card>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
