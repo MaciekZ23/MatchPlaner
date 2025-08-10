@@ -1,25 +1,14 @@
 <div class="accordion" id="calendarAccordion">
-    <app-calendar-day *ngFor="let day of days" [date]="day.date" [matches]="day.matches"
-        (matchClicked)="openDetails($event)">
-    </app-calendar-day>
+  <app-calendar-day
+    *ngFor="let day of days"
+    [date]="day.date"
+    [matches]="day.matches"
+    (matchClicked)="openDetails($event)"
+  >
+  </app-calendar-day>
 </div>
 
-<div class="modal fade show d-block" tabindex="-1" *ngIf="selectedMatch">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title">
-                    {{ selectedMatch.teamA }} {{ selectedMatch.scoreA }} - {{ selectedMatch.scoreB }} {{
-                    selectedMatch.teamB }}
-                </h5>
-                <button type="button" class="btn-close" (click)="closeDetails()"></button>
-            </div>
-            <div class="modal-body">
-                <div *ngFor="let d of selectedMatch.details">
-                    <p><strong>{{ d.player }}</strong> ({{ d.time }} min) – {{ d.score }}</p>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-<div class="modal-backdrop fade show" *ngIf="selectedMatch"></div>
+<app-match-details-modal
+  [match]="selectedMatch"
+  (close)="closeDetails()"
+></app-match-details-modal>

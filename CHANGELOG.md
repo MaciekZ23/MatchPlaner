@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.3.0
+
+### (FEATURE) Implementacja zakładki Terminarz
+* Dodano rozwijane daty z listą meczów
+* Mecze prezentowane w kartach, kliknięcie otwiera modal ze szczegółami
+* Podział na komponenty: `calendar-day` oraz `match-card`
+* Dodano mockowany serwis `MatchService` do dostarczania danych meczów
+
 ## 1.2.2
 
 ### (FIX) Poprawki w widoku mobilnym
