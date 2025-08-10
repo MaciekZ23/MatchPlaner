@@ -1,11 +1,19 @@
 <div class="card bg-dark text-white m-1">
-  <h6 class="fs-5 text p-3 card-title card-header bg-transparent d-flex justify-content-between">
+  <h6
+    class="fs-5 text p-3 card-title card-header bg-transparent d-flex justify-content-between"
+  >
     <span>Bramkarze - Czyste Konta</span>
     <button class="btn btn-link text-white" (click)="toggleCollapse()">
-      <i class="fas" [ngClass]="{'fa-chevron-down': isCollapsed, 'fa-chevron-up': !isCollapsed}"></i>
+      <i
+        class="fas"
+        [ngClass]="{
+          'fa-chevron-down': isCollapsed,
+          'fa-chevron-up': !isCollapsed
+        }"
+      ></i>
     </button>
   </h6>
-  <div class="collapse" [ngClass]="{'show': !isCollapsed}">
+  <div class="collapse" [ngClass]="{ show: !isCollapsed }">
     <div class="table-responsive card-body">
       <table class="table table-dark table-hover align-middle w-100">
         <thead>
@@ -13,8 +21,15 @@
             <th>#</th>
             <th>Bramkarz</th>
             <th>Drużyna</th>
-            <th class="sortable" (click)="sortData('cleanSheets')">Czyste Konta
-              <i [class]="sortColumn === 'cleanSheets' ? 'fa fa-sort-' + sortDirection : 'fa fa-sort'"></i>
+            <th class="sortable" (click)="sortData('cleanSheets')">
+              Czyste Konta
+              <i
+                [class]="
+                  sortColumn === 'cleanSheets'
+                    ? 'fa fa-sort-' + sortDirection
+                    : 'fa fa-sort'
+                "
+              ></i>
             </th>
           </tr>
         </thead>

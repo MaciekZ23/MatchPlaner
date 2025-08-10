@@ -2,13 +2,20 @@
   <div class="g-4">
     <div *ngIf="!selectedTeam" class="row">
       <div *ngFor="let team of teams" class="col-12 col-md-4">
-        <app-team-card [team]="team" (teamClick)="onTeamClick(team)"></app-team-card>
+        <app-team-card
+          [team]="team"
+          (teamClick)="onTeamClick(team)"
+        ></app-team-card>
       </div>
     </div>
   </div>
 
   <div *ngIf="selectedTeam" class="mt-1">
-    <app-team-table [teamName]="selectedTeam.name" [players]="selectedTeam.players" [teamLogo]="selectedTeam.logo"
-      (backClick)="onBackClick()"></app-team-table>
+    <app-team-table
+      [teamName]="selectedTeam.name"
+      [players]="selectedTeam.players"
+      [teamLogo]="selectedTeam.logo"
+      (backClick)="onBackClick()"
+    ></app-team-table>
   </div>
 </div>
