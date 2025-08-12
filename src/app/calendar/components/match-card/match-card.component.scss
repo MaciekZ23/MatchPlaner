@@ -1,11 +1,28 @@
 .match-card {
-    color: #FFFFFF;
-    border-radius: 1rem;
-    transition: 0.2s ease;
-    cursor: pointer;
+  background-color: #adadad;
+  transition: 0.2s ease;
+  cursor: pointer;
 
-    &:hover {
-        transform: scale(1.03);
-        background-color: #004080;
-    }
+  &:hover {
+    transform: scale(1.02);
+    background-color: #dedede !important;
+  }
+}
+
+.team-logo {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.fas.fa-tshirt.team-logo {
+  font-size: 20px;
+  color: #007bfe;
+  margin-right: 10px;
+  line-height: 35px;
+}
+
+.badge {
+  font-size: 0.95rem;
 }
