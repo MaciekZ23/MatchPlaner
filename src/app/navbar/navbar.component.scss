@@ -1,8 +1,10 @@
+@use "../../styles.scss" as *;
+
 .sidebar {
   width: 300px;
   height: 100vh;
-  background-color: #1C1C1C !important;
-  color: #DEDEDE;
+  background-color: $navbar-background-color;
+  color: $text-gray;
   padding: 15px;
   position: fixed;
   z-index: 1000;
@@ -16,13 +18,13 @@
 
   .sidebar-toggle {
     font-size: 1.3rem;
-    color: #DEDEDE;
+    color: $text-gray;
     border: none;
     background: none;
   }
 
   .nav-link {
-    color: #DEDEDE;
+    color: $text-gray;
     display: flex;
     align-items: center;
     padding: 0.75rem;
@@ -37,13 +39,13 @@
     }
 
     &.active {
-      background-color: #004080;
-      color: #FFFFFF;
+      background-color: $primary-dark;
+      color: $white;
     }
 
     &:hover {
-      background-color: #004080;
-      color: #FFFFFF;
+      background-color: $primary-dark;
+      color: $white;
     }
   }
 
@@ -51,13 +53,12 @@
     font-size: 1rem;
     font-weight: bold;
     margin: 1.5rem auto 1rem auto;
-    color: #ADADAD;
+    color: $menu-text;
     margin-top: 1rem;
   }
 
   &.collapsed {
     width: 100px;
-
 
     .logo-img {
       margin: 0 auto;
@@ -93,7 +94,7 @@
       }
 
       &.active {
-        background-color: #004080;
+        background-color: $primary-dark;
         height: 48px;
         border-radius: 10px;
         display: flex;
@@ -143,14 +144,13 @@
       left: 0;
       overflow-y: auto;
     }
-  
+
     :host ::ng-deep .sidebar.collapsed {
       width: 100px !important;
     }
-  
+
     :host ::ng-deep .sidebar:not(.collapsed) {
       width: 300px !important;
     }
   }
-  
 }

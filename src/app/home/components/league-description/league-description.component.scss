@@ -1,9 +1,7 @@
 @use "../../../../styles.scss" as *;
 
 .card {
-  border-radius: 10px;
-  background-color: #1f1f1f;
-  color: $white;
+  border-radius: 8px;
   width: 100%;
 
   &:hover {
@@ -21,9 +19,7 @@
 
 @media (max-width: 767.98px) {
   .card {
-    border-radius: 10px;
-    background-color: #1f1f1f;
-    color: $white;
+    border-radius: 8px;
     width: 100%;
 
     &:hover {

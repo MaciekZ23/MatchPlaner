@@ -1,65 +1,45 @@
+@use "../../../../styles.scss" as *;
+
 .card {
-    background-color: #1F1F1F;
-    color: #FFFFFF;
-    border-radius: 10px;
+  border-radius: 8px;
 }
 
 .table-responsive {
-    padding: 0;
-    max-height: 500px;
-}
-
-.table-header th {
-    padding: 12px;
-    font-weight: 600;
-    color: #FFFFFF;
-    font-size: 0.95rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.bg-primary {
-    background-color: #007BFE !important;
-    color: #FFFFFF;
+  padding: 0;
+  max-height: 500px;
 }
 
 .table-body-container {
-    max-height: 400px;
-    overflow-y: auto;
-    display: block;
-    margin-top: 10px;
+  max-height: 400px;
+  overflow-y: auto;
+  display: block;
+  margin-top: 10px;
 }
 
 table {
-    width: 100%;
-    border-collapse: collapse;
-    table-layout: fixed;
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
 
-    thead {
-        background-color: #2C2C2C;
+  thead {
+    text-align: center;
+  }
+
+  tbody {
+    tr {
+      border-top: 1px solid $border-table;
+      transition: background-color 0.3s;
+
+      td {
         text-align: center;
+        vertical-align: middle;
+        padding: 10px;
+      }
     }
-
-    tbody {
-        tr {
-            border-top: 1px solid #3C3C3C;
-            transition: background-color 0.3s;
-
-            &:hover {
-                background-color: #2A2A2A;
-            }
-
-            td {
-                text-align: center;
-                vertical-align: middle;
-                padding: 10px;
-            }
-        }
-    }
+  }
 }
 
 .sortable i {
-    margin-left: 5px;
-    font-size: 1rem;
+  margin-left: 5px;
+  font-size: 1rem;
 }

@@ -1,22 +1,23 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TopScorerService } from '../../services/top-scorer.service';
+import { stringsTopScorers } from '../../misc/strings-top-scorers';
 
 @Component({
   selector: 'app-top-scorers',
   imports: [CommonModule],
   templateUrl: './top-scorers.component.html',
   styleUrls: ['./top-scorers.component.scss'],
-  standalone: true
+  standalone: true,
 })
-
 export class TopScorersComponent implements OnInit {
+  moduleStrings = stringsTopScorers;
   topScorers: any[] = [];
   isCollapsed = true;
   sortColumn: string | null = null;
   sortDirection: 'asc' | 'desc' | '' = 'asc';
-  constructor(private topScorerService: TopScorerService) { }
-  
+  constructor(private topScorerService: TopScorerService) {}
+
   ngOnInit(): void {
     this.loadTopScorers();
   }
@@ -33,11 +34,9 @@ export class TopScorersComponent implements OnInit {
   }
 
   sortData(column: string): void {
-    if(this.sortColumn === column) {
+    if (this.sortColumn === column) {
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-    }
-    else
-    {
+    } else {
       this.sortColumn = column;
       this.sortDirection = 'desc';
     }
@@ -46,11 +45,10 @@ export class TopScorersComponent implements OnInit {
       const valueA = this.getSortableValue(a, column);
       const valueB = this.getSortableValue(b, column);
 
-      if(valueA === null || valueB === null)
-      {
+      if (valueA === null || valueB === null) {
         return 0;
       }
-      return this.sortDirection === 'asc' ? valueA - valueB: valueB - valueA;
+      return this.sortDirection === 'asc' ? valueA - valueB : valueB - valueA;
     });
   }
 

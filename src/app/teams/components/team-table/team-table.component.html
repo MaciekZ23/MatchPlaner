@@ -1,7 +1,14 @@
 <div class="card bg-dark text-white m-1">
-  <h6 class="fs-5 text p-4 card-title card-header bg-transparent d-flex justify-content-between">
-    <div class="team-logo-container">
-      <img *ngIf="teamLogo; else defaultLogo" [src]="teamLogo" alt="{{ teamName }} Logo" class="team-logo">
+  <h6
+    class="fs-5 text p-4 card-title card-header bg-transparent d-flex justify-content-between"
+  >
+    <div class="d-flex align-items-center justify-content-center">
+      <img
+        *ngIf="teamLogo; else defaultLogo"
+        [src]="teamLogo"
+        alt="{{ teamName }} Logo"
+        class="team-logo"
+      />
       <ng-template #defaultLogo>
         <i class="fas fa-tshirt team-logo"></i>
       </ng-template>
@@ -12,13 +19,22 @@
     </button>
   </h6>
 
-  <div class="table-responsive card-body">
+  <div
+    class="table-responsive d-flex justify-content-center align-items-center"
+  >
     <table class="table table-dark align-middle w-100">
       <thead>
         <tr>
           <th>#</th>
-          <th class="sortable" (click)="sortData('name')">Imię i nazwisko
-            <i [class]="sortColumn === 'name' ? 'fa fa-sort-' + sortDirection : 'fa fa-sort'"></i>
+          <th class="sortable" (click)="sortData('name')">
+            Imię i nazwisko
+            <i
+              [class]="
+                sortColumn === 'name'
+                  ? 'fa fa-sort-' + sortDirection
+                  : 'fa fa-sort'
+              "
+            ></i>
           </th>
           <th>Pozycja</th>
           <th>Nr Koszulki</th>
@@ -34,8 +50,17 @@
           <td class="badge-container">
             <span
               class="badge 
-              {{ player.healthStatus === 'Zdrowy' ? 'bg-info text-white rounded-pill px-1 py-1 fs-6' : '' }} 
-              {{ player.healthStatus === 'Kontuzjowany' ? 'bg-info-subtle rounded-pill text-dark px-1 py-1 fs-6' : '' }}">
+              {{
+                player.healthStatus === 'Zdrowy'
+                  ? 'bg-info text-white rounded-pill px-1 py-1 fs-6'
+                  : ''
+              }} 
+              {{
+                player.healthStatus === 'Kontuzjowany'
+                  ? 'bg-info-subtle rounded-pill text-dark px-1 py-1 fs-6'
+                  : ''
+              }}"
+            >
               {{ player.healthStatus }}
             </span>
           </td>

@@ -1,21 +1,39 @@
 <div class="card bg-dark text-white shadow-sm border-0">
-    <div class="card-header bg-dark text-white bg-opacity-10 d-flex align-items-center">
-        <i class="fas fa-clock me-2"></i>
-        <strong>CZAS DO PIERWSZEGO MECZU</strong>
-        <button class="btn btn-link text-white ms-auto" (click)="toggleTimer()">
-            <i class="fas" [ngClass]="{'fa-chevron-down': !isTimerOpen, 'fa-chevron-up': isTimerOpen}"></i>
-        </button>
-    </div>
-    <div class="card-body" *ngIf="isTimerOpen">
-        <div class="d-flex flex-column flex-sm-row justify-content-center align-items-center">
-            <div class="text-content">
-                <div class="timer">
-                    <span class="time-item">{{ timeLeft.days}} dni</span>
-                    <span class="time-item">{{ timeLeft.hours }} godz.</span>
-                    <span class="time-item">{{ timeLeft.minutes }} min.</span>
-                    <span class="time-item">{{ timeLeft.seconds }} sek.</span>
-                </div>
-            </div>
+  <div
+    class="card-header bg-dark text-white bg-opacity-10 d-flex align-items-center"
+  >
+    <i class="fas fa-clock me-2"></i>
+    <strong>{{ moduleStrings.title }}</strong>
+    <button class="btn btn-link text-white ms-auto" (click)="toggleTimer()">
+      <i
+        class="fas"
+        [ngClass]="{
+          'fa-chevron-down': !isTimerOpen,
+          'fa-chevron-up': isTimerOpen
+        }"
+      ></i>
+    </button>
+  </div>
+  <div class="card-body" *ngIf="isTimerOpen">
+    <div
+      class="d-flex flex-column flex-sm-row justify-content-center align-items-center"
+    >
+      <div class="text-content">
+        <div class="timer">
+          <span class="time-item"
+            >{{ timeLeft.days }} {{ moduleStrings.days }}</span
+          >
+          <span class="time-item"
+            >{{ timeLeft.hours }} {{ moduleStrings.hours }}</span
+          >
+          <span class="time-item"
+            >{{ timeLeft.minutes }} {{ moduleStrings.minutes }}</span
+          >
+          <span class="time-item"
+            >{{ timeLeft.seconds }} {{ moduleStrings.seconds }}</span
+          >
         </div>
+      </div>
     </div>
+  </div>
 </div>

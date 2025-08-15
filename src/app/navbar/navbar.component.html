@@ -1,15 +1,25 @@
-<div class="d-flex flex-column flex-shrink-0 p-3 bg-dark sidebar" [class.collapsed]="!isOpen">
-
+<div
+  class="d-flex flex-column flex-shrink-0 p-3 sidebar"
+  [class.collapsed]="!isOpen"
+>
   <!-- Logo i Toggle -->
   <div class="d-flex justify-content-between align-items-center mb-5">
     <div class="d-flex align-items-center">
-      <img src="assets/MatchPlaner2.png" alt="Logo" class="me-2 logo-img" width="35" />
+      <img
+        src="assets/MatchPlaner2.png"
+        alt="Logo"
+        class="me-2 logo-img"
+        width="35"
+      />
       <span class="fs-4 fw-bold text-primary" *ngIf="isOpen">MatchPLANER</span>
     </div>
 
     <!--Toggle-->
-    <button class="btn bg-transparent sidebar-toggle" (click)="onToggleSidebar()">
-      <i class="fa" [ngClass]="{ 'fa-bars': !isOpen, 'fa-times': isOpen}"></i>
+    <button
+      class="btn bg-transparent sidebar-toggle"
+      (click)="onToggleSidebar()"
+    >
+      <i class="fa" [ngClass]="{ 'fa-bars': !isOpen, 'fa-times': isOpen }"></i>
     </button>
   </div>
 
@@ -18,11 +28,15 @@
     <span>Menu</span>
   </div>
 
-
   <!--Nawigacja-->
   <ul class="nav nav-pills flex-column">
     <li class="nav-item">
-      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="nav-link my-2">
+      <a
+        routerLink="/"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+        class="nav-link my-2"
+      >
         <i class="fa-solid fa-trophy me-4"></i>
         <span *ngIf="isOpen">Turniej</span>
       </a>

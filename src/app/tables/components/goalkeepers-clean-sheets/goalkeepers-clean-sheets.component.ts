@@ -1,22 +1,23 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { GoalkeepersCleanSheetsService } from '../../services/goalkeepers-clean-sheets.service';
+import { stringsGoalkeepersCleanSheets } from '../../misc/strings-goalkeepers-clean-sheets';
 
 @Component({
   selector: 'app-goalkeepers-clean-sheets',
   imports: [CommonModule],
   templateUrl: './goalkeepers-clean-sheets.component.html',
   styleUrls: ['./goalkeepers-clean-sheets.component.scss'],
-  standalone: true
+  standalone: true,
 })
-
 export class GoalkeepersCleanSheetsComponent implements OnInit {
-  cleanSheetsData: any[] = []; 
-  isCollapsed = true; 
-  sortColumn: string | null = null; 
+  moduleStrings = stringsGoalkeepersCleanSheets;
+  cleanSheetsData: any[] = [];
+  isCollapsed = true;
+  sortColumn: string | null = null;
   sortDirection: 'asc' | 'desc' | '' = 'asc';
 
-  constructor(private cleanSheetsService: GoalkeepersCleanSheetsService) { }
+  constructor(private cleanSheetsService: GoalkeepersCleanSheetsService) {}
 
   ngOnInit(): void {
     this.loadCleanSheets();
@@ -24,10 +25,9 @@ export class GoalkeepersCleanSheetsComponent implements OnInit {
 
   loadCleanSheets(): void {
     this.cleanSheetsData = this.cleanSheetsService.getCleanSheets();
-    this.sortData('cleanSheets'); 
+    this.sortData('cleanSheets');
   }
 
-  
   toggleCollapse(): void {
     this.isCollapsed = !this.isCollapsed;
   }

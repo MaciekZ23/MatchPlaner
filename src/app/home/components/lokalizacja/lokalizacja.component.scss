@@ -1,130 +1,124 @@
+@use "../../../../styles.scss" as *;
+
 .card {
-    background-color: #1F1F1F;
-    color: #FFFFFF;
-    border-radius: 10px;
+  border-radius: 8px;
+  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.3 ease;
+
+  &:hover {
+    .card-body {
+      background-color: $home-cards-hover;
+      border-radius: 10px;
+    }
+  }
+
+  .card-header {
+    font-weight: bold;
+    font-size: 1.4rem;
+
+    button {
+      background: none;
+      border: none;
+      color: $white;
+      font-size: 1.4rem;
+      cursor: pointer;
+    }
+  }
+
+  .card-body {
+    font-size: 1.2rem;
+    transition: background-color 0.3s ease;
+
+    p {
+      font-weight: normal;
+    }
+
+    small {
+      color: $home-cards-small;
+    }
+  }
+
+  .image-container {
+    width: 180px;
+    height: 130px;
+    overflow: hidden;
+    border-radius: 8px;
+    border: 2px solid $table-highlight;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: border-color 0.3s ease;
+
+    .image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+}
+
+@media (max-width: 767.98px) {
+  .card {
+    border-radius: 8px;
     box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.2);
     transition: background-color 0.3 ease;
 
     &:hover {
-        .card-body {
-            background-color: #2A2A2A;
-            border-radius: 10px;
-        }
+      .card-body {
+        background-color: $home-cards-hover;
+        border-radius: 10px;
+      }
     }
 
     .card-header {
-        background-color: #292929;
-        color: #FFFFFF;
-        font-weight: bold;
-        font-size: 1.4rem;
+      font-weight: bold;
+      font-size: 0.9rem;
 
-        button {
-            background: none;
-            border: none;
-            color: #FFFFFF;
-            font-size: 1.4rem;
-            cursor: pointer;
-        }
+      button {
+        background: none;
+        border: none;
+        color: $white;
+        font-size: 0.9rem;
+        cursor: pointer;
+      }
     }
 
     .card-body {
-        font-size: 1.2rem;
-        transition: background-color 0.3s ease;
+      font-size: 0.8rem;
+      transition: background-color 0.3s ease;
 
-        p {
-            font-weight: normal;
-        }
+      p {
+        font-weight: normal;
+        text-align: center;
+      }
 
-        small {
-            color: #A0A0A0;
-        }
+      small {
+        color: $home-cards-small;
+        text-align: center;
+        display: block;
+      }
+
+      .text-content {
+        text-align: center;
+      }
     }
 
     .image-container {
-        width: 180px;
-        height: 130px;
-        overflow: hidden;
-        border-radius: 8px;
-        border: 2px solid #007BFE;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        transition: border-color 0.3s ease;
+      width: 90px;
+      height: 50px;
+      overflow: hidden;
+      border-radius: 8px;
+      border: 2px solid $table-highlight;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: border-color 0.3s ease;
 
-        .image {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+      .image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
     }
-}
-
-@media (max-width: 767.98px) {
-    .card {
-        background-color: #1F1F1F;
-        color: #FFFFFF;
-        border-radius: 10px;
-        box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.2);
-        transition: background-color 0.3 ease;
-    
-        &:hover {
-            .card-body {
-                background-color: #2A2A2A;
-                border-radius: 10px;
-            }
-        }
-    
-        .card-header {
-            background-color: #292929;
-            color: #FFFFFF;
-            font-weight: bold;
-            font-size: 0.9rem;
-    
-            button {
-                background: none;
-                border: none;
-                color: #FFFFFF;
-                font-size: 0.9rem;
-                cursor: pointer;
-            }
-        }
-    
-        .card-body {
-            font-size: 0.8rem;
-            transition: background-color 0.3s ease;
-    
-            p {
-                font-weight: normal;
-                text-align: center;
-            }
-    
-            small {
-                color: #A0A0A0;
-                text-align: center;
-                display: block;
-            }
-
-            .text-content {
-                text-align: center;
-            }
-        }
-    
-        .image-container {
-            width: 90px;
-            height: 50px;
-            overflow: hidden;
-            border-radius: 8px;
-            border: 2px solid #007BFE;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: border-color 0.3s ease;
-    
-            .image {
-                width: 100%;
-                height: 100%;
-                object-fit: cover;
-            }
-        }
-    }
+  }
 }
