@@ -1,11 +1,34 @@
-.match-card {
-    color: #FFFFFF;
-    border-radius: 1rem;
-    transition: 0.2s ease;
-    cursor: pointer;
+@use "../../../../styles.scss" as *;
 
-    &:hover {
-        transform: scale(1.03);
-        background-color: #004080;
-    }
+.match-card {
+  background-color: $match-card;
+  transition: 0.2s ease;
+  cursor: pointer;
+
+  &:hover {
+    transform: scale(1.02);
+    background-color: $match-card-hover;
+  }
+}
+
+.team-logo {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.fas.fa-tshirt.team-logo {
+  font-size: 20px;
+  color: $primary-blue;
+  margin-right: 10px;
+  line-height: 35px;
+}
+
+.badge {
+  font-size: 0.95rem;
+}
+
+.custom-group {
+  color: $cards-text-information;
 }

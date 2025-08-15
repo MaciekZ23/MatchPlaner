@@ -1,0 +1,87 @@
+<div #modalRef class="modal fade" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div
+      class="modal-content bg-dark text-white shadow-lg rounded-3 overflow-hidden"
+    >
+      <div
+        class="modal-header d-flex justify-content-center align-items-center modal-header-bar bg-primary text-white"
+      >
+        <div class="header-grid align-items-center">
+          <div class="team text-start">{{ match?.teamA }}</div>
+          <div class="score text-center">
+            {{ match?.scoreA }} - {{ match?.scoreB }}
+          </div>
+          <div class="team text-end">{{ match?.teamB }}</div>
+        </div>
+        <button
+          type="button"
+          class="btn-close btn-close-white ms-2"
+          [attr.aria-label]="moduleStrings.headerAriaClose"
+          (click)="onRequestClose()"
+        ></button>
+      </div>
+
+      <div class="modal-body py-4" *ngIf="match">
+        <div class="row g-4">
+          <div class="col-12 col-md-6 side-left">
+            <ul class="list-unstyled m-0">
+              <ng-container *ngIf="teamAScorers.length; else noA">
+                <li
+                  class="event-row d-flex align-items-center"
+                  *ngFor="let d of teamAScorers"
+                >
+                  <span class="badge custom-badge align-self-center me-2 lh-1">
+                    <i class="fas fa-futbol me-1"></i>
+                    {{ d.time }}{{ moduleStrings.minuteSuffix }}
+                  </span>
+                  <span
+                    class="d-inline-block mw-100 fw-semibold text-truncate"
+                    >{{ d.player }}</span
+                  >
+                </li>
+              </ng-container>
+              <ng-template #noA>
+                <li class="text-muted small">{{ moduleStrings.noEvents }}</li>
+              </ng-template>
+            </ul>
+          </div>
+
+          <div class="col-12 col-md-6 side-right">
+            <ul class="list-unstyled m-0">
+              <ng-container *ngIf="teamBScorers.length; else noB">
+                <li
+                  class="event-row d-flex align-items-center justify-content-end"
+                  *ngFor="let d of teamBScorers"
+                >
+                  <span
+                    class="d-inline-block mw-100 fw-semibold text-truncate text-end"
+                    >{{ d.player }}</span
+                  >
+                  <span class="badge custom-badge align-self-center ms-2 lh-1">
+                    {{ d.time }}{{ moduleStrings.minuteSuffix }}
+                    <i class="fas fa-futbol ms-1"></i>
+                  </span>
+                </li>
+              </ng-container>
+              <ng-template #noB>
+                <li class="text-muted small text-end">
+                  {{ moduleStrings.noEvents }}
+                </li>
+              </ng-template>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer border-0 pt-0">
+        <button
+          type="button"
+          class="btn btn-primary px-4"
+          (click)="onRequestClose()"
+        >
+          {{ moduleStrings.close }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

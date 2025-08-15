@@ -1,122 +1,123 @@
+@use "../../../../styles.scss" as *;
+
 .card {
-    background-color: #1F1F1F;
-    color: #FFFFFF;
+  background-color: #1f1f1f;
+  color: $white;
+  border-radius: 10px;
+  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    .card-body {
+      background-color: $home-cards-hover;
+      border-radius: 10px;
+    }
+  }
+
+  .card-header {
+    background-color: #292929;
+    color: $white;
+    font-weight: bold;
+    font-size: 1.4rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    button {
+      background: none;
+      border: none;
+      color: $white;
+      font-size: 1.4rem;
+      cursor: pointer;
+    }
+  }
+
+  .card-body {
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+    padding: 1.1rem;
+
+    .timer {
+      font-size: 1.25rem;
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      font-weight: bold;
+      align-items: center;
+      text-align: center;
+      width: 100%;
+
+      .time-item {
+        background-color: $table-highlight;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-size: 1.25rem;
+        display: inline-block;
+        min-width: 120px;
+      }
+    }
+  }
+}
+
+@media (max-width: 767.98px) {
+  .card {
+    background-color: #1f1f1f;
+    color: $white;
     border-radius: 10px;
     box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.2);
     transition: background-color 0.3s ease;
 
     &:hover {
-        .card-body {
-            background-color: #2A2A2A;
-            border-radius: 10px;
-        }
+      .card-body {
+        background-color: $home-cards-hover;
+        border-radius: 10px;
+      }
     }
 
     .card-header {
-        background-color: #292929;
-        color: #FFFFFF;
-        font-weight: bold;
-        font-size: 1.4rem;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
+      background-color: #292929;
+      color: $white;
+      font-weight: bold;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
 
-        button {
-            background: none;
-            border: none;
-            color: #FFFFFF;
-            font-size: 1.4rem;
-            cursor: pointer;
-        }
+      button {
+        background: none;
+        border: none;
+        color: $white;
+        font-size: 0.9rem;
+        cursor: pointer;
+      }
     }
 
     .card-body {
-        font-size: 1rem;
-        transition: background-color 0.3s ease;
-        padding: 1.1rem;
+      font-size: 0.8rem;
+      transition: background-color 0.3s ease;
+      padding: 0.9rem;
 
-        .timer {
-            font-size: 1.25rem;
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            font-weight: bold;
-            align-items: center;
-            text-align: center;
-            width: 100%;
+      .timer {
+        font-size: 0.8rem;
+        display: flex;
+        justify-content: center;
+        gap: 0.6rem;
+        font-weight: bold;
+        flex-direction: column;
+        flex-wrap: wrap;
+        align-items: center;
+        text-align: center;
+        width: 100%;
 
-            .time-item {
-                background-color: #007BFE;
-                padding: 0.5rem 1rem;
-                border-radius: 8px;
-                font-size: 1.25rem;
-                display: inline-block;
-                min-width: 120px;
-            }
+        .time-item {
+          background-color: $table-highlight;
+          padding: 0.5rem 1rem;
+          border-radius: 8px;
+          font-size: 0.8rem;
+          display: inline-block;
+          min-width: 30px;
         }
+      }
     }
-}
-
-@media (max-width: 767.98px)
-{
-    .card {
-        background-color: #1F1F1F;
-        color: #FFFFFF;
-        border-radius: 10px;
-        box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.2);
-        transition: background-color 0.3s ease;
-    
-        &:hover {
-            .card-body {
-                background-color: #2A2A2A;
-                border-radius: 10px;
-            }
-        }
-    
-        .card-header {
-            background-color: #292929;
-            color: #FFFFFF;
-            font-weight: bold;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-    
-            button {
-                background: none;
-                border: none;
-                color: #FFFFFF;
-                font-size: 0.9rem;
-                cursor: pointer;
-            }
-        }
-    
-        .card-body {
-            font-size: 0.8rem;
-            transition: background-color 0.3s ease;
-            padding: 0.9rem;
-    
-            .timer {
-                font-size: 0.8rem;
-                display: flex;
-                justify-content: center;
-                gap: 0.6rem;
-                font-weight: bold;
-                flex-direction: column;
-                flex-wrap: wrap;
-                align-items: center;
-                text-align: center;
-                width: 100%;
-    
-                .time-item {
-                    background-color: #007BFE;
-                    padding: 0.5rem 1rem;
-                    border-radius: 8px;
-                    font-size: 0.8rem;
-                    display: inline-block;
-                    min-width: 30px;
-                }
-            }
-        }
-    }
+  }
 }

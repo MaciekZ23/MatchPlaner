@@ -1,33 +1,35 @@
+@use "../../../../styles.scss" as *;
+
 .card {
-    border-radius: 10px;
-    background-color: #1F1F1F;
-    color: #FFFFFF;
-    width: 100%;
+  border-radius: 10px;
+  background-color: #1f1f1f;
+  color: $white;
+  width: 100%;
 }
 
 .card-title {
-    font-size: 2rem;
+  font-size: 2rem;
 }
 
 .card-text {
-    font-size: 1.3rem;
-    color: #B0B0B0;
+  font-size: 1.3rem;
+  color: $cards-text-information;
 }
 
 @media (max-width: 767.98px) {
-    .card {
-        border-radius: 10px;
-        background-color: #1F1F1F;
-        color: #FFFFFF;
-        width: 100%;
-    }
-    
-    .card-title {
-        font-size: 1rem;
-    }
-    
-    .card-text {
-        font-size: 0.8rem;
-        color: #B0B0B0;
-    }
+  .card {
+    border-radius: 10px;
+    background-color: #1f1f1f;
+    color: $white;
+    width: 100%;
+  }
+
+  .card-title {
+    font-size: 1rem;
+  }
+
+  .card-text {
+    font-size: 0.8rem;
+    color: $cards-text-information;
+  }
 }
