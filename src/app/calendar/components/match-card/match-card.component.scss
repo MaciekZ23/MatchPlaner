@@ -1,11 +1,13 @@
+@use "../../../../styles.scss" as *;
+
 .match-card {
-  background-color: #adadad;
+  background-color: $match-card;
   transition: 0.2s ease;
   cursor: pointer;
 
   &:hover {
     transform: scale(1.02);
-    background-color: #dedede !important;
+    background-color: $match-card-hover;
   }
 }
 
@@ -18,11 +20,15 @@
 
 .fas.fa-tshirt.team-logo {
   font-size: 20px;
-  color: #007bfe;
+  color: $primary-blue;
   margin-right: 10px;
   line-height: 35px;
 }
 
 .badge {
   font-size: 0.95rem;
+}
+
+.custom-group {
+  color: $cards-text-information;
 }

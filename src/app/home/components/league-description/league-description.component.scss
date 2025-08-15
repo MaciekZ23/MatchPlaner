@@ -1,39 +1,41 @@
-.card {
-    border-radius: 10px;
-    background-color: #1F1F1F;
-    color: #FFFFFF;
-    width: 100%;
+@use "../../../../styles.scss" as *;
 
-    &:hover {
-        .card-body {
-            background-color: #2A2A2A;
-            border-radius: 10px;
-        }
+.card {
+  border-radius: 10px;
+  background-color: #1f1f1f;
+  color: $white;
+  width: 100%;
+
+  &:hover {
+    .card-body {
+      background-color: $home-cards-hover;
+      border-radius: 10px;
     }
+  }
 }
 
 .card-text {
-    font-size: 1.3rem;
-    color: #B0B0B0;
+  font-size: 1.3rem;
+  color: $cards-text-information;
 }
 
 @media (max-width: 767.98px) {
-    .card {
+  .card {
+    border-radius: 10px;
+    background-color: #1f1f1f;
+    color: $white;
+    width: 100%;
+
+    &:hover {
+      .card-body {
+        background-color: $home-cards-hover;
         border-radius: 10px;
-        background-color: #1F1F1F;
-        color: #FFFFFF;
-        width: 100%;
-    
-        &:hover {
-            .card-body {
-                background-color: #2A2A2A;
-                border-radius: 10px;
-            }
-        }
+      }
     }
-    
-    .card-text {
-        font-size: 0.8rem;
-        color: #B0B0B0;
-    }    
+  }
+
+  .card-text {
+    font-size: 0.8rem;
+    color: $cards-text-information;
+  }
 }

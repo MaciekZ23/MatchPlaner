@@ -1,3 +1,5 @@
+@use "../../../../styles.scss" as *;
+
 .modal-header-bar {
   padding: 1rem;
 }
@@ -27,4 +29,12 @@
 .event-row {
   gap: 0.5rem;
   padding: 0.25rem 0;
+}
+
+.custom-badge {
+  background-color: $match-card-badge;
+
+  i {
+    font-size: 0.85rem;
+  }
 }

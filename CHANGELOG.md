@@ -2,7 +2,7 @@
 
 ## 1.3.0
 
-### (FEATURE) Implementacja zakładki Terminarz
+### (FEATURE) Implementacja zakładki Terminarz (karty-rozwijane)
 * Dodano rozwijane daty z listą meczów
 * Mecze prezentowane w kartach, kliknięcie otwiera modal ze szczegółami
 * Podział na komponenty: `calendar-day` oraz `match-card`

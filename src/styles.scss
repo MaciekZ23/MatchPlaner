@@ -1,54 +1,62 @@
 /* Kolory */
 $primary-dark: #004080;
-$primary-blue: #0A58CA;
-$text-gray: #DEDEDE;
-$menu-text: #ADADAD;
-$white: #FFFFFF;
-$table-highlight: #007BFE;
+$primary-blue: #0a58ca;
+$normal-blue: #0000ff;
+$table-highlight: #007bfe;
+$sky-blue: #add8e6;
 
-$primary: $primary-blue;
-$secondary: $primary-dark;
-$body-color: $text-gray;
+$text-gray: #dedede;
+$menu-text: #adadad;
+$white: #ffffff;
+$black: #000000;
+
+/* KOLORY KART MECZÓW */
+$match-card: #585858;
+$match-card-hover: #818181;
+$match-card-badge: #555555;
+
+$cards-text-information: #b0b0b0;
+$home-cards-hover: #2a2a2a;
 
 /* Styl dla scrollbara */
 ::-webkit-scrollbar {
-    width: 4px;
-    height: 4px;
+  width: 4px;
+  height: 4px;
 }
 
 ::-webkit-scrollbar-button {
-    width: 0px;
-    height: 0px;
+  width: 0px;
+  height: 0px;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #696969;
-    border: 0px none #FFFFFF;
-    border-radius: 50px;
+  background: #696969;
+  border: 0px none #ffffff;
+  border-radius: 50px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #CCCCCC;
+  background: #cccccc;
 }
 
 ::-webkit-scrollbar-thumb:active {
-    background: #ADADAD98;
+  background: #adadad98;
 }
 
 ::-webkit-scrollbar-track {
-    background: transparent;
-    border: 0px none #FFFFFF;
-    border-radius: 50px;
+  background: transparent;
+  border: 0px none #ffffff;
+  border-radius: 50px;
 }
 
 ::-webkit-scrollbar-track:hover {
-    background: #666666;
+  background: #666666;
 }
 
 ::-webkit-scrollbar-track:active {
-    background: #333333;
+  background: #333333;
 }
 
 ::-webkit-scrollbar-corner {
-    background: transparent;
+  background: transparent;
 }
