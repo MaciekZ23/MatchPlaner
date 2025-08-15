@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { GoalkeepersCleanSheetsService } from '../../services/goalkeepers-clean-sheets.service';
-import { stringsGoalkeepersCleanSheets } from '../../misc/strings-goalkeepers-clean-sheets';
+import { stringsGoalkeepersCleanSheets } from '../../misc';
 
 @Component({
   selector: 'app-goalkeepers-clean-sheets',

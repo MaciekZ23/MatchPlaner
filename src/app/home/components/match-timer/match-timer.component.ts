@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { stringsMatchTimer } from '../../misc/strings-match-timer';
+import { stringsMatchTimer } from '../../misc';
+
 @Component({
   selector: 'app-match-timer',
   imports: [CommonModule],

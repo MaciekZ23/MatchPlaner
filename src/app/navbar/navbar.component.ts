@@ -1,16 +1,24 @@
-import { Component, EventEmitter, Input, Output, HostListener, OnInit, } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+  HostListener,
+  OnInit,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { stringsNavbar } from './misc';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './navbar.component.html',
-  styleUrls: ['./navbar.component.scss']
+  styleUrls: ['./navbar.component.scss'],
 })
-
 export class NavbarComponent implements OnInit {
+  moduleStrings = stringsNavbar;
   @Input() isOpen: boolean = true;
   @Output() toggleSidebar = new EventEmitter<void>();
 

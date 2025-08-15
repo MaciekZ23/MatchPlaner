@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { stringsLeagueDescription } from '../../misc/strings-league-description';
+import { stringsLeagueDescription } from '../../misc';
 
 @Component({
   selector: 'app-league-description',

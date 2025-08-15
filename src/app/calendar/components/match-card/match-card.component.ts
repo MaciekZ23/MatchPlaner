@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Match } from '../../models/match.model';
-import { STRINGS_MATCH_DETAILS } from '../../misc/strings-match-details';
+import { stringsMatchDetails } from '../../misc';
 @Component({
   selector: 'app-match-card',
   imports: [CommonModule],
@@ -12,7 +12,7 @@ export class MatchCardComponent {
   @Input() match!: Match;
   @Output() openDetails = new EventEmitter<Match>();
 
-  moduleStrings = STRINGS_MATCH_DETAILS;
+  moduleStrings = stringsMatchDetails;
 
   onClick() {
     this.openDetails.emit(this.match);

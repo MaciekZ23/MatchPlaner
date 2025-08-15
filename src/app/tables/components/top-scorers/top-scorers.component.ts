@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TopScorerService } from '../../services/top-scorer.service';
-import { stringsTopScorers } from '../../misc/strings-top-scorers';
+import { stringsTopScorers } from '../../misc';
 
 @Component({
   selector: 'app-top-scorers',

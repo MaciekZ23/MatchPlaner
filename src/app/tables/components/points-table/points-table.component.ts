@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TeamStats } from '../../models/team-table.model';
 import { TeamTableService } from '../../services/team-table.service';
-import { stringsPointsTable } from '../../misc/strings-points-table';
+import { stringsPointsTable } from '../../misc';
 
 @Component({
   selector: 'app-points-table',

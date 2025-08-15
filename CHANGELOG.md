@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.3.1
+
+### (FIX) Porządki w strukturze projektu i stylach
+
+* Refaktoryzacja plików SCSS w projekcie — ujednolicenie stylów, drobne poprawki i optymalizacja kodu
+* Dodanie folderów `misc` w modułach z plikami stringów oraz utworzenie plików barell (`index.ts`) dla wygodniejszego importowania
+* Uzupełnienie `styles.scss` o paletę kolorów
+
+
 ## 1.3.0
 
 ### (FEATURE) Implementacja zakładki Terminarz (karty-rozwijane)

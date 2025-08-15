@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { stringsLokalizacja } from '../../misc/strings-lokalizacja';
+import { stringsLokalizacja } from '../../misc';
 
 @Component({
   selector: 'app-lokalizacja',

@@ -12,7 +12,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Match } from '../../models/match.model';
-import { STRINGS_MATCH_DETAILS } from '../../misc/strings-match-details';
+import { stringsMatchDetails } from '../../misc';
 
 declare const bootstrap: any;
 
@@ -32,7 +32,7 @@ export class MatchDetailsModalComponent
   @ViewChild('modalRef', { static: true })
   modalRef!: ElementRef<HTMLDivElement>;
 
-  public moduleStrings = STRINGS_MATCH_DETAILS;
+  moduleStrings = stringsMatchDetails;
   private modalInstance: any;
 
   ngAfterViewInit(): void {

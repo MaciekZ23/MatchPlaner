@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { stringsTournamentTitle } from '../../misc/strings-tournament-title';
+import { stringsTournamentTitle } from '../../misc';
+
 @Component({
   selector: 'app-tournament-title',
   imports: [CommonModule],
