@@ -1,0 +1,77 @@
+@use "../../../../styles.scss" as *;
+
+.card {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.table-responsive {
+  padding: 0;
+  max-height: 500px;
+}
+
+.table-header th {
+  padding: 12px;
+  text-align: center;
+  font-weight: 600;
+  color: $white;
+  font-size: 0.95rem;
+}
+
+.table-body-container {
+  max-height: 415px;
+  overflow-y: auto;
+  display: block;
+  margin-top: 10px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+
+  tbody {
+    tr {
+      border-top: 1px solid $border-table;
+      transition: background-color 0.3s;
+
+      td {
+        text-align: center;
+        vertical-align: middle;
+        padding: 10px;
+        white-space: nowrap;
+
+        &:first-child {
+          width: 80px;
+        }
+
+        &:nth-child(2) {
+          text-align: center;
+          width: 132px;
+        }
+
+        &:nth-child(n + 3) {
+          width: 105px;
+        }
+      }
+
+      .badge {
+        font-size: 0.95rem;
+      }
+    }
+  }
+}
+
+.team-logo {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.fas.fa-tshirt.team-logo {
+  font-size: 20px;
+  color: $table-highlight;
+  margin-right: 10px;
+  line-height: 35px;
+}

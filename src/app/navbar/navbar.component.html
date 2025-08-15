@@ -1,48 +1,64 @@
-<div class="d-flex flex-column flex-shrink-0 p-3 bg-dark sidebar" [class.collapsed]="!isOpen">
-
+<div
+  class="d-flex flex-column flex-shrink-0 p-3 sidebar"
+  [class.collapsed]="!isOpen"
+>
   <!-- Logo i Toggle -->
   <div class="d-flex justify-content-between align-items-center mb-5">
     <div class="d-flex align-items-center">
-      <img src="assets/MatchPlaner2.png" alt="Logo" class="me-2 logo-img" width="35" />
-      <span class="fs-4 fw-bold text-primary" *ngIf="isOpen">MatchPLANER</span>
+      <img
+        src="assets/MatchPlaner2.png"
+        alt="{{ moduleStrings.logoAlt }}"
+        class="me-2 logo-img"
+        width="35"
+      />
+      <span class="fs-4 fw-bold text-primary" *ngIf="isOpen">{{
+        moduleStrings.logoTitle
+      }}</span>
     </div>
 
     <!--Toggle-->
-    <button class="btn bg-transparent sidebar-toggle" (click)="onToggleSidebar()">
-      <i class="fa" [ngClass]="{ 'fa-bars': !isOpen, 'fa-times': isOpen}"></i>
+    <button
+      class="btn bg-transparent sidebar-toggle"
+      (click)="onToggleSidebar()"
+    >
+      <i class="fa" [ngClass]="{ 'fa-bars': !isOpen, 'fa-times': isOpen }"></i>
     </button>
   </div>
 
   <div class="mb-1"></div>
   <div class="sectionTitle fs-6 text">
-    <span>Menu</span>
+    <span>{{ moduleStrings.menu }}</span>
   </div>
-
 
   <!--Nawigacja-->
   <ul class="nav nav-pills flex-column">
     <li class="nav-item">
-      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="nav-link my-2">
+      <a
+        routerLink="/"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+        class="nav-link my-2"
+      >
         <i class="fa-solid fa-trophy me-4"></i>
-        <span *ngIf="isOpen">Turniej</span>
+        <span *ngIf="isOpen">{{ moduleStrings.links.tournament }}</span>
       </a>
     </li>
     <li>
       <a routerLink="/teams" routerLinkActive="active" class="nav-link my-2">
         <i class="fa-solid fa-people-group me-4"></i>
-        <span *ngIf="isOpen">Drużyny</span>
+        <span *ngIf="isOpen">{{ moduleStrings.links.teams }}</span>
       </a>
     </li>
     <li>
       <a routerLink="/tables" routerLinkActive="active" class="nav-link my-2">
         <i class="fa-solid fa-table-list me-4"></i>
-        <span *ngIf="isOpen">Tabele</span>
+        <span *ngIf="isOpen">{{ moduleStrings.links.tables }}</span>
       </a>
     </li>
     <li>
       <a routerLink="/calendar" routerLinkActive="active" class="nav-link my-2">
         <i class="fa-solid fa-calendar-days me-4"></i>
-        <span *ngIf="isOpen">Terminarz</span>
+        <span *ngIf="isOpen">{{ moduleStrings.links.calendar }}</span>
       </a>
     </li>
   </ul>

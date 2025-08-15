@@ -1,8 +1,9 @@
-/* Kolory */
+/* KOLORY GŁÓWNE */
 $primary-dark: #004080;
 $primary-blue: #0a58ca;
 $normal-blue: #0000ff;
 $table-highlight: #007bfe;
+$button-hover: #0056b3;
 $sky-blue: #add8e6;
 
 $text-gray: #dedede;
@@ -15,8 +16,16 @@ $match-card: #585858;
 $match-card-hover: #818181;
 $match-card-badge: #555555;
 
+/* KOLORY W TABELACH */
+$border-table: #505053;
+
+/* KOLORY NAVBARA */
+$navbar-background-color: #1c1c1c;
+
+/* POZOSTAŁE */
 $cards-text-information: #b0b0b0;
 $home-cards-hover: #2a2a2a;
+$home-cards-small: #a0a0a0;
 
 /* Styl dla scrollbara */
 ::-webkit-scrollbar {

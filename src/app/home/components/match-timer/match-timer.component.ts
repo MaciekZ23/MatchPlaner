@@ -1,14 +1,16 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { stringsMatchTimer } from '../../misc';
 
 @Component({
   selector: 'app-match-timer',
   imports: [CommonModule],
   templateUrl: './match-timer.component.html',
   styleUrls: ['./match-timer.component.scss'],
-  standalone: true
+  standalone: true,
 })
 export class MatchTimerComponent {
+  moduleStrings = stringsMatchTimer;
   targetDate: Date = new Date('2026-01-10T00:00:00');
   timeLeft: any = {};
   isTimerOpen = false;
@@ -31,10 +33,12 @@ export class MatchTimerComponent {
       const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
 
       this.timeLeft = {
-        days, hours, minutes, seconds
+        days,
+        hours,
+        minutes,
+        seconds,
       };
-    }
-    else {
+    } else {
       this.timeLeft = { days: 0, hours: 0, minutes: 0, seconds: 0 };
     }
   }

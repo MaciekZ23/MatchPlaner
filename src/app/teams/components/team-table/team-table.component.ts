@@ -1,16 +1,17 @@
 import { Component, Input, EventEmitter, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Team } from '../../models/team';
+import { stringsTeamTable } from '../../misc';
+import { HealthStatus } from '../../types/health-status.type';
 
 @Component({
   selector: 'app-team-table',
   imports: [CommonModule],
   templateUrl: './team-table.component.html',
   styleUrls: ['./team-table.component.scss'],
-  standalone: true
+  standalone: true,
 })
-
 export class TeamTableComponent {
+  moduleStrings = stringsTeamTable;
   @Input() players: any[] = [];
   @Input() teamName: string = '';
   @Input() teamLogo?: string;
@@ -46,15 +47,18 @@ export class TeamTableComponent {
     });
   }
 
-  /*getHealthStatusClass(player: any): string {
-    if (player.healthStatus === 'Zdrowy') {
-      return 'text-success';
+  getHealthBadgeClass(player: { healthStatus: HealthStatus }): string[] {
+    const base = ['rounded-pill', 'px-2', 'py-1', 'fs-6'];
+    const status = String(player?.healthStatus || '').toLowerCase();
+
+    if (status === 'zdrowy') {
+      return ['bg-info', 'text-white', ...base];
     }
-    else if (player.healthStatus === 'Kontuzjowany') {
-      return 'text-warning';
+    if (status === 'kontuzjowany') {
+      return ['bg-info-subtle', 'text-dark', ...base];
     }
-    return "";
-  }*/
+    return ['bg-secondary', ...base];
+  }
 
   onBackClick(): void {
     this.backClick.emit();
