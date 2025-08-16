@@ -29,6 +29,43 @@
   font-size: 0.95rem;
 }
 
+.team-name {
+  font-size: 1rem;
+}
+
 .custom-group {
   color: $cards-text-information;
+}
+
+@media (max-width: 767.98px) {
+  // Nazwa drużyny (1rem na desktopowym)
+  .team-name {
+    font-size: 0.8rem;
+  }
+
+  // Nazwa grupy
+  // 0.875 * 16px = 14px lub 0.875rem (small)
+  .custom-group {
+    font-size: 0.7rem;
+  }
+
+  // Logo drużyny
+  .team-logo {
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    margin-right: 8px;
+  }
+
+  // Ikona koszulki
+  .fas.fa-tshirt.team-logo {
+    font-size: 18px;
+    margin-right: 8px;
+    line-height: 25px;
+  }
+
+  // Rozmiar pastylki z wynikiem
+  .badge {
+    font-size: 0.8rem;
+  }
 }

@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.4.0
+
+### (FEATURE) Widok mobilny dla terminarza
+
+* Dodano responsywny widok mobilny dla kart terminarza (`calendar-day` oraz `match-card`)
+* Dostosowanie rozmiarów czcionek, przycisków oraz paddingów do ekranów smartfonów
+* Zmniejszone logotypy i badge wyników na urządzeniach mobilnych
+
 ## 1.3.1
 
 ### (FIX) Porządki w strukturze projektu i stylach
