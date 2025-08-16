@@ -39,4 +39,15 @@ export class NavbarComponent implements OnInit {
     this.isOpen = !this.isOpen;
     this.toggleSidebar.emit(); // emitujesz do rodzica jeśli trzeba
   }
+
+  isMobile(): boolean {
+    return window.innerWidth < 768;
+  }
+
+  onNavClick(event: Event) {
+    const el = event.target as HTMLElement;
+    if (this.isMobile() && el.closest('a.nav-link')) {
+      this.isOpen = false;
+    }
+  }
 }
