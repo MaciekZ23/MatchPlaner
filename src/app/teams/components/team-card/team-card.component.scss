@@ -1,7 +1,7 @@
 @use "../../../../styles.scss" as *;
 
 .card {
-  border-radius: 10px;
+  border-radius: 8px;
   cursor: pointer;
   margin-bottom: 1rem;
   transition: transform 0.3s ease;
@@ -40,11 +40,10 @@
 
 @media (max-width: 767.98px) {
   .card {
-    border-radius: 10px;
+    border-radius: 8px;
     cursor: pointer;
     margin-bottom: 1rem;
     transition: transform 0.3s ease;
-    width: 100%;
 
     &:hover {
       background-color: $home-cards-hover;
