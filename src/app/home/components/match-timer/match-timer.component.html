@@ -2,24 +2,39 @@
   <div
     class="card-header bg-dark text-white bg-opacity-10 d-flex align-items-center"
   >
-    <i class="fas fa-clock me-2"></i>
+    <i class="fas fa-clock me-2" aria-hidden="true"></i>
     <strong>{{ moduleStrings.title }}</strong>
-    <button class="btn btn-link text-white ms-auto" (click)="toggleTimer()">
+    <button
+      class="btn btn-link text-white ms-auto"
+      (click)="toggleTimer()"
+      [attr.aria-label]="
+        isTimerOpen ? 'Zwiń sekcję timera' : 'Rozwiń sekcję timera'
+      "
+      [attr.aria-expanded]="isTimerOpen"
+      aria-controls="timerPanel"
+    >
       <i
         class="fas"
         [ngClass]="{
           'fa-chevron-down': !isTimerOpen,
           'fa-chevron-up': isTimerOpen
         }"
+        aria-hidden="true"
       ></i>
     </button>
   </div>
-  <div class="card-body" *ngIf="isTimerOpen">
+  <div
+    class="card-body"
+    *ngIf="isTimerOpen"
+    id="timerPanel"
+    role="region"
+    aria-label="Sekcja timera"
+  >
     <div
       class="d-flex flex-column flex-sm-row justify-content-center align-items-center"
     >
       <div class="text-content">
-        <div class="timer">
+        <div class="timer" role="timer" aria-atomic="true" aria-live="polite">
           <span class="time-item"
             >{{ timeLeft.days }} {{ moduleStrings.days }}</span
           >

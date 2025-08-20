@@ -9,13 +9,18 @@
         type="button"
         data-bs-toggle="dropdown"
         aria-expanded="false"
+        aria-label="Powiadomienia"
+        aria-haspopup="menu"
+        aria-controls="notificationMenu"
         id="notificationDropdown"
       >
-        <i class="fa fa-bell"></i>
+        <i class="fa fa-bell" aria-hidden="true"></i>
       </button>
       <div
+        id="notificationMenu"
         class="dropdown-menu dropdown-menu-end"
         aria-labelledby="notificationDropdown"
+        role="menu"
       >
         <span class="dropdown-item-text text-white text-center">{{
           moduleStrings.notifications.empty
@@ -29,27 +34,41 @@
         type="button"
         data-bs-toggle="dropdown"
         aria-expanded="false"
+        aria-haspopup="menu"
+        aria-controls="userMenu"
         id="userDropdown"
+        aria-label="Menu użytkownika"
       >
         <div class="avatar">
           <ng-container *ngIf="avatar; else defaultAvatar">
             <img [src]="avatar" alt="User Avatar" />
           </ng-container>
           <ng-template #defaultAvatar>
-            <i class="fa-regular fa-user"></i>
+            <i class="fa-regular fa-user" aria-hidden="true"></i>
           </ng-template>
         </div>
       </button>
 
       <div
+        id="userMenu"
         class="dropdown-menu dropdown-menu-end"
         aria-labelledby="userDropdown"
+        role="menu"
       >
-        <button class="dropdown-item bg-transparent" routerLink="/profile">
-          <i class="fa fa-user me-2"></i> {{ moduleStrings.user.profile }}
+        <button
+          class="dropdown-item bg-transparent"
+          routerLink="/profile"
+          role="menuitem"
+        >
+          <i class="fa fa-user me-2" aria-hidden="true"></i>
+          {{ moduleStrings.user.profile }}
         </button>
-        <button class="dropdown-item bg-transparent" (click)="onLogout()">
-          <i class="fa fa-sign-out-alt me-2"></i>
+        <button
+          class="dropdown-item bg-transparent"
+          (click)="onLogout()"
+          role="menuitem"
+        >
+          <i class="fa fa-sign-out-alt me-2" aria-hidden="true"></i>
           {{ moduleStrings.user.logout }}
         </button>
       </div>

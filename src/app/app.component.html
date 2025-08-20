@@ -1,10 +1,14 @@
 <div class="layout">
-  <app-navbar [isOpen]="isSidebarOpen" (toggleSidebar)="toggleSidebar()">
-  </app-navbar>
+  <header role="banner">
+    <app-topbar [isSidebarOpen]="isSidebarOpen"></app-topbar>
+  </header>
 
-  <app-topbar [isSidebarOpen]="isSidebarOpen"></app-topbar>
+  <nav class="sidebar-nav" aria-label="Główna nawigacja">
+    <app-navbar [isOpen]="isSidebarOpen" (toggleSidebar)="toggleSidebar()">
+    </app-navbar>
+  </nav>
 
-  <div class="content" [ngClass]="{ collapsed: !isSidebarOpen }">
+  <main id="main" class="content" [ngClass]="{ collapsed: !isSidebarOpen }">
     <router-outlet></router-outlet>
-  </div>
+  </main>
 </div>

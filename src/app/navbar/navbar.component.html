@@ -1,6 +1,9 @@
 <div
+  id="sidebar"
   class="d-flex flex-column flex-shrink-0 p-3 sidebar"
   [class.collapsed]="!isOpen"
+  role="navigation"
+  aria-label="Menu boczne"
 >
   <!-- Logo i Toggle -->
   <div class="d-flex justify-content-between align-items-center mb-5">
@@ -20,8 +23,15 @@
     <button
       class="btn bg-transparent sidebar-toggle"
       (click)="onToggleSidebar()"
+      [attr.aria-label]="isOpen ? 'Zamknij menu boczne' : 'Otwórz menu boczne'"
+      [attr.aria-expanded]="isOpen"
+      aria-controls="sidebar"
     >
-      <i class="fa" [ngClass]="{ 'fa-bars': !isOpen, 'fa-times': isOpen }"></i>
+      <i
+        class="fa"
+        [ngClass]="{ 'fa-bars': !isOpen, 'fa-times': isOpen }"
+        aria-hidden="true"
+      ></i>
     </button>
   </div>
 
@@ -38,26 +48,42 @@
         routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }"
         class="nav-link my-2"
+        [attr.aria-label]="moduleStrings.links.tournament"
       >
-        <i class="fa-solid fa-trophy me-4"></i>
+        <i class="fa-solid fa-trophy me-4" aria-hidden="true"></i>
         <span *ngIf="isOpen">{{ moduleStrings.links.tournament }}</span>
       </a>
     </li>
     <li>
-      <a routerLink="/teams" routerLinkActive="active" class="nav-link my-2">
-        <i class="fa-solid fa-people-group me-4"></i>
+      <a
+        routerLink="/teams"
+        routerLinkActive="active"
+        class="nav-link my-2"
+        [attr.aria-label]="moduleStrings.links.teams"
+      >
+        <i class="fa-solid fa-people-group me-4" aria-hidden="true"></i>
         <span *ngIf="isOpen">{{ moduleStrings.links.teams }}</span>
       </a>
     </li>
     <li>
-      <a routerLink="/tables" routerLinkActive="active" class="nav-link my-2">
-        <i class="fa-solid fa-table-list me-4"></i>
+      <a
+        routerLink="/tables"
+        routerLinkActive="active"
+        class="nav-link my-2"
+        [attr.aria-label]="moduleStrings.links.tables"
+      >
+        <i class="fa-solid fa-table-list me-4" aria-hidden="true"></i>
         <span *ngIf="isOpen">{{ moduleStrings.links.tables }}</span>
       </a>
     </li>
     <li>
-      <a routerLink="/calendar" routerLinkActive="active" class="nav-link my-2">
-        <i class="fa-solid fa-calendar-days me-4"></i>
+      <a
+        routerLink="/calendar"
+        routerLinkActive="active"
+        class="nav-link my-2"
+        [attr.aria-label]="moduleStrings.links.calendar"
+      >
+        <i class="fa-solid fa-calendar-days me-4" aria-hidden="true"></i>
         <span *ngIf="isOpen">{{ moduleStrings.links.calendar }}</span>
       </a>
     </li>

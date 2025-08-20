@@ -52,7 +52,7 @@ export class TeamTableComponent {
     const status = String(player?.healthStatus || '').toLowerCase();
 
     if (status === 'zdrowy') {
-      return ['bg-info', 'text-white', ...base];
+      return ['bg-info', 'text-dark', ...base];
     }
     if (status === 'kontuzjowany') {
       return ['bg-info-subtle', 'text-dark', ...base];

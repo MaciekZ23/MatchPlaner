@@ -2,19 +2,34 @@
   <div
     class="card-header bg-dark text-white bg-opacity-10 d-flex align-items-center"
   >
-    <i class="fa-solid fa-location-dot me-2"></i>
+    <i class="fa-solid fa-location-dot me-2" aria-hidden="true"></i>
     <strong>{{ moduleStrings.title }}</strong>
-    <button class="btn btn-link text-white ms-auto" (click)="toggleLocation()">
+    <button
+      class="btn btn-link text-white ms-auto"
+      (click)="toggleLocation()"
+      [attr.aria-label]="
+        isLocationOpen ? 'Zwiń sekcję lokalizacji' : 'Rozwiń sekcję lokalizacji'
+      "
+      [attr.aria-expanded]="isLocationOpen"
+      [attr.aria-controls]="'locationPanel'"
+    >
       <i
         class="fas"
         [ngClass]="{
           'fa-chevron-down': !isLocationOpen,
           'fa-chevron-up': isLocationOpen
         }"
+        aria-hidden="true"
       ></i>
     </button>
   </div>
-  <div class="card-body" *ngIf="isLocationOpen">
+  <div
+    class="card-body"
+    *ngIf="isLocationOpen"
+    id="locationPanel"
+    role="region"
+    aria-label="Sekcja lokalizacji"
+  >
     <div class="d-flex flex-column flex-sm-row align-items-center">
       <div class="text-content">
         <p class="mb-1">{{ moduleStrings.name }}</p>
