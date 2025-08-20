@@ -1,0 +1,50 @@
+@use "../../styles.scss" as *;
+
+.topbar {
+  position: fixed;
+  top: 0;
+  left: 300px;
+  width: calc(100% - 300px);
+  height: 60px;
+  background-color: $navbar-topbar-background-color;
+  color: $white;
+  transition: left 0.3s ease-in-out, width 0.3s ease-in-out;
+  z-index: 100;
+
+  &.sidebar-open {
+    left: 300px;
+    width: calc(100% - 300px);
+  }
+
+  &:not(.sidebar-open) {
+    left: 100px;
+    width: calc(100% - 100px);
+  }
+
+  .btn .fa-bell {
+    font-size: 1.4rem;
+    width: 1.2em;
+  }
+}
+
+.dropdown-menu {
+  background-color: $dropdown-background-color;
+  border-radius: 6px;
+  border-color: $dropdown-border-color;
+
+  .dropdown-item {
+    color: $dropdown-item-color;
+
+    &:hover {
+      background: $dropdown-item-hover-background;
+      color: $white;
+    }
+  }
+}
+
+@media (max-width: 767.98px) {
+  .topbar {
+    left: 100px !important;
+    width: calc(100% - 100px) !important;
+  }
+}

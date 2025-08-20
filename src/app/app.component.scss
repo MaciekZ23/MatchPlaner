@@ -1,9 +1,11 @@
+@use "../styles.scss" as *;
+
 html,
 body {
   height: 100%;
   margin: 0;
   padding: 0;
-  background-color: #004080;
+  background-color: $primary-dark;
   overflow-x: hidden;
 }
 
@@ -11,8 +13,8 @@ body {
   display: flex;
   min-height: 100vh;
   width: 100%;
-  background-color: #004080;
-  color: #ffffff;
+  background-color: $primary-dark;
+  color: $white;
   overflow-x: hidden;
 }
 
@@ -20,6 +22,7 @@ body {
   flex-grow: 1;
   padding: 2rem;
   margin-left: 300px;
+  margin-top: 60px;
   transition: margin-left 0.3s ease-in-out;
 
   &.collapsed {
@@ -29,10 +32,12 @@ body {
   @media (max-width: 767.98px) {
     margin-left: 75px !important;
     margin-right: -25px !important;
+    margin-top: 35px !important;
 
     &.collapsed {
       margin-left: 75px !important;
       margin-right: -25px !important;
+      margin-top: 35px !important;
     }
   }
 }
