@@ -1,1 +1,58 @@
-<p>topbar works!</p>
+<nav
+  class="navbar navbar-expand text-white fixed-top topbar"
+  [class.sidebar-open]="isSidebarOpen"
+>
+  <div class="container-fluid d-flex justify-content-end align-items-center">
+    <div class="dropdown me-2">
+      <button
+        class="btn bg-transparent text-white"
+        type="button"
+        data-bs-toggle="dropdown"
+        aria-expanded="false"
+        id="notificationDropdown"
+      >
+        <i class="fa fa-bell"></i>
+      </button>
+      <div
+        class="dropdown-menu dropdown-menu-end"
+        aria-labelledby="notificationDropdown"
+      >
+        <span class="dropdown-item-text text-white text-center">{{
+          moduleStrings.notifications.empty
+        }}</span>
+      </div>
+    </div>
+
+    <div class="dropdown">
+      <button
+        class="btn bg-transparent text-white d-flex align-items-center"
+        type="button"
+        data-bs-toggle="dropdown"
+        aria-expanded="false"
+        id="userDropdown"
+      >
+        <div class="avatar">
+          <ng-container *ngIf="avatar; else defaultAvatar">
+            <img [src]="avatar" alt="User Avatar" />
+          </ng-container>
+          <ng-template #defaultAvatar>
+            <i class="fa-regular fa-user"></i>
+          </ng-template>
+        </div>
+      </button>
+
+      <div
+        class="dropdown-menu dropdown-menu-end"
+        aria-labelledby="userDropdown"
+      >
+        <button class="dropdown-item bg-transparent" routerLink="/profile">
+          <i class="fa fa-user me-2"></i> {{ moduleStrings.user.profile }}
+        </button>
+        <button class="dropdown-item bg-transparent" (click)="onLogout()">
+          <i class="fa fa-sign-out-alt me-2"></i>
+          {{ moduleStrings.user.logout }}
+        </button>
+      </div>
+    </div>
+  </div>
+</nav>

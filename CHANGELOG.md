@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.5.0
+
+### (FEATURE) Implementacja zakładki Topbar i dodanie spinera
+
+* Dodano nowy komponent **Topbar** – pasek górny z ikoną powiadomień i menu użytkownika
+* Wprowadzono globalny komponent **Spinner**, używany jak na razie przy przełączaniu widoków w module drużyn
+
 ## 1.4.0
 
 ### (FEATURE) Widok mobilny dla terminarza

@@ -19,13 +19,56 @@ $match-card-badge: #555555;
 /* KOLORY W TABELACH */
 $border-table: #505053;
 
-/* KOLORY NAVBARA */
-$navbar-background-color: #1c1c1c;
+/* KOLORY NAVBARA i TOPBARA*/
+$navbar-topbar-background-color: #1c1c1c;
+
+/* KOLORY LIST ROZWIJANYCH */
+$dropdown-background-color: #1c1c1c;
+$dropdown-border-color: #505053;
+$dropdown-item-color: #dedede;
+$dropdown-item-hover-background: #3f3f3fbe;
+
+/* KOLOR SPINERA */
+$spiner-color: #006ce0;
 
 /* POZOSTAŁE */
 $cards-text-information: #b0b0b0;
 $home-cards-hover: #2a2a2a;
 $home-cards-small: #a0a0a0;
+
+/* STYLIZACJA AWATARA */
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: $primary-blue;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 5px;
+  color: $black;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-radius: 50%;
+  }
+
+  i {
+    font-size: 1.1rem;
+    color: $white;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+}
 
 /* Styl dla scrollbara */
 ::-webkit-scrollbar {
