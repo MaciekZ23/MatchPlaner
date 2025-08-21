@@ -1,4 +1,6 @@
 <div class="accordion" id="calendarAccordion">
+  <app-page-header [title]="moduleStrings.headerTitle"></app-page-header>
+
   <app-calendar-day
     *ngFor="let day of days"
     [date]="day.date"

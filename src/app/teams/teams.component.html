@@ -1,6 +1,12 @@
-<div class="container p-0">
-  <div class="g-4">
-    <div *ngIf="!selectedTeam" class="row">
+<div class="container teams-page p-0 px-sm-1 py-sm-1">
+  <app-page-header
+    [title]="
+      !selectedTeam ? moduleStrings.headerTitle : moduleStrings.headerTitleTeam
+    "
+  ></app-page-header>
+
+  <div *ngIf="!selectedTeam" class="teams-list">
+    <div class="row g-3">
       <div *ngFor="let team of teams" class="col-12 col-md-4">
         <app-team-card
           [team]="team"
