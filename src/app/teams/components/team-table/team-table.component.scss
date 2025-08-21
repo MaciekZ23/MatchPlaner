@@ -2,7 +2,6 @@
 
 .card {
   border-radius: 8px;
-  margin-bottom: 1rem;
   transition: transform 0.3s ease;
 
   .team-logo {
@@ -14,13 +13,12 @@
   .fa-tshirt {
     font-size: 30px;
     color: $table-highlight;
-    line-height: 35px;
+    line-height: 50px;
   }
 
   button {
     background-color: $table-highlight-2;
     border: none;
-    padding: 0.5rem 1rem;
     cursor: pointer;
     transition: background-color 0.3s ease;
 
@@ -37,6 +35,54 @@
     td {
       text-align: center;
       vertical-align: middle;
+    }
+  }
+}
+
+@media (max-width: 767.98px) {
+  .card {
+    border-radius: 8px;
+    transition: transform 0.3s ease;
+
+    .team-logo {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+    }
+
+    .fa-tshirt {
+      font-size: 20px;
+      color: $table-highlight;
+      line-height: 30px;
+    }
+
+    .card-title span {
+      display: block;
+      font-size: 0.8rem;
+    }
+
+    button {
+      flex: 0 0 auto;
+      background-color: $table-highlight-2;
+      border: none;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+
+      i {
+        font-size: 0.8rem;
+      }
+
+      &:hover {
+        background-color: $button-hover;
+      }
+    }
+
+    table {
+      th,
+      td {
+        font-size: 0.75rem;
+      }
     }
   }
 }

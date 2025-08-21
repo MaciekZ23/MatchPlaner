@@ -1,13 +1,17 @@
-<div class="accordion" id="calendarAccordion">
+<div class="calendar-page">
   <app-page-header [title]="moduleStrings.headerTitle"></app-page-header>
 
-  <app-calendar-day
-    *ngFor="let day of days"
-    [date]="day.date"
-    [matches]="day.matches"
-    (matchClicked)="openDetails($event)"
-  >
-  </app-calendar-day>
+  <div class="calendar-list">
+    <div class="accordion d-flex flex-column gap-1" id="calendarAccordion">
+      <app-calendar-day
+        *ngFor="let day of days"
+        [date]="day.date"
+        [matches]="day.matches"
+        (matchClicked)="openDetails($event)"
+      >
+      </app-calendar-day>
+    </div>
+  </div>
 </div>
 
 <app-match-details-modal

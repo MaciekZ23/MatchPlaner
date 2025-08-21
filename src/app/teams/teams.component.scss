@@ -1,13 +1,13 @@
 .teams-page {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  min-height: 0;
+  display: flex; // włączamy flexbox – łatwiej dzielić przestrzeń
+  flex-direction: column; // układamy elementy jeden pod drugim (nagłówek nad listą)
+  height: 100%; // kontener zajmuje całą dostępną wysokość
+  min-height: 0; // zabezpieczenie – dzięki temu dzieci nie „rozpychają” kontenera
 }
 
 .teams-list {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
+  flex: 1 1 auto; // lista zajmuje całe wolne miejsce pod nagłówkiem
+  min-height: 0; // pozwala liście zmniejszyć się i włączyć scroll zamiast wypychać stronę
+  overflow-y: auto; // przewijanie tylko w pionie, gdy lista jest za długa
+  overflow-x: hidden; // ukrycie przewijania w poziomie
 }

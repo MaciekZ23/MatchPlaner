@@ -6,7 +6,8 @@ body {
   margin: 0;
   padding: 0;
   background-color: $primary-dark;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: hidden;
 }
 
 .layout {
@@ -24,8 +25,10 @@ body {
   padding: 2rem;
   margin-left: 300px;
   margin-top: 60px;
+  min-height: 0;
   height: calc(100vh - 60px);
   transition: margin-left 0.3s ease-in-out;
+  overflow-x: hidden;
 
   &.collapsed {
     margin-left: 100px;
