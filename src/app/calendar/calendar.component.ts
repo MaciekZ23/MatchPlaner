@@ -5,10 +5,17 @@ import { Match } from './models/match.model';
 import { MatchService } from './services/match.service';
 import { CommonModule } from '@angular/common';
 import { MatchDetailsModalComponent } from './components/match-details-modal/match-details-modal.component';
+import { PageHeaderComponent } from '../shared/components/page-header/page-header.component';
+import { stringsCalendar } from './misc';
 
 @Component({
   selector: 'app-calendar',
-  imports: [CalendarDayComponent, CommonModule, MatchDetailsModalComponent],
+  imports: [
+    CalendarDayComponent,
+    CommonModule,
+    MatchDetailsModalComponent,
+    PageHeaderComponent,
+  ],
   templateUrl: './calendar.component.html',
   styleUrl: './calendar.component.scss',
   standalone: true,
@@ -16,6 +23,8 @@ import { MatchDetailsModalComponent } from './components/match-details-modal/mat
 export class CalendarComponent implements OnInit {
   days: CalendarDay[] = [];
   selectedMatch: Match | null = null;
+
+  moduleStrings = stringsCalendar;
 
   constructor(private matchService: MatchService) {}
 

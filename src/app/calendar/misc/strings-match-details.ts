@@ -1,4 +1,5 @@
 export const stringsMatchDetails = {
+  modalTitle: 'Szczegóły meczu',
   headerAriaClose: 'Zamknij modal ze szczegółami meczu',
   close: 'Zamknij',
   group: 'Grupa',

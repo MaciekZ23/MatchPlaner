@@ -5,6 +5,8 @@ import { TeamTableComponent } from './components/team-table/team-table.component
 import { TeamService } from './services/team.service';
 import { Team } from './models/team';
 import { SpinnerComponent } from '../shared/components/spinner/spinner.component';
+import { PageHeaderComponent } from '../shared/components/page-header/page-header.component';
+import { stringsTeams } from './misc';
 
 @Component({
   selector: 'app-teams',
@@ -13,6 +15,7 @@ import { SpinnerComponent } from '../shared/components/spinner/spinner.component
     TeamCardComponent,
     TeamTableComponent,
     SpinnerComponent,
+    PageHeaderComponent,
   ],
   templateUrl: './teams.component.html',
   styleUrls: ['./teams.component.scss'],
@@ -22,6 +25,8 @@ export class TeamsComponent implements OnInit {
   teams: Team[] = [];
   selectedTeam: Team | null = null;
   isLoading = false;
+
+  moduleStrings = stringsTeams;
 
   constructor(private teamService: TeamService) {}
 

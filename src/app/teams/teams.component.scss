@@ -1,39 +1,13 @@
-.container {
-  margin-top: 30px;
+.teams-page {
+  display: flex; // włączamy flexbox – łatwiej dzielić przestrzeń
+  flex-direction: column; // układamy elementy jeden pod drugim (nagłówek nad listą)
+  height: 100%; // kontener zajmuje całą dostępną wysokość
+  min-height: 0; // zabezpieczenie – dzięki temu dzieci nie „rozpychają” kontenera
 }
 
-.row.g-4 {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-}
-
-.card {
-  width: 100%;
-  max-width: 300px;
-}
-
-button {
-  margin-top: 20px;
-}
-
-@media (max-width: 767.98px) {
-  .container {
-  margin-top: 30px;
-}
-
-.row.g-4 {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-}
-
-.card {
-  width: 100%;
-  max-width: 300px;
-}
-
-button {
-  margin-top: 20px;
-}
+.teams-list {
+  flex: 1 1 auto; // lista zajmuje całe wolne miejsce pod nagłówkiem
+  min-height: 0; // pozwala liście zmniejszyć się i włączyć scroll zamiast wypychać stronę
+  overflow-y: auto; // przewijanie tylko w pionie, gdy lista jest za długa
+  overflow-x: hidden; // ukrycie przewijania w poziomie
 }

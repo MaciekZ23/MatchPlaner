@@ -1,6 +1,18 @@
-<div class="container mt-4">
-  <div class="g-4">
-    <div *ngIf="!selectedTeam" class="row">
+<div class="container teams-page p-0 px-sm-1 py-sm-1">
+  <app-page-header
+    [title]="
+      !selectedTeam ? moduleStrings.headerTitle : moduleStrings.headerTitleTeam
+    "
+  ></app-page-header>
+
+  <div
+    *ngIf="!selectedTeam"
+    class="teams-list"
+    tabindex="0"
+    role="region"
+    aria-label="Lista drużyn — przewijany obszar"
+  >
+    <div class="row g-1 g-md-3">
       <div *ngFor="let team of teams" class="col-12 col-md-4">
         <app-team-card
           [team]="team"
@@ -10,7 +22,13 @@
     </div>
   </div>
 
-  <div *ngIf="selectedTeam" class="mt-1">
+  <div
+    *ngIf="selectedTeam"
+    class="teams-list mt-1"
+    tabindex="0"
+    role="region"
+    aria-label="Tabela składu drużyny — przewijany obszar"
+  >
     <app-team-table
       [teamName]="selectedTeam.name"
       [players]="selectedTeam.players"
