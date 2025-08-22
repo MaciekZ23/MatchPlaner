@@ -47,25 +47,24 @@ table {
 }
 
 @media (max-width: 767.98px) {
-  .card {
-    border-radius: 8px;
-
-    .card-title span {
-      display: block;
-      font-size: 0.8rem;
-    }
-
-    .sortable i {
-      margin-left: 4px;
-      font-size: 0.8rem;
-    }
+  // Padding (p-3 to 1rem lub 16px)
+  h6.card-title {
+    padding: 0.8rem !important;
   }
 
-  .table {
-    th,
-    td {
-      font-size: 0.75rem;
-      white-space: normal !important;
-    }
+  // Tytuł (fs-5 to 1.25rem lub 20px)
+  .card-title span {
+    font-size: 1rem;
+  }
+
+  .sortable i {
+    margin-left: 4px;
+    font-size: 0.8rem;
+  }
+
+  .table th,
+  .table td {
+    font-size: 0.75rem;
+    white-space: normal !important;
   }
 }
