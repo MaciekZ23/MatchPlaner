@@ -36,25 +36,6 @@ table {
         vertical-align: middle;
         padding: 10px;
         white-space: nowrap;
-        /*
-                &:first-child {
-                    width: 115px;
-                    text-align: center;
-                }
-
-                &:nth-child(2) {
-                    text-align: center;
-                    width: 100px;
-                }
-
-                &:nth-child(n+3) {
-                    width: 100px;
-                    text-align: center;
-                }*/
-
-        .badge {
-          font-size: 0.95rem;
-        }
       }
     }
   }
@@ -63,4 +44,28 @@ table {
 .sortable i {
   margin-left: 5px;
   font-size: 1rem;
+}
+
+@media (max-width: 767.98px) {
+  .card {
+    border-radius: 8px;
+
+    .card-title span {
+      display: block;
+      font-size: 0.8rem;
+    }
+
+    .sortable i {
+      margin-left: 4px;
+      font-size: 0.8rem;
+    }
+  }
+
+  .table {
+    th,
+    td {
+      font-size: 0.75rem;
+      white-space: normal !important;
+    }
+  }
 }

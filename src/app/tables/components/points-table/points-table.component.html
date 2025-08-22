@@ -8,14 +8,28 @@
         <tr>
           <th>{{ moduleStrings.headers.pos }}</th>
           <th>{{ moduleStrings.headers.team }}</th>
-          <th>{{ moduleStrings.headers.rm }}</th>
-          <th>{{ moduleStrings.headers.w }}</th>
-          <th>{{ moduleStrings.headers.r }}</th>
-          <th>{{ moduleStrings.headers.p }}</th>
+          <th class="d-none d-md-table-cell text-center">
+            {{ moduleStrings.headers.rm }}
+          </th>
+          <th class="d-none d-md-table-cell text-center">
+            {{ moduleStrings.headers.w }}
+          </th>
+          <th class="d-none d-md-table-cell text-center">
+            {{ moduleStrings.headers.r }}
+          </th>
+          <th class="d-none d-md-table-cell text-center">
+            {{ moduleStrings.headers.p }}
+          </th>
           <th class="bg-info text-white">{{ moduleStrings.headers.pts }}</th>
-          <th>{{ moduleStrings.headers.bz }}</th>
-          <th>{{ moduleStrings.headers.bs }}</th>
-          <th>{{ moduleStrings.headers.diff }}</th>
+          <th class="d-none d-md-table-cell text-center">
+            {{ moduleStrings.headers.bz }}
+          </th>
+          <th class="d-none d-md-table-cell text-center">
+            {{ moduleStrings.headers.bs }}
+          </th>
+          <th class="d-none d-md-table-cell text-center">
+            {{ moduleStrings.headers.diff }}
+          </th>
         </tr>
       </thead>
     </table>
@@ -38,17 +52,17 @@
                 {{ team.name }}
               </div>
             </td>
-            <td>{{ team.rm }}</td>
-            <td>{{ team.w }}</td>
-            <td>{{ team.r }}</td>
-            <td>{{ team.p }}</td>
+            <td class="d-none d-md-table-cell text-center">{{ team.rm }}</td>
+            <td class="d-none d-md-table-cell text-center">{{ team.w }}</td>
+            <td class="d-none d-md-table-cell text-center">{{ team.r }}</td>
+            <td class="d-none d-md-table-cell text-center">{{ team.p }}</td>
             <td>
               <span class="badge bg-info text-white px-3 py-2">{{
                 team.pkt
               }}</span>
             </td>
-            <td>{{ team.bz }}</td>
-            <td>{{ team.bs }}</td>
+            <td class="d-none d-md-table-cell text-center">{{ team.bz }}</td>
+            <td class="d-none d-md-table-cell text-center">{{ team.bs }}</td>
             <td
               [ngClass]="{
                 'text-success': team.diff >= 0,
