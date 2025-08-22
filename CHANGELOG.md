@@ -1,11 +1,21 @@
 # Changelog
 
+## 1.6.0
+
+### (FEATURE) Widok mobilny – Karta Drużyny
+
+* Naprawiono błędy WCAG (ARIA, fokusowalność)  
+* Ulepszono wygląd tytułu i nagłówka tabeli w widoku mobilnym  
+* Uporządkowano układ i rozmiary elementów (logo, przycisk, odstępy)  
+* Dodano komponent `page-header` do każdej wymaganej karty w aplikacji  
+* Wprowadzono przewijanie w obrębie kontenerów zamiast globalnego scrolla dla całej aplikacji
+
 ## 1.5.0
 
 ### (FEATURE) Implementacja zakładki Topbar i dodanie spinera
 
-* Dodano nowy komponent **Topbar** – pasek górny z ikoną powiadomień i menu użytkownika
-* Wprowadzono globalny komponent **Spinner**, używany jak na razie przy przełączaniu widoków w module drużyn
+* Dodano nowy komponent `topbar` – pasek górny z ikoną powiadomień i menu użytkownika
+* Wprowadzono globalny komponent `spinner`, używany jak na razie przy przełączaniu widoków w module drużyn
 
 ## 1.4.0
 
