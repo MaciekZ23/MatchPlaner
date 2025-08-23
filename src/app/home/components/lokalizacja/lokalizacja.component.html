@@ -32,13 +32,13 @@
   >
     <div class="d-flex flex-column flex-sm-row align-items-center">
       <div class="text-content">
-        <p class="mb-1">{{ moduleStrings.name }}</p>
-        <small>{{ moduleStrings.address }}</small>
+        <p class="mb-1">{{ name$ | async }}</p>
+        <small>{{ address$ | async }}</small>
       </div>
       <div class="image-container ms-md-5">
         <img
           src="https://upload.wikimedia.org/wikipedia/commons/c/c3/Hala_sportowa_Torun_09_2014.JPG"
-          alt="{{ moduleStrings.imageAlt }}"
+          [alt]="(imageAlt$ | async)!"
           class="image"
         />
       </div>

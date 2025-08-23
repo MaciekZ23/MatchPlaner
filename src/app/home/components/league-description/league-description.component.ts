@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { stringsLeagueDescription } from '../../misc';
+import { map } from 'rxjs';
+import { TournamentStore } from '../../../core/services/tournament-store.service';
 
 @Component({
   selector: 'app-league-description',
@@ -10,5 +11,10 @@ import { stringsLeagueDescription } from '../../misc';
   standalone: true,
 })
 export class LeagueDescriptionComponent {
-  moduleStrings = stringsLeagueDescription;
+  private readonly store = inject(TournamentStore);
+
+  description$ = this.store.tournament$.pipe(map((t) => t.description ?? ''));
+  additionalInfo$ = this.store.tournament$.pipe(
+    map((t) => t.additionalInfo ?? '')
+  );
 }

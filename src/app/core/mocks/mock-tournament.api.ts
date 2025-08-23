@@ -12,6 +12,17 @@ export class MockTournamentApi implements ITournamentApi {
     id: 't1',
     name: 'Liga testowa',
     mode: 'LEAGUE',
+    description:
+      'Halowa Liga Piłki Nożnej Toruń to coroczne wydarzenie sportowe, które gromadzi drużyny z całego regionu. Edycja 2026 zapowiada się wyjątkowo emocjonująco – ponad 20 zespołów, setki kibiców i pasja, która napędza każdą akcję na boisku.',
+    additionalInfo:
+      'Wyniki, strzelcy bramek oraz szczegóły meczów będą uzupełniane na bieżąco po zakończeniu każdego meczu. Do zobaczenia na hali sportowej!',
+    season: 'Edycja 2025',
+    startDate: '2025-08-01',
+    endDate: '2025-08-31',
+    venue: 'Arena Toruń',
+    venueAddress: 'ul. Józefa Bema 73/89, 87-100 Toruń',
+    venueImageUrl:
+      'https://upload.wikimedia.org/wikipedia/commons/c/c3/Hala_sportowa_Torun_09_2014.JPG',
     groups: [
       { id: 'A', name: 'Grupa A', teamIds: ['T1', 'T2', 'T3,', 'T4'] }, // uwaga: literówka celowa? zostawiam poprawną listę niżej
     ],
