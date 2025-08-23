@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.7.0
+
+### (FEATURE) Widok mobilny – Karta Tabele
+* Naprawiono błędy WCAG (ARIA, fokusowalność)
+* Poprawiono kontrast danych w tabelach
+* Ujednolicono typografię i układ nagłówków na mobile
+* Wprowadzono przewijanie treści tabel przy stałym nagłówku
+
 ## 1.6.0
 
 ### (FEATURE) Widok mobilny – Karta Drużyny

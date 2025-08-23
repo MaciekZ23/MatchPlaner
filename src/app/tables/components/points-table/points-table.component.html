@@ -1,31 +1,56 @@
-<div class="card bg-dark text-white m-1">
-  <h6 class="fs-5 text p-4 card-title card-header bg-transparent">
+<div class="card bg-dark text-white">
+  <h2
+    id="pointsTableTitle"
+    class="fs-5 text p-3 card-title card-header bg-transparent"
+  >
     {{ moduleStrings.title }}
-  </h6>
-  <div class="table-responsive card-body">
+  </h2>
+  <div class="table-responsive card-body" tabindex="0">
     <table class="table table-dark table-hover align-middle w-100">
       <thead class="table-header">
         <tr>
-          <th>{{ moduleStrings.headers.pos }}</th>
-          <th>{{ moduleStrings.headers.team }}</th>
-          <th>{{ moduleStrings.headers.rm }}</th>
-          <th>{{ moduleStrings.headers.w }}</th>
-          <th>{{ moduleStrings.headers.r }}</th>
-          <th>{{ moduleStrings.headers.p }}</th>
-          <th class="bg-info text-white">{{ moduleStrings.headers.pts }}</th>
-          <th>{{ moduleStrings.headers.bz }}</th>
-          <th>{{ moduleStrings.headers.bs }}</th>
-          <th>{{ moduleStrings.headers.diff }}</th>
+          <th scope="col" class="text-center">
+            {{ moduleStrings.headers.pos }}
+          </th>
+          <th scope="col" class="text-start text-md-center">
+            {{ moduleStrings.headers.team }}
+          </th>
+          <th scope="col" class="d-none d-md-table-cell text-center">
+            {{ moduleStrings.headers.rm }}
+          </th>
+          <th scope="col" class="d-none d-md-table-cell text-center">
+            {{ moduleStrings.headers.w }}
+          </th>
+          <th scope="col" class="d-none d-md-table-cell text-center">
+            {{ moduleStrings.headers.r }}
+          </th>
+          <th scope="col" class="d-none d-md-table-cell text-center">
+            {{ moduleStrings.headers.p }}
+          </th>
+          <th scope="col" class="bg-info text-dark text-center">
+            {{ moduleStrings.headers.pts }}
+          </th>
+          <th scope="col" class="d-none d-md-table-cell text-center">
+            {{ moduleStrings.headers.bz }}
+          </th>
+          <th scope="col" class="d-none d-md-table-cell text-center">
+            {{ moduleStrings.headers.bs }}
+          </th>
+          <th scope="col" class="d-none d-md-table-cell text-center">
+            {{ moduleStrings.headers.diff }}
+          </th>
         </tr>
       </thead>
     </table>
-    <div class="table-body-container">
+    <div class="table-body-container" tabindex="0">
       <table class="table table-dark table-hover align-middle w-100">
         <tbody>
           <tr *ngFor="let team of tableData; let i = index">
-            <td>{{ i + 1 }}</td>
-            <td class="text-start">
-              <div class="d-flex align-items-center justify-content-start">
+            <td class="text-center">{{ i + 1 }}</td>
+            <td class="text-center">
+              <div
+                class="d-flex align-items-center justify-content-center justify-content-md-start"
+              >
                 <img
                   *ngIf="team.logo; else defaultLogo"
                   [src]="team.logo"
@@ -35,24 +60,27 @@
                 <ng-template #defaultLogo>
                   <i class="fas fa-tshirt team-logo"></i>
                 </ng-template>
-                {{ team.name }}
+                <span class="team-name">
+                  {{ team.name }}
+                </span>
               </div>
             </td>
-            <td>{{ team.rm }}</td>
-            <td>{{ team.w }}</td>
-            <td>{{ team.r }}</td>
-            <td>{{ team.p }}</td>
-            <td>
-              <span class="badge bg-info text-white px-3 py-2">{{
+            <td class="d-none d-md-table-cell text-center">{{ team.rm }}</td>
+            <td class="d-none d-md-table-cell text-center">{{ team.w }}</td>
+            <td class="d-none d-md-table-cell text-center">{{ team.r }}</td>
+            <td class="d-none d-md-table-cell text-center">{{ team.p }}</td>
+            <td class="text-center text-md-center">
+              <span class="badge bg-info text-dark px-2 py-1 px-md-3 py-md-2">{{
                 team.pkt
               }}</span>
             </td>
-            <td>{{ team.bz }}</td>
-            <td>{{ team.bs }}</td>
+            <td class="d-none d-md-table-cell text-center">{{ team.bz }}</td>
+            <td class="d-none d-md-table-cell text-center">{{ team.bs }}</td>
             <td
+              class="d-none d-md-table-cell text-center"
               [ngClass]="{
-                'text-success': team.diff >= 0,
-                'text-danger': team.diff < 0
+                'text-diff-plus': team.diff >= 0,
+                'text-diff-minus': team.diff < 0
               }"
             >
               {{ team.diff >= 0 ? "+" : "" }}{{ team.diff }}
