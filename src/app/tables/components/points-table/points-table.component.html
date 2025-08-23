@@ -9,8 +9,12 @@
     <table class="table table-dark table-hover align-middle w-100">
       <thead class="table-header">
         <tr>
-          <th scope="col">{{ moduleStrings.headers.pos }}</th>
-          <th scope="col">{{ moduleStrings.headers.team }}</th>
+          <th scope="col" class="text-center">
+            {{ moduleStrings.headers.pos }}
+          </th>
+          <th scope="col" class="text-start text-md-center">
+            {{ moduleStrings.headers.team }}
+          </th>
           <th scope="col" class="d-none d-md-table-cell text-center">
             {{ moduleStrings.headers.rm }}
           </th>
@@ -23,7 +27,7 @@
           <th scope="col" class="d-none d-md-table-cell text-center">
             {{ moduleStrings.headers.p }}
           </th>
-          <th scope="col" class="bg-info text-white">
+          <th scope="col" class="bg-info text-dark text-center">
             {{ moduleStrings.headers.pts }}
           </th>
           <th scope="col" class="d-none d-md-table-cell text-center">
@@ -42,9 +46,11 @@
       <table class="table table-dark table-hover align-middle w-100">
         <tbody>
           <tr *ngFor="let team of tableData; let i = index">
-            <td>{{ i + 1 }}</td>
-            <td class="text-start">
-              <div class="d-flex align-items-center justify-content-start">
+            <td class="text-center">{{ i + 1 }}</td>
+            <td class="text-center">
+              <div
+                class="d-flex align-items-center justify-content-center justify-content-md-start"
+              >
                 <img
                   *ngIf="team.logo; else defaultLogo"
                   [src]="team.logo"
@@ -54,24 +60,27 @@
                 <ng-template #defaultLogo>
                   <i class="fas fa-tshirt team-logo"></i>
                 </ng-template>
-                {{ team.name }}
+                <span class="team-name">
+                  {{ team.name }}
+                </span>
               </div>
             </td>
             <td class="d-none d-md-table-cell text-center">{{ team.rm }}</td>
             <td class="d-none d-md-table-cell text-center">{{ team.w }}</td>
             <td class="d-none d-md-table-cell text-center">{{ team.r }}</td>
             <td class="d-none d-md-table-cell text-center">{{ team.p }}</td>
-            <td>
-              <span class="badge bg-info text-white px-3 py-2">{{
+            <td class="text-center text-md-center">
+              <span class="badge bg-info text-dark px-2 py-1 px-md-3 py-md-2">{{
                 team.pkt
               }}</span>
             </td>
             <td class="d-none d-md-table-cell text-center">{{ team.bz }}</td>
             <td class="d-none d-md-table-cell text-center">{{ team.bs }}</td>
             <td
+              class="d-none d-md-table-cell text-center"
               [ngClass]="{
-                'text-success': team.diff >= 0,
-                'text-danger': team.diff < 0
+                'text-diff-plus': team.diff >= 0,
+                'text-diff-minus': team.diff < 0
               }"
             >
               {{ team.diff >= 0 ? "+" : "" }}{{ team.diff }}
