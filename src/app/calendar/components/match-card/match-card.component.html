@@ -16,9 +16,9 @@
 
       <span
         class="badge text-white px-2 px-md-3 py-1 py-md-2"
-        [ngClass]="getBadgeClass(match.scoreA, match.scoreB)"
+        [ngClass]="getBadgeClass('A')"
       >
-        {{ match.scoreA }}
+        {{ getScoreText("A") }}
       </span>
     </div>
 
@@ -38,16 +38,31 @@
 
       <span
         class="badge text-white px-2 px-md-3 py-1 py-md-2"
-        [ngClass]="getBadgeClass(match.scoreB, match.scoreA)"
+        [ngClass]="getBadgeClass('B')"
       >
-        {{ match.scoreB }}
+        {{ getScoreText("B") }}
       </span>
     </div>
 
     <div
       class="custom-group d-flex justify-content-center align-items-center small mt-1"
     >
-      {{ moduleStrings.group }} {{ match.group }}
+      <span>{{ moduleStrings.group }} {{ match.group }}</span>
+
+      <ng-container *ngIf="match.kickoffISO">
+        <span class="mx-2"></span>
+        <ng-container *ngIf="isLive; else notLive">
+          <span class="live-dot me-1" aria-hidden="true"></span>
+          <span>{{ match.kickoffISO | date : "HH:mm" }}</span>
+        </ng-container>
+
+        <ng-template #notLive>
+          <span class="d-inline-flex align-items-center lh-1 gap-1">
+            <i class="fa-solid fa-clock fa-fw" aria-hidden="true"></i>
+            <span class="lh-1">{{ match.kickoffISO | date : "HH:mm" }}</span>
+          </span>
+        </ng-template>
+      </ng-container>
     </div>
   </div>
 </div>

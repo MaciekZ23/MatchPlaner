@@ -1,6 +1,5 @@
 import { Injectable, inject } from '@angular/core';
 import { combineLatest, map, take } from 'rxjs';
-
 import { TournamentStore } from '../../core/services/tournament-store.service';
 import { Team as UiTeam, Player as UiPlayer } from '../models/team';
 import {
@@ -12,7 +11,6 @@ import {
 export class TeamService {
   private readonly store = inject(TournamentStore);
 
-  /** Zwraca natychmiastowego “snapshota” drużyn z mockowanych danych (pierwsza emisja). */
   getTeams(): UiTeam[] {
     let snapshot: UiTeam[] = [];
 
@@ -26,12 +24,11 @@ export class TeamService {
     return snapshot;
   }
 
-  // --- mapowanie domena -> UI ---
-
   private mapToUiTeams(
     coreTeams: CoreTeam[],
     corePlayers: CorePlayer[]
   ): UiTeam[] {
+    // Grupujemy zawodników wg teamId, żeby szybciej dopinać do drużyn
     const playersByTeam = corePlayers.reduce<Record<string, CorePlayer[]>>(
       (acc, p) => {
         (acc[p.teamId] ??= []).push(p);
@@ -40,8 +37,9 @@ export class TeamService {
       {}
     );
 
+    // Mapujemy drużyny domenowe na drużyny UI
     return coreTeams.map((t, idx) => ({
-      id: idx + 1, // UI ma number → nadajemy indeks
+      id: idx + 1, // UI używa number – nadajemy stabilny indeks na podstawie kolejności
       name: t.name,
       logo: t.logo,
 
@@ -49,6 +47,9 @@ export class TeamService {
     }));
   }
 
+  /**
+   * Mapuje pojedynczego zawodnika domenowego (CorePlayer) na model UI (UiPlayer)
+   */
   private mapPlayerToUi = (p: CorePlayer): UiPlayer => ({
     name: p.name,
     position: this.positionPl(p.position),

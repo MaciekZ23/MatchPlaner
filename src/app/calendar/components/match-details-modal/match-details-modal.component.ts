@@ -84,4 +84,27 @@ export class MatchDetailsModalComponent
   get teamBScorers() {
     return this.match?.details.filter((d) => d.scoringTeam === 'B') ?? [];
   }
+
+  get isFinished(): boolean {
+    return this.match?.status === 'FINISHED';
+  }
+
+  get goalsA(): number {
+    return this.teamAScorers.length;
+  }
+
+  get goalsB(): number {
+    return this.teamBScorers.length;
+  }
+
+  get showScore(): boolean {
+    if (!this.match) return false;
+    return this.isFinished || this.goalsA + this.goalsB > 0;
+  }
+
+  get scoreText(): string {
+    if (!this.match) return '';
+    if (this.isFinished) return `${this.match.scoreA} - ${this.match.scoreB}`;
+    return `${this.goalsA} - ${this.goalsB}`;
+  }
 }

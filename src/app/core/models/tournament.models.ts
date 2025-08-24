@@ -16,6 +16,7 @@ export interface Tournament {
   season?: string; // np. "2025/26" albo "Edycja 2026"
   startDate?: string; // ISO: "2025-08-01"
   endDate?: string; // ISO: "2025-12-15"
+  timezone?: string;
   venue?: string; // nazwa obiektu (np. "Arena Toruń")
   venueAddress?: string; // adres (np. "ul. Bema 73/89, 87-100 Toruń")
   venueImageUrl?: string; // zdjęcie obiektu

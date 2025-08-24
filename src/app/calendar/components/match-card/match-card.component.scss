@@ -37,6 +37,36 @@
   color: $match-card-text-group;
 }
 
+.live-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: $match-card-background-dot;
+  animation: blink 1.1s infinite;
+}
+
+@keyframes blink {
+  0%,
+  60% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 0.25;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.badge-live {
+  background-color: $match-card-background-badge-live;
+}
+
+.badge-scheduled {
+  background-color: $match-card-background-badge-scheduled;
+}
+
 @media (max-width: 767.98px) {
   // Nazwa drużyny (1rem na desktopowym)
   .team-name {
@@ -67,5 +97,11 @@
   // Rozmiar pastylki z wynikiem
   .badge {
     font-size: 0.8rem;
+  }
+
+  // Rozmiar migającej kropki
+  .live-dot {
+    width: 8px;
+    height: 8px;
   }
 }

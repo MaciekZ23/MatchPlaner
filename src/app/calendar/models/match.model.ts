@@ -9,4 +9,6 @@ export interface Match {
   logoA?: string;
   logoB?: string;
   details: MatchDetail[];
+  status?: 'SCHEDULED' | 'LIVE' | 'FINISHED';
+  kickoffISO?: string;
 }

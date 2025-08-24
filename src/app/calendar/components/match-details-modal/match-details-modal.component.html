@@ -21,7 +21,15 @@
         <div class="header-grid align-items-center">
           <div class="team text-start">{{ match?.teamA }}</div>
           <div class="score text-center">
-            {{ match?.scoreA }} - {{ match?.scoreB }}
+            <ng-container *ngIf="showScore; else noScore">
+              {{ scoreText }}
+            </ng-container>
+            <ng-template #noScore>
+              <span class="visually-hidden"
+                >Brak wyniku — mecz nie został jeszcze rozegrany lub jest w
+                trakcie</span
+              >
+            </ng-template>
           </div>
           <div class="team text-end">{{ match?.teamB }}</div>
         </div>
