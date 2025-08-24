@@ -1,28 +1,19 @@
 import { Injectable, inject } from '@angular/core';
 import { combineLatest, map, take } from 'rxjs';
-
 import { CalendarDay } from '../models/calendar-day.model';
 import { Match as UiMatch } from '../models/match.model';
 import { MatchDetail } from '../models/match-detail.model';
-
 import { TournamentStore } from '../../core/services/tournament-store.service';
 import {
   Match as CoreMatch,
   Player as CorePlayer,
 } from '../../core/models/tournament.models';
-
 import { formatFullDate, toLocalWallClockISO } from '../../core/utils';
 
 @Injectable({ providedIn: 'root' })
 export class MatchService {
-  /** Jedno źródło prawdy dla turnieju, meczów, drużyn i zawodników. */
   private readonly store = inject(TournamentStore);
 
-  /**
-   * Snapshot listy dni kalendarza z meczami (pierwsza emisja z core).
-   * UWAGA: na potrzeby mocków stripujemy strefę z ISO (toLocalWallClockISO),
-   * żeby godzina na karcie była dokładnie „taka jak wpisana” (bez +2h).
-   */
   getMockData(): CalendarDay[] {
     let snapshot: CalendarDay[] = [];
 
@@ -37,26 +28,29 @@ export class MatchService {
         map(([tournament, matchesByStage, teamMap, playerMap]) => {
           const tournamentTz = tournament.timezone ?? 'Europe/Warsaw';
 
-          // Mecze z pierwszego etapu fazy grupowej (kalendarz ligowy).
+          // Mecze z pierwszego etapu fazy grupowej (kalendarz ligowy)
           const groupStage = tournament.stages.find((s) => s.kind === 'GROUP');
+          // Pobranie meczów dla etapu
           const matches: CoreMatch[] = groupStage
             ? matchesByStage.get(groupStage.id) ?? []
             : [];
 
-          // Posortuj po dacie, mapuj do UI i wrzucaj do „wiader” dni.
+          // Utworzenie „wiader” na dni kalendarza
           const buckets = new Map<string, UiMatch[]>();
 
+          // Sortowanie po dacie rosnąco
           for (const m of [...matches].sort(
             (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
           )) {
+            // Lookup drużyn — nazwy, logotypy
             const home = teamMap.get(m.homeTeamId);
             const away = teamMap.get(m.awayTeamId);
-
+            // Zliczenie wyniku z eventów + przełożenie na detale UI
             const { scoreA, scoreB, details } = this.toUiDetails(m, playerMap);
 
-            // <<< KLUCZOWE: traktujemy ISO z backendu jako „wall-clock” (bez przesunięcia)
+            // Traktujemy datę ISO z backendu bez przesunięcia o ileś godzin
             const localIso = toLocalWallClockISO(m.date);
-
+            // Mapowanie: CoreMatch -> UiMatch
             const ui: UiMatch = {
               teamA: home?.name ?? m.homeTeamId,
               teamB: away?.name ?? m.awayTeamId,
@@ -66,20 +60,21 @@ export class MatchService {
               logoA: home?.logo,
               logoB: away?.logo,
               details,
-              status: this.computeUiStatus(m), // tylko SCHEDULED/FINISHED
-              kickoffISO: localIso, // godzina do wyświetlenia bez +2h
+              status: this.computeUiStatus(m),
+              kickoffISO: localIso,
             };
 
-            // Nagłówek dnia liczony również po „lokalnym” ISO.
+            // Nagłówek dnia liczony również po lokalnym ISO
             const dayKey = this.capitalizeFirst(
               formatFullDate(localIso, tournamentTz, 'pl-PL')
             );
 
+            // Dodanie meczu do właściwego „wiadra” dnia
             if (!buckets.has(dayKey)) buckets.set(dayKey, []);
             buckets.get(dayKey)!.push(ui);
           }
 
-          // Map -> CalendarDay[] (chronologicznie)
+          // Zamiana wiader na listę dni kalendarza
           const days: CalendarDay[] = [];
           for (const [date, dayMatches] of buckets) {
             days.push({ date, matches: dayMatches });
@@ -89,12 +84,16 @@ export class MatchService {
       )
       .subscribe((days) => (snapshot = days));
 
+    // Zwrócenie snapshotu — pierwszy wynik z combineLatest
     return snapshot;
   }
 
-  // -------- helpers --------
-
-  /** Buduje listę detali i wynik na podstawie zdarzeń GOAL (oraz finalnego score). */
+  /**
+   * Budowanie listy detali i wyniku na podstawie eventów GOAL
+   * — Sortowanie eventów po minucie
+   * — Zliczanie „na żywo” (scoreA/scoreB) po każdym GOAL
+   * — Nadpisanie wyniku finalnego, jeśli m.score istnieje
+   */
   private toUiDetails(
     m: CoreMatch,
     playerMap: Map<string, CorePlayer>
@@ -114,6 +113,7 @@ export class MatchService {
 
       const playerName = playerMap.get(ev.playerId)?.name ?? ev.playerId;
 
+      // Dodanie wpisu detalu (minuta, kto, aktualny stan, strona)
       details.push({
         player: playerName,
         time: String(ev.minute),
@@ -130,15 +130,10 @@ export class MatchService {
     return { scoreA, scoreB, details };
   }
 
-  /**
-   * Status domenowy (tylko SCHEDULED/FINISHED).
-   * LIVE liczymy w komponencie (czas prezentacyjny, nie domenowy).
-   */
   private computeUiStatus(m: CoreMatch): 'SCHEDULED' | 'FINISHED' {
     return m.status === 'FINISHED' ? 'FINISHED' : 'SCHEDULED';
   }
 
-  /** Podnosi pierwszą literę (np. "sobota" → "Sobota"). */
   private capitalizeFirst(s: string): string {
     return s.charAt(0).toUpperCase() + s.slice(1);
   }
