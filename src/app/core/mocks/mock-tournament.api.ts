@@ -9,15 +9,15 @@ export class MockTournamentApi implements ITournamentApi {
   private readonly STAGE_GRP = 'STAGE-GRP-1';
   private tournament: Tournament = {
     id: 't1',
-    name: 'Liga halowa Toruń 2026 test',
+    name: 'Halowa Liga Piłki Nożnej Toruń 2026',
     mode: 'LEAGUE',
     description:
       'Halowa Liga Piłki Nożnej Toruń to coroczne wydarzenie sportowe, które gromadzi drużyny z całego regionu. Edycja 2026 zapowiada się wyjątkowo emocjonująco – ponad 20 zespołów, setki kibiców i pasja, która napędza każdą akcję na boisku.',
     additionalInfo:
       'Wyniki, strzelcy bramek oraz szczegóły meczów będą uzupełniane na bieżąco po zakończeniu każdego meczu. Do zobaczenia na hali sportowej!',
     season: 'Edycja 2025',
-    startDate: '2025-08-01',
-    endDate: '2025-08-31',
+    startDate: '2026-01-10',
+    endDate: '2026-02-22',
     timezone: 'Europe/Warsaw',
     venue: 'Arena Toruń',
     venueAddress: 'ul. Józefa Bema 73/89, 87-100 Toruń',
@@ -46,6 +46,11 @@ export class MockTournamentApi implements ITournamentApi {
           'T17',
           'T18',
         ],
+      },
+      {
+        id: 'B',
+        name: 'Grupa B',
+        teamIds: ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8'],
       },
     ],
     stages: [
@@ -78,6 +83,11 @@ export class MockTournamentApi implements ITournamentApi {
           'T17',
           'T18',
         ],
+      },
+      {
+        id: 'B',
+        name: 'Grupa B',
+        teamIds: ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8'],
       },
     ];
   }
@@ -1225,8 +1235,11 @@ export class MockTournamentApi implements ITournamentApi {
       score: { home: 2, away: 1 },
       events: [
         { minute: 12, type: 'GOAL', playerId: 'P1', teamId: 'T1' },
+        { minute: 12, type: 'ASSIST', playerId: 'P2', teamId: 'T1' },
         { minute: 34, type: 'GOAL', playerId: 'P7', teamId: 'T3' },
+        { minute: 34, type: 'ASSIST', playerId: 'P8', teamId: 'T3' },
         { minute: 58, type: 'GOAL', playerId: 'P2', teamId: 'T1' },
+        { minute: 58, type: 'ASSIST', playerId: 'P4', teamId: 'T1' },
       ],
     },
     {
@@ -1241,7 +1254,9 @@ export class MockTournamentApi implements ITournamentApi {
       score: { home: 1, away: 1 },
       events: [
         { minute: 41, type: 'GOAL', playerId: 'P18', teamId: 'T4' },
+        { minute: 41, type: 'ASSIST', playerId: 'P14', teamId: 'T4' },
         { minute: 77, type: 'GOAL', playerId: 'P33', teamId: 'T5' },
+        { minute: 77, type: 'ASSIST', playerId: 'P31', teamId: 'T5' },
       ],
     },
     {
@@ -1256,7 +1271,9 @@ export class MockTournamentApi implements ITournamentApi {
       score: { home: 2, away: 0 },
       events: [
         { minute: 22, type: 'GOAL', playerId: 'P48', teamId: 'T6' },
+        { minute: 22, type: 'ASSIST', playerId: 'P44', teamId: 'T6' },
         { minute: 71, type: 'GOAL', playerId: 'P49', teamId: 'T6' },
+        { minute: 71, type: 'ASSIST', playerId: 'P51', teamId: 'T6' },
       ],
     },
     {
@@ -1271,8 +1288,11 @@ export class MockTournamentApi implements ITournamentApi {
       score: { home: 1, away: 2 },
       events: [
         { minute: 18, type: 'GOAL', playerId: 'P79', teamId: 'T8' },
+        { minute: 18, type: 'ASSIST', playerId: 'P77', teamId: 'T8' },
         { minute: 59, type: 'GOAL', playerId: 'P93', teamId: 'T9' },
+        { minute: 59, type: 'ASSIST', playerId: 'P92', teamId: 'T9' },
         { minute: 86, type: 'GOAL', playerId: 'P94', teamId: 'T9' },
+        { minute: 86, type: 'ASSIST', playerId: 'P96', teamId: 'T9' },
       ],
     },
     {
@@ -1285,7 +1305,10 @@ export class MockTournamentApi implements ITournamentApi {
       homeTeamId: 'T10',
       awayTeamId: 'T4',
       score: { home: 0, away: 1 },
-      events: [{ minute: 73, type: 'GOAL', playerId: 'P20', teamId: 'T4' }],
+      events: [
+        { minute: 73, type: 'GOAL', playerId: 'P20', teamId: 'T4' },
+        { minute: 73, type: 'ASSIST', playerId: 'P21', teamId: 'T4' },
+      ],
     },
     {
       id: 'M6',
@@ -1299,7 +1322,9 @@ export class MockTournamentApi implements ITournamentApi {
       score: { home: 2, away: 0 },
       events: [
         { minute: 12, type: 'GOAL', playerId: 'P31', teamId: 'T5' },
+        { minute: 12, type: 'ASSIST', playerId: 'P34', teamId: 'T5' },
         { minute: 67, type: 'GOAL', playerId: 'P34', teamId: 'T5' },
+        { minute: 67, type: 'ASSIST', playerId: 'P36', teamId: 'T5' },
       ],
     },
     {
@@ -1314,7 +1339,9 @@ export class MockTournamentApi implements ITournamentApi {
       score: { home: 1, away: 1 },
       events: [
         { minute: 9, type: 'GOAL', playerId: 'P7', teamId: 'T3' },
+        { minute: 9, type: 'ASSIST', playerId: 'P8', teamId: 'T3' },
         { minute: 55, type: 'GOAL', playerId: 'P51', teamId: 'T6' },
+        { minute: 55, type: 'ASSIST', playerId: 'P49', teamId: 'T6' },
       ],
     },
     {
@@ -1329,7 +1356,9 @@ export class MockTournamentApi implements ITournamentApi {
       score: { home: 2, away: 0 },
       events: [
         { minute: 21, type: 'GOAL', playerId: 'P18', teamId: 'T4' },
+        { minute: 21, type: 'ASSIST', playerId: 'P14', teamId: 'T4' },
         { minute: 63, type: 'GOAL', playerId: 'P21', teamId: 'T4' },
+        { minute: 63, type: 'ASSIST', playerId: 'P16', teamId: 'T4' },
       ],
     },
     {
@@ -1344,9 +1373,13 @@ export class MockTournamentApi implements ITournamentApi {
       score: { home: 1, away: 3 },
       events: [
         { minute: 18, type: 'GOAL', playerId: 'P92', teamId: 'T9' },
+        { minute: 18, type: 'ASSIST', playerId: 'P95', teamId: 'T9' },
         { minute: 44, type: 'GOAL', playerId: 'P33', teamId: 'T5' },
+        { minute: 44, type: 'ASSIST', playerId: 'P31', teamId: 'T5' },
         { minute: 57, type: 'GOAL', playerId: 'P36', teamId: 'T5' },
+        { minute: 57, type: 'ASSIST', playerId: 'P34', teamId: 'T5' },
         { minute: 81, type: 'GOAL', playerId: 'P31', teamId: 'T5' },
+        { minute: 81, type: 'ASSIST', playerId: 'P36', teamId: 'T5' },
       ],
     },
     {
@@ -1359,7 +1392,10 @@ export class MockTournamentApi implements ITournamentApi {
       homeTeamId: 'T7',
       awayTeamId: 'T10',
       score: { home: 0, away: 1 },
-      events: [{ minute: 70, type: 'GOAL', playerId: 'P109', teamId: 'T10' }],
+      events: [
+        { minute: 70, type: 'GOAL', playerId: 'P109', teamId: 'T10' },
+        { minute: 70, type: 'ASSIST', playerId: 'P108', teamId: 'T10' },
+      ],
     },
     {
       id: 'M11',
@@ -1373,8 +1409,11 @@ export class MockTournamentApi implements ITournamentApi {
       score: { home: 1, away: 2 },
       events: [
         { minute: 14, type: 'GOAL', playerId: 'P4', teamId: 'T1' },
+        { minute: 14, type: 'ASSIST', playerId: 'P2', teamId: 'T1' },
         { minute: 38, type: 'GOAL', playerId: 'P14', teamId: 'T4' },
+        { minute: 38, type: 'ASSIST', playerId: 'P16', teamId: 'T4' },
         { minute: 77, type: 'GOAL', playerId: 'P18', teamId: 'T4' },
+        { minute: 77, type: 'ASSIST', playerId: 'P21', teamId: 'T4' },
       ],
     },
     {
@@ -1389,7 +1428,9 @@ export class MockTournamentApi implements ITournamentApi {
       score: { home: 2, away: 0 },
       events: [
         { minute: 29, type: 'GOAL', playerId: 'P79', teamId: 'T8' },
+        { minute: 29, type: 'ASSIST', playerId: 'P77', teamId: 'T8' },
         { minute: 61, type: 'GOAL', playerId: 'P77', teamId: 'T8' },
+        { minute: 61, type: 'ASSIST', playerId: 'P81', teamId: 'T8' },
       ],
     },
     {
@@ -1404,7 +1445,9 @@ export class MockTournamentApi implements ITournamentApi {
       score: { home: 1, away: 1 },
       events: [
         { minute: 52, type: 'GOAL', playerId: 'P34', teamId: 'T5' },
+        { minute: 52, type: 'ASSIST', playerId: 'P31', teamId: 'T5' },
         { minute: 74, type: 'GOAL', playerId: 'P48', teamId: 'T6' },
+        { minute: 74, type: 'ASSIST', playerId: 'P44', teamId: 'T6' },
       ],
     },
     {
@@ -1419,7 +1462,9 @@ export class MockTournamentApi implements ITournamentApi {
       score: { home: 2, away: 0 },
       events: [
         { minute: 14, type: 'GOAL', playerId: 'P93', teamId: 'T9' },
+        { minute: 14, type: 'ASSIST', playerId: 'P92', teamId: 'T9' },
         { minute: 58, type: 'GOAL', playerId: 'P94', teamId: 'T9' },
+        { minute: 58, type: 'ASSIST', playerId: 'P96', teamId: 'T9' },
       ],
     },
     {
@@ -1434,8 +1479,11 @@ export class MockTournamentApi implements ITournamentApi {
       score: { home: 1, away: 2 },
       events: [
         { minute: 10, type: 'GOAL', playerId: 'P63', teamId: 'T7' },
+        { minute: 10, type: 'ASSIST', playerId: 'P59', teamId: 'T7' },
         { minute: 47, type: 'GOAL', playerId: 'P78', teamId: 'T8' },
+        { minute: 47, type: 'ASSIST', playerId: 'P79', teamId: 'T8' },
         { minute: 83, type: 'GOAL', playerId: 'P81', teamId: 'T8' },
+        { minute: 83, type: 'ASSIST', playerId: 'P77', teamId: 'T8' },
       ],
     },
     {
@@ -1450,9 +1498,13 @@ export class MockTournamentApi implements ITournamentApi {
       score: { home: 3, away: 1 },
       events: [
         { minute: 9, type: 'GOAL', playerId: 'P18', teamId: 'T4' },
+        { minute: 9, type: 'ASSIST', playerId: 'P14', teamId: 'T4' },
         { minute: 28, type: 'GOAL', playerId: 'P21', teamId: 'T4' },
+        { minute: 28, type: 'ASSIST', playerId: 'P16', teamId: 'T4' },
         { minute: 51, type: 'GOAL', playerId: 'P14', teamId: 'T4' },
+        { minute: 51, type: 'ASSIST', playerId: 'P17', teamId: 'T4' },
         { minute: 77, type: 'GOAL', playerId: 'P4', teamId: 'T1' },
+        { minute: 77, type: 'ASSIST', playerId: 'P2', teamId: 'T1' },
       ],
     },
     {
@@ -1467,8 +1519,11 @@ export class MockTournamentApi implements ITournamentApi {
       score: { home: 1, away: 2 },
       events: [
         { minute: 19, type: 'GOAL', playerId: 'P7', teamId: 'T3' },
+        { minute: 19, type: 'ASSIST', playerId: 'P8', teamId: 'T3' },
         { minute: 46, type: 'GOAL', playerId: 'P33', teamId: 'T5' },
+        { minute: 46, type: 'ASSIST', playerId: 'P31', teamId: 'T5' },
         { minute: 77, type: 'GOAL', playerId: 'P36', teamId: 'T5' },
+        { minute: 77, type: 'ASSIST', playerId: 'P34', teamId: 'T5' },
       ],
     },
     {
@@ -1483,7 +1538,9 @@ export class MockTournamentApi implements ITournamentApi {
       score: { home: 2, away: 0 },
       events: [
         { minute: 12, type: 'GOAL', playerId: 'P48', teamId: 'T6' },
+        { minute: 12, type: 'ASSIST', playerId: 'P44', teamId: 'T6' },
         { minute: 71, type: 'GOAL', playerId: 'P49', teamId: 'T6' },
+        { minute: 71, type: 'ASSIST', playerId: 'P51', teamId: 'T6' },
       ],
     },
     {
@@ -1506,10 +1563,18 @@ export class MockTournamentApi implements ITournamentApi {
       groupId: 'A',
       round: 4,
       date: '2025-08-24T16:50:00Z',
-      status: 'SCHEDULED' as MatchStatus,
+      status: 'FINISHED' as MatchStatus,
       homeTeamId: 'T6',
       awayTeamId: 'T7',
-      events: [],
+      score: { home: 2, away: 1 },
+      events: [
+        { minute: 14, type: 'GOAL', playerId: 'P48', teamId: 'T6' },
+        { minute: 14, type: 'ASSIST', playerId: 'P44', teamId: 'T6' },
+        { minute: 55, type: 'GOAL', playerId: 'P63', teamId: 'T7' },
+        { minute: 55, type: 'ASSIST', playerId: 'P59', teamId: 'T7' },
+        { minute: 78, type: 'GOAL', playerId: 'P49', teamId: 'T6' },
+        { minute: 78, type: 'ASSIST', playerId: 'P51', teamId: 'T6' },
+      ],
     },
     {
       id: 'M21',
@@ -1517,10 +1582,18 @@ export class MockTournamentApi implements ITournamentApi {
       groupId: 'A',
       round: 4,
       date: '2025-08-24T17:40:00Z',
-      status: 'SCHEDULED' as MatchStatus,
+      status: 'FINISHED' as MatchStatus,
       homeTeamId: 'T8',
       awayTeamId: 'T9',
-      events: [],
+      score: { home: 1, away: 2 },
+      events: [
+        { minute: 19, type: 'GOAL', playerId: 'P79', teamId: 'T8' },
+        { minute: 19, type: 'ASSIST', playerId: 'P77', teamId: 'T8' },
+        { minute: 47, type: 'GOAL', playerId: 'P93', teamId: 'T9' },
+        { minute: 47, type: 'ASSIST', playerId: 'P92', teamId: 'T9' },
+        { minute: 85, type: 'GOAL', playerId: 'P94', teamId: 'T9' },
+        { minute: 85, type: 'ASSIST', playerId: 'P96', teamId: 'T9' },
+      ],
     },
     {
       id: 'M22',
@@ -1528,10 +1601,20 @@ export class MockTournamentApi implements ITournamentApi {
       groupId: 'A',
       round: 4,
       date: '2025-08-24T18:30:00Z',
-      status: 'SCHEDULED' as MatchStatus,
+      status: 'FINISHED' as MatchStatus,
       homeTeamId: 'T10',
       awayTeamId: 'T4',
-      events: [],
+      score: { home: 0, away: 2 },
+      events: [
+        { minute: 33, type: 'GOAL', playerId: 'P18', teamId: 'T4' },
+        { minute: 33, type: 'ASSIST', playerId: 'P14', teamId: 'T4' },
+        { minute: 69, type: 'GOAL', playerId: 'P20', teamId: 'T4' },
+        { minute: 69, type: 'ASSIST', playerId: 'P21', teamId: 'T4' },
+      ],
+      lineups: {
+        homeGKIds: ['P113'],
+        awayGKIds: ['P23'],
+      },
     },
     {
       id: 'M23',
@@ -1539,10 +1622,16 @@ export class MockTournamentApi implements ITournamentApi {
       groupId: 'A',
       round: 4,
       date: '2025-08-24T19:20:00Z',
-      status: 'SCHEDULED' as MatchStatus,
+      status: 'FINISHED' as MatchStatus,
       homeTeamId: 'T3',
       awayTeamId: 'T1',
-      events: [],
+      score: { home: 1, away: 1 },
+      events: [
+        { minute: 22, type: 'GOAL', playerId: 'P7', teamId: 'T3' },
+        { minute: 22, type: 'ASSIST', playerId: 'P8', teamId: 'T3' },
+        { minute: 66, type: 'GOAL', playerId: 'P4', teamId: 'T1' },
+        { minute: 66, type: 'ASSIST', playerId: 'P2', teamId: 'T1' },
+      ],
     },
     {
       id: 'M24',
@@ -1550,10 +1639,24 @@ export class MockTournamentApi implements ITournamentApi {
       groupId: 'A',
       round: 4,
       date: '2025-08-24T21:10:00Z',
-      status: 'SCHEDULED' as MatchStatus,
+      status: 'FINISHED' as MatchStatus,
       homeTeamId: 'T5',
       awayTeamId: 'T8',
-      events: [],
+      score: { home: 2, away: 2 },
+      events: [
+        { minute: 11, type: 'GOAL', playerId: 'P31', teamId: 'T5' },
+        { minute: 11, type: 'ASSIST', playerId: 'P34', teamId: 'T5' },
+        { minute: 39, type: 'GOAL', playerId: 'P79', teamId: 'T8' },
+        { minute: 39, type: 'ASSIST', playerId: 'P78', teamId: 'T8' },
+        { minute: 64, type: 'GOAL', playerId: 'P36', teamId: 'T5' },
+        { minute: 64, type: 'ASSIST', playerId: 'P33', teamId: 'T5' },
+        { minute: 82, type: 'GOAL', playerId: 'P77', teamId: 'T8' },
+        { minute: 82, type: 'ASSIST', playerId: 'P81', teamId: 'T8' },
+      ],
+      lineups: {
+        homeGKIds: ['P38'],
+        awayGKIds: ['P83'],
+      },
     },
     {
       id: 'M25',
@@ -1686,6 +1789,23 @@ export class MockTournamentApi implements ITournamentApi {
       homeTeamId: 'T1',
       awayTeamId: 'T6',
       events: [],
+    },
+    {
+      id: 'M37',
+      stageId: this.STAGE_GRP,
+      groupId: 'B',
+      round: 1,
+      date: '2025-08-03T16:00:00Z',
+      status: 'FINISHED' as MatchStatus,
+      homeTeamId: 'T1',
+      awayTeamId: 'T2',
+      score: { home: 3, away: 1 },
+      events: [
+        { minute: 5, type: 'GOAL', playerId: 'P101', teamId: 'T1' },
+        { minute: 17, type: 'GOAL', playerId: 'P102', teamId: 'T1' },
+        { minute: 42, type: 'GOAL', playerId: 'P103', teamId: 'T1' },
+        { minute: 66, type: 'GOAL', playerId: 'P201', teamId: 'T2' },
+      ],
     },
   ];
 

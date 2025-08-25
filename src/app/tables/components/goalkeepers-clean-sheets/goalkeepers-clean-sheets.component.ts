@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { GoalkeepersCleanSheetsService } from '../../services/goalkeepers-clean-sheets.service';
+import { GoalkeepersCleanSheets } from '../../models';
 import { stringsGoalkeepersCleanSheets } from '../../misc';
 
 @Component({
@@ -12,9 +13,9 @@ import { stringsGoalkeepersCleanSheets } from '../../misc';
 })
 export class GoalkeepersCleanSheetsComponent implements OnInit {
   moduleStrings = stringsGoalkeepersCleanSheets;
-  cleanSheetsData: any[] = [];
+  cleanSheetsData: GoalkeepersCleanSheets[] = [];
   isCollapsed = true;
-  sortColumn: string | null = null;
+  sortColumn: 'cleanSheets' | null = null;
   sortDirection: 'asc' | 'desc' | '' = 'asc';
 
   constructor(private cleanSheetsService: GoalkeepersCleanSheetsService) {}
@@ -24,35 +25,28 @@ export class GoalkeepersCleanSheetsComponent implements OnInit {
   }
 
   loadCleanSheets(): void {
-    this.cleanSheetsData = this.cleanSheetsService.getCleanSheets();
-    this.sortData('cleanSheets');
+    this.cleanSheetsService.getCleanSheets().subscribe((rows) => {
+      this.cleanSheetsData = rows;
+      this.sortColumn = 'cleanSheets';
+      this.sortDirection = 'desc';
+    });
   }
 
   toggleCollapse(): void {
     this.isCollapsed = !this.isCollapsed;
   }
 
-  sortData(column: string): void {
+  sortData(column: 'cleanSheets'): void {
     if (this.sortColumn === column) {
+      this.cleanSheetsData = [...this.cleanSheetsData].reverse();
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-    } else {
-      this.sortColumn = column;
-      this.sortDirection = 'desc';
+      return;
     }
 
-    this.cleanSheetsData = [...this.cleanSheetsData].sort((a, b) => {
-      const valueA = this.getSortableValue(a, column);
-      const valueB = this.getSortableValue(b, column);
-
-      if (valueA === null || valueB === null) {
-        return 0;
-      }
-      return this.sortDirection === 'asc' ? valueA - valueB : valueB - valueA;
+    this.cleanSheetsService.getCleanSheets().subscribe((rows) => {
+      this.cleanSheetsData = rows;
+      this.sortColumn = column;
+      this.sortDirection = 'desc';
     });
-  }
-
-  getSortableValue(player: any, column: string): number {
-    const value = player[column];
-    return value ? value : 0;
   }
 }

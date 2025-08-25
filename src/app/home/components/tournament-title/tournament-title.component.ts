@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { map } from 'rxjs';
 import { stringsTournamentTitle } from '../../misc';
 import { TournamentStore } from '../../../core/services/tournament-store.service';
+import { formatFullDate, capitalizeFirst } from '../../../core/utils';
 
 @Component({
   selector: 'app-tournament-title',
@@ -17,7 +18,17 @@ export class TournamentTitleComponent {
   private readonly store = inject(TournamentStore);
 
   title$ = this.store.tournament$.pipe(map((t) => t.name));
-  mode$ = this.store.tournament$.pipe(map((t) => t.mode));
-  startDate$ = this.store.tournament$.pipe(map((t) => t.startDate ?? ''));
-  endDate$ = this.store.tournament$.pipe(map((t) => t.endDate ?? ''));
+  dateRange$ = this.store.tournament$.pipe(
+    map((t) => {
+      const tz = t.timezone ?? 'Europe/Warsaw';
+      const start = t.startDate
+        ? capitalizeFirst(formatFullDate(t.startDate, tz, 'pl-PL'))
+        : '';
+      const end = t.endDate
+        ? capitalizeFirst(formatFullDate(t.endDate, tz, 'pl-PL'))
+        : '';
+      if (start && end) return `${start} - ${end}`;
+      return start || end || '';
+    })
+  );
 }

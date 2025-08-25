@@ -1,10 +1,13 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TopScorersComponent } from './components/top-scorers/top-scorers.component';
 import { GoalkeepersCleanSheetsComponent } from './components/goalkeepers-clean-sheets/goalkeepers-clean-sheets.component';
 import { PointsTableComponent } from './components/points-table/points-table.component';
 import { PageHeaderComponent } from '../shared/components/page-header/page-header.component';
+import { TeamTableService } from './services/team-table.service';
+import { PointsTableGroup } from './models';
 import { stringsTables } from './misc';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-tables',
@@ -19,6 +22,15 @@ import { stringsTables } from './misc';
   styleUrls: ['./tables.component.scss'],
   standalone: true,
 })
-export class TablesComponent {
+export class TablesComponent implements OnInit {
   moduleStrings = stringsTables;
+  groups$!: Observable<PointsTableGroup[]>;
+
+  constructor(private teamTable: TeamTableService) {}
+
+  ngOnInit(): void {
+    this.groups$ = this.teamTable.getTables();
+  }
+
+  trackGroup = (_: number, g: PointsTableGroup) => g.groupId;
 }

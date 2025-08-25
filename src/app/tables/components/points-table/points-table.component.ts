@@ -1,7 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TeamStats } from '../../models/team-table.model';
-import { TeamTableService } from '../../services/team-table.service';
 import { stringsPointsTable } from '../../misc';
 
 @Component({
@@ -11,18 +10,11 @@ import { stringsPointsTable } from '../../misc';
   styleUrls: ['./points-table.component.scss'],
   standalone: true,
 })
-export class PointsTableComponent implements OnInit {
+export class PointsTableComponent {
   moduleStrings = stringsPointsTable;
-  tableData: TeamStats[] = [];
 
-  constructor(private tableService: TeamTableService) {}
+  @Input() rows: TeamStats[] = [];
+  @Input() groupTitle: string = '';
 
-  ngOnInit(): void {
-    this.tableData = this.tableService.getTable();
-    this.sortTableByPoints();
-  }
-
-  sortTableByPoints() {
-    this.tableData.sort((a, b) => b.pkt - a.pkt);
-  }
+  trackRow = (_: number, r: TeamStats) => r.id ?? r.name;
 }

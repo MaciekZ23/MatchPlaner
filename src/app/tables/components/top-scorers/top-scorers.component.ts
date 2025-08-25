@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TopScorerService } from '../../services/top-scorer.service';
+import { TopScorer } from '../../models';
+import { TopScorersSortKey } from '../../types';
 import { stringsTopScorers } from '../../misc';
 
 @Component({
@@ -12,10 +14,10 @@ import { stringsTopScorers } from '../../misc';
 })
 export class TopScorersComponent implements OnInit {
   moduleStrings = stringsTopScorers;
-  topScorers: any[] = [];
+  topScorers: TopScorer[] = [];
   isCollapsed = true;
-  sortColumn: string | null = null;
-  sortDirection: 'asc' | 'desc' | '' = 'asc';
+  sortColumn: TopScorersSortKey | null = null;
+  sortDirection: 'asc' | 'desc' = 'desc';
   constructor(private topScorerService: TopScorerService) {}
 
   ngOnInit(): void {
@@ -23,37 +25,32 @@ export class TopScorersComponent implements OnInit {
   }
 
   loadTopScorers(): void {
-    this.topScorerService.getTopScorers().subscribe((data: any[]) => {
-      this.topScorers = data;
-      this.sortData('goals');
-    });
+    this.topScorerService
+      .getTopScorers('goals')
+      .subscribe((data: TopScorer[]) => {
+        this.topScorers = data;
+        this.sortColumn = 'goals';
+        this.sortDirection = 'desc';
+      });
   }
 
   toggleCollapse(): void {
     this.isCollapsed = !this.isCollapsed;
   }
 
-  sortData(column: string): void {
+  sortData(column: TopScorersSortKey): void {
     if (this.sortColumn === column) {
+      this.topScorers = [...this.topScorers].reverse();
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-    } else {
-      this.sortColumn = column;
-      this.sortDirection = 'desc';
+      return;
     }
 
-    this.topScorers = [...this.topScorers].sort((a, b) => {
-      const valueA = this.getSortableValue(a, column);
-      const valueB = this.getSortableValue(b, column);
-
-      if (valueA === null || valueB === null) {
-        return 0;
-      }
-      return this.sortDirection === 'asc' ? valueA - valueB : valueB - valueA;
-    });
-  }
-
-  getSortableValue(player: any, column: string): number {
-    const value = player[column];
-    return value ? value : 0;
+    this.topScorerService
+      .getTopScorers(column)
+      .subscribe((data: TopScorer[]) => {
+        this.topScorers = data;
+        this.sortColumn = column;
+        this.sortDirection = 'desc';
+      });
   }
 }

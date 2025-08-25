@@ -5,6 +5,7 @@ import {
   Position,
   HealthStatus,
   MatchEventType,
+  CardKind,
 } from '../types';
 
 export interface Tournament {
@@ -58,6 +59,7 @@ export interface MatchEvent {
   type: MatchEventType;
   playerId: string;
   teamId: string;
+  card?: CardKind;
 }
 
 export interface Match {
@@ -71,4 +73,8 @@ export interface Match {
   awayTeamId: string;
   score?: { home: number; away: number };
   events?: MatchEvent[];
+  lineups?: {
+    homeGKIds?: string[];
+    awayGKIds?: string[];
+  };
 }

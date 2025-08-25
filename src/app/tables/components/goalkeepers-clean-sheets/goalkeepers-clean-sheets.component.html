@@ -78,8 +78,8 @@
           <tbody>
             <tr *ngFor="let keeper of cleanSheetsData; let i = index">
               <td>{{ i + 1 }}</td>
-              <td>{{ keeper.name }}</td>
-              <td class="d-none d-md-table-cell">{{ keeper.team }}</td>
+              <td>{{ keeper.playerName }}</td>
+              <td class="d-none d-md-table-cell">{{ keeper.teamName }}</td>
               <td>{{ keeper.cleanSheets }}</td>
             </tr>
           </tbody>

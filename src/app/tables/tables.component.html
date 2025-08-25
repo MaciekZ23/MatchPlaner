@@ -2,7 +2,11 @@
   <app-page-header [title]="moduleStrings.headerTitle"></app-page-header>
 
   <div class="tables-list d-flex flex-column gap-1 gap-md-2">
-    <app-points-table></app-points-table>
+    <app-points-table
+      *ngFor="let g of groups$ | async; trackBy: trackGroup"
+      [rows]="g.rows"
+      [groupTitle]="g.groupTitle"
+    ></app-points-table>
     <app-top-scorers></app-top-scorers>
     <app-goalkeepers-clean-sheets></app-goalkeepers-clean-sheets>
   </div>

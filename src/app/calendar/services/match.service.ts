@@ -8,7 +8,11 @@ import {
   Match as CoreMatch,
   Player as CorePlayer,
 } from '../../core/models/tournament.models';
-import { formatFullDate, toLocalWallClockISO } from '../../core/utils';
+import {
+  formatFullDate,
+  toLocalWallClockISO,
+  capitalizeFirst,
+} from '../../core/utils';
 
 @Injectable({ providedIn: 'root' })
 export class MatchService {
@@ -65,7 +69,7 @@ export class MatchService {
             };
 
             // Nagłówek dnia liczony również po lokalnym ISO
-            const dayKey = this.capitalizeFirst(
+            const dayKey = capitalizeFirst(
               formatFullDate(localIso, tournamentTz, 'pl-PL')
             );
 
@@ -132,9 +136,5 @@ export class MatchService {
 
   private computeUiStatus(m: CoreMatch): 'SCHEDULED' | 'FINISHED' {
     return m.status === 'FINISHED' ? 'FINISHED' : 'SCHEDULED';
-  }
-
-  private capitalizeFirst(s: string): string {
-    return s.charAt(0).toUpperCase() + s.slice(1);
   }
 }

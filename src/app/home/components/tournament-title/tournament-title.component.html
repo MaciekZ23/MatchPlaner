@@ -4,8 +4,7 @@
       {{ title$ | async }}
     </h1>
     <p class="card-text fs-7 fs-md-5">
-      {{ startDate$ | async | date : "longDate" }} -
-      {{ endDate$ | async | date : "longDate" }}
+      {{ dateRange$ | async }}
     </p>
   </div>
 </div>

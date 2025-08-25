@@ -1,31 +1,352 @@
-import { Injectable } from "@angular/core";
-import { TeamStats } from "../models/team-table.model";
+import { Injectable, inject } from '@angular/core';
+import { combineLatest, map, Observable, take } from 'rxjs';
+import { TournamentStore } from '../../core/services/tournament-store.service';
+import { Match as CoreMatch, Team as CoreTeam } from '../../core/models';
+import { TeamStats, PointsTableGroup } from '../models';
 
-@Injectable({
-    providedIn: 'root'
-})
-
+@Injectable({ providedIn: 'root' })
 export class TeamTableService {
-    getTable(): TeamStats[] {
-        return [
-            { id: 1, name: 'Stajnia Kuniccy', rm: 7, w: 7, r: 0, p: 0, pkt: 20, bz: 29, bs: 7, diff: 22, logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR_PwRy6Kx9DqJCU3Wy_Ww8P01wP5gg1pxpOw&s" },
-            { id: 2, name: 'DP Meble', rm: 7, w: 5, r: 1, p: 1, pkt: 2, bz: 24, bs: 12, diff: 12, logo: "https://yt3.googleusercontent.com/nnUt-yW5Y9hD7gVz18g8cobi3QIpsht3OBnO5e9trnJRe5nrs212CudWS6AdXNxjdgnimz7Kdw=s900-c-k-c0x00ffffff-no-rj" },
-            { id: 3, name: 'Tradycja Sarbicko', rm: 7, w: 5, r: 0, p: 2, pkt: 15, bz: 22, bs: 16, diff: 6, logo: "https://yt3.googleusercontent.com/3MuJZcfzJCWFim5oUnn-umt_9zxmt8Okb8IlT6zMEkWyjDMgxgETaU9jd2WZO434ZVbzWaTWFKo=s900-c-k-c0x00ffffff-no-rj" },
-            { id: 4, name: 'Transport Michalski', rm: 7, w: 3, r: 0, p: 4, pkt: 9, bz: 24, bs: 18, diff: 6, logo: "https://autoline.com.pl/img/dealers/logos/d/0/1575490699151597729.png?1576499575" },
-            { id: 5, name: 'OSP Słodków', rm: 7, w: 2, r: 2, p: 3, pkt: 8, bz: 13, bs: 14, diff: -1, logo: "https://www.sokolkleczew.pl/wp-content/themes/sokolkleczew/img/logofb.png" },
-            { id: 6, name: 'RKN Konin', rm: 7, w: 2, r: 1, p: 4, pkt: 7, bz: 18, bs: 19, diff: -1, logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR98XyRz__qMBiKHDJ9x3Rf795XGy41jYT-uw&s" },
-            { id: 7, name: 'AKP Magros Konin', rm: 7, w: 1, r: 2, p: 4, pkt: 5, bz: 19, bs: 37, diff: -18, logo: "https://play-lh.googleusercontent.com/Aqp_wNSGx1JGiuOD5FHk3fa5iQcZ2NzB9hy75N5lBrDm2OrQ_Jnka7__-yXQe1pjHCM" },
-            { id: 8, name: 'MKS Żychlin', rm: 7, w: 0, r: 0, p: 7, pkt: 20, bz: 11, bs: 34, diff: -23, logo: "https://upload.wikimedia.org/wikipedia/commons/f/f5/ElanaTorun2016.png" },
-            { id: 9, name: 'Czerwone Diabły', rm: 7, w: 6, r: 0, p: 1, pkt: 18, bz: 30, bs: 10, diff: 20, logo: "https://upload.wikimedia.org/wikipedia/en/thumb/a/aa/Herb_Pogo%C5%84.cdr.svg/1200px-Herb_Pogo%C5%84.cdr.svg.png" },
-            { id: 10, name: 'FC Łaziki', rm: 7, w: 4, r: 1, p: 2, pkt: 13, bz: 21, bs: 15, diff: 6, logo: undefined },
-            { id: 11, name: 'Warta Wilczyn', rm: 7, w: 8, r: 0, p: 4, pkt: 24, bz: 17, bs: 13, diff: 4, logo: "https://upload.wikimedia.org/wikipedia/commons/0/0e/Wisla_P%C5%82ock.png" },
-            { id: 12, name: 'Zryw Zalesie', rm: 7, w: 2, r: 3, p: 2, pkt: 9, bz: 14, bs: 14, diff: 0, logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ4rcV9ZBqCeFvUdlVo0W9bFW64m8g-zc4rPQ&s" },
-            { id: 18, name: 'Huragan Golina', rm: 7, w: 2, r: 1, p: 4, pkt: 7, bz: 13, bs: 20, diff: -7, logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDO7F1yDmXTTN5k3LMAxI1A-VYe36khoWEdQ&s" },
-            { id: 14, name: 'Start Jarocin', rm: 7, w: 1, r: 2, p: 4, pkt: 5, bz: 11, bs: 22, diff: -11, logo: undefined },
-            { id: 15, name: 'Górnik Lubin', rm: 7, w: 1, r: 1, p: 5, pkt: 4, bz: 9, bs: 25, diff: -16, logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRGF1uEzEYNEeZ0qzg_GcllYg2rN29yjBu2Aw&s" },
-            { id: 16, name: 'Polonia Skulsk', rm: 7, w: 0, r: 3, p: 4, pkt: 3, bz: 10, bs: 21, diff: -11, logo: "https://lh3.googleusercontent.com/proxy/-xrbTLuaa0frI7b69byY_kq2ourDeU13vg53eG1rW-8M-fcqFDPCdjQpe9sDDx0BM3CdPme69JhhGp1Q8ctIKtT-tPaYfbo0l4E" },
-            { id: 17, name: 'Orzeł Czarnków', rm: 7, w: 0, r: 1, p: 6, pkt: 1, bz: 8, bs: 28, diff: -20, logo: undefined },
-            { id: 13, name: 'Sokół Dąbie', rm: 7, w: 0, r: 0, p: 7, pkt: 0, bz: 5, bs: 35, diff: -30, logo: "https://sport.travel.pl/wp-content/uploads/2022/07/Real-Madryt-logo-600x700.jpg" }
-        ];
+  private readonly store = inject(TournamentStore);
+
+  getTables(): Observable<PointsTableGroup[]> {
+    return combineLatest([
+      this.store.tournament$,
+      this.store.matchesByStage$,
+      this.store.teamMap$,
+    ]).pipe(
+      map(([tournament, matchesByStage, teamMap]) => {
+        // 1) etap ligowy
+        const groupStage = tournament.stages.find((s) => s.kind === 'GROUP');
+        if (!groupStage) return [];
+
+        // 2) mecze tego etapu
+        const all = (matchesByStage.get(groupStage.id) ?? []).slice();
+
+        // 3) mapowanie id->name z mocka
+        const groupNameById = new Map<string, string>();
+        for (const g of tournament.groups ?? []) {
+          if (g?.id) groupNameById.set(g.id, g.name ?? `Grupa ${g.id}`);
+        }
+
+        // 4) grupowanie po groupId
+        const byGroup = new Map<string, CoreMatch[]>();
+        for (const m of all) {
+          const key = m.groupId ?? 'UNGROUPED';
+          if (!byGroup.has(key)) byGroup.set(key, []);
+          byGroup.get(key)!.push(m);
+        }
+
+        // 5) posortowane klucze po NAZWIE (Grupa A, Grupa B, ...)
+        const sortedIds = Array.from(byGroup.keys()).sort((a, b) => {
+          const nameA =
+            a === 'UNGROUPED' ? 'Tabela' : groupNameById.get(a) ?? `Grupa ${a}`;
+          const nameB =
+            b === 'UNGROUPED' ? 'Tabela' : groupNameById.get(b) ?? `Grupa ${b}`;
+          return nameA.localeCompare(nameB, 'pl', { numeric: true });
+        });
+
+        // 6) budowa tabel dla każdej grupy
+        const groups: PointsTableGroup[] = [];
+        for (const groupId of sortedIds) {
+          const matches = byGroup.get(groupId)!;
+          const rows = this.buildAndSortGroupTable(matches, teamMap);
+
+          const groupTitle =
+            groupId === 'UNGROUPED'
+              ? 'Tabela'
+              : groupNameById.get(groupId) ?? `Grupa ${groupId}`;
+
+          groups.push({ groupId, groupTitle, rows });
+        }
+
+        return groups;
+      })
+    );
+  }
+
+  /** Szybki snapshot (bez subskrypcji w komponencie) */
+  getTablesSnapshot(): PointsTableGroup[] {
+    let snap: PointsTableGroup[] = [];
+    this.getTables()
+      .pipe(take(1))
+      .subscribe((r) => (snap = r));
+    return snap;
+  }
+
+  /** Zgodność wstecz — zwraca wiersze pierwszej tabeli */
+  getTable(): TeamStats[] {
+    const groups = this.getTablesSnapshot();
+    return groups[0]?.rows ?? [];
+  }
+
+  // =================== PRIVATE ===================
+
+  /** Liczenie surowych statystyk i sortowanie pełnymi tie-breakerami */
+  private buildAndSortGroupTable(
+    matches: CoreMatch[],
+    teamMap: Map<string, CoreTeam>
+  ): TeamStats[] {
+    const finished = matches.filter((m) => m.status === 'FINISHED');
+
+    const teamIds = new Set<string>();
+    for (const m of finished) {
+      teamIds.add(m.homeTeamId);
+      teamIds.add(m.awayTeamId);
     }
+
+    const base = new Map<string, TeamStats>();
+    for (const id of teamIds) {
+      const t = teamMap.get(id);
+      base.set(id, {
+        id: 0,
+        name: t?.name ?? id,
+        logo: t?.logo,
+        rm: 0,
+        w: 0,
+        r: 0,
+        p: 0,
+        pkt: 0,
+        bz: 0,
+        bs: 0,
+        diff: 0,
+      });
+    }
+
+    // zliczanie meczów
+    for (const m of finished) {
+      const { home, away } = this.getScore(m);
+
+      const homeRow = base.get(m.homeTeamId)!;
+      const awayRow = base.get(m.awayTeamId)!;
+
+      homeRow.rm++;
+      awayRow.rm++;
+
+      homeRow.bz += home;
+      homeRow.bs += away;
+      awayRow.bz += away;
+      awayRow.bs += home;
+
+      if (home > away) {
+        homeRow.w++;
+        awayRow.p++;
+        homeRow.pkt += 3;
+      } else if (home < away) {
+        awayRow.w++;
+        homeRow.p++;
+        awayRow.pkt += 3;
+      } else {
+        homeRow.r++;
+        awayRow.r++;
+        homeRow.pkt++;
+        awayRow.pkt++;
+      }
+    }
+
+    for (const row of base.values()) {
+      row.diff = row.bz - row.bs;
+    }
+
+    const rows = Array.from(base.entries()).map(([teamId, row]) => ({
+      teamId,
+      row,
+    }));
+    const comparator = this.makeFullComparator(finished);
+    rows.sort((a, b) => comparator(a.teamId, b.teamId, a.row, b.row));
+    rows.forEach((it, idx) => (it.row.id = idx + 1));
+    return rows.map((it) => it.row);
+  }
+
+  /** Komparator z pełnym łańcuchem reguł remisów */
+  private makeFullComparator(groupMatches: CoreMatch[]) {
+    const matchesBetween = (teams: Set<string>) =>
+      groupMatches.filter(
+        (m) => teams.has(m.homeTeamId) && teams.has(m.awayTeamId)
+      );
+
+    const cardsPointsByTeam = this.buildDisciplineIndex(groupMatches);
+    const awayWinsIndex = this.buildAwayWinsIndex(groupMatches);
+
+    return (aId: string, bId: string, a: TeamStats, b: TeamStats): number => {
+      // 0) punkty ogółem
+      if (a.pkt !== b.pkt) return b.pkt - a.pkt;
+
+      const tier = new Set<string>([aId, bId]);
+      const h2h = matchesBetween(tier);
+
+      // 1) punkty H2H
+      const [aH2Hp, bH2Hp] = this.headToHeadPoints(h2h, aId, bId);
+      if (aH2Hp !== bH2Hp) return bH2Hp - aH2Hp;
+
+      // 2) różnica bramek H2H
+      const [aH2Hgd, bH2Hgd] = this.headToHeadGoalDiff(h2h, aId, bId);
+      if (aH2Hgd !== bH2Hgd) return bH2Hgd - aH2Hgd;
+
+      // 3) „reguła wyjazdowa” H2H (2 zespoły) — więcej goli na wyjeździe
+      const awayA = this.headToHeadAwayGoals(h2h, aId);
+      const awayB = this.headToHeadAwayGoals(h2h, bId);
+      if (awayA !== awayB) return awayB - awayA;
+
+      // 4) różnica bramek ogółem
+      if (a.diff !== b.diff) return b.diff - a.diff;
+
+      // 5) więcej goli ogółem
+      if (a.bz !== b.bz) return b.bz - a.bz;
+
+      // 6) więcej zwycięstw ogółem
+      if (a.w !== b.w) return b.w - a.w;
+
+      // 7) więcej zwycięstw na wyjeździe
+      const aAwayW = awayWinsIndex.get(aId) ?? 0;
+      const bAwayW = awayWinsIndex.get(bId) ?? 0;
+      if (aAwayW !== bAwayW) return bAwayW - aAwayW;
+
+      // 8) mniej punktów karnych (kartki)
+      const aDisc = cardsPointsByTeam.get(aId) ?? 0;
+      const bDisc = cardsPointsByTeam.get(bId) ?? 0;
+      if (aDisc !== bDisc) return aDisc - bDisc;
+
+      // 9) Fair Play — pomijamy; ostatni tie-breaker: nazwa A→Z
+      return a.name.localeCompare(b.name, 'pl');
+    };
+  }
+
+  // ---------- H2H helpers ----------
+
+  private headToHeadPoints(
+    h2h: CoreMatch[],
+    aId: string,
+    bId: string
+  ): [number, number] {
+    let aP = 0,
+      bP = 0;
+    for (const m of h2h) {
+      const { home, away } = this.getScore(m);
+      if (m.homeTeamId === aId && m.awayTeamId === bId) {
+        if (home > away) aP += 3;
+        else if (home < away) bP += 3;
+        else {
+          aP++;
+          bP++;
+        }
+      } else if (m.homeTeamId === bId && m.awayTeamId === aId) {
+        if (home > away) bP += 3;
+        else if (home < away) aP += 3;
+        else {
+          aP++;
+          bP++;
+        }
+      }
+    }
+    return [aP, bP];
+  }
+
+  private headToHeadGoalDiff(
+    h2h: CoreMatch[],
+    aId: string,
+    bId: string
+  ): [number, number] {
+    let aGF = 0,
+      aGA = 0,
+      bGF = 0,
+      bGA = 0;
+    for (const m of h2h) {
+      const { home, away } = this.getScore(m);
+      if (m.homeTeamId === aId && m.awayTeamId === bId) {
+        aGF += home;
+        aGA += away;
+        bGF += away;
+        bGA += home;
+      }
+      if (m.homeTeamId === bId && m.awayTeamId === aId) {
+        bGF += home;
+        bGA += away;
+        aGF += away;
+        aGA += home;
+      }
+    }
+    return [aGF - aGA, bGF - bGA];
+  }
+
+  private headToHeadAwayGoals(h2h: CoreMatch[], teamId: string): number {
+    let awayGoals = 0;
+    for (const m of h2h) {
+      const { away } = this.getScore(m);
+      if (m.awayTeamId === teamId) awayGoals += away;
+    }
+    return awayGoals;
+  }
+
+  // ---------- discipline / wins-away ----------
+
+  private buildDisciplineIndex(matches: CoreMatch[]): Map<string, number> {
+    const pts = new Map<string, number>();
+    const add = (teamId: string, v: number) =>
+      pts.set(teamId, (pts.get(teamId) ?? 0) + v);
+
+    for (const m of matches) {
+      // śledzimy, kto miał już żółtą w danym meczu (team+player)
+      const hadYellow = new Set<string>();
+
+      for (const ev of m.events ?? []) {
+        if (ev.type !== 'CARD') continue;
+        if (!ev.teamId) continue;
+
+        const key = `${ev.teamId}:${ev.playerId}`;
+
+        switch (ev.card) {
+          case 'YELLOW':
+            add(ev.teamId, 1);
+            hadYellow.add(key);
+            break;
+
+          case 'SECOND_YELLOW':
+            // 3 pkt łącznie (1 za pierwszą + 2 „dodatkowe” za drugą)
+            add(ev.teamId, hadYellow.has(key) ? 2 : 3);
+            break;
+
+          case 'RED':
+            add(ev.teamId, 3);
+            break;
+
+          default:
+            // nieznany wariant – ignorujemy
+            break;
+        }
+      }
+    }
+    return pts;
+  }
+
+  private buildAwayWinsIndex(matches: CoreMatch[]): Map<string, number> {
+    const wins = new Map<string, number>();
+    const bump = (teamId: string) =>
+      wins.set(teamId, (wins.get(teamId) ?? 0) + 1);
+
+    for (const m of matches) {
+      if (m.status !== 'FINISHED') continue;
+      const { home, away } = this.getScore(m);
+      if (away > home) bump(m.awayTeamId);
+    }
+    return wins;
+  }
+
+  // ---------- score helpers ----------
+
+  private getScore(m: CoreMatch): { home: number; away: number } {
+    if (m.score) return { home: m.score.home, away: m.score.away };
+
+    let h = 0,
+      a = 0;
+    for (const ev of m.events ?? []) {
+      if (ev.type === 'GOAL') {
+        if (ev.teamId === m.homeTeamId) h++;
+        else if (ev.teamId === m.awayTeamId) a++;
+      } else if (ev.type === 'OWN_GOAL') {
+        if (ev.teamId === m.homeTeamId) a++;
+        else if (ev.teamId === m.awayTeamId) h++;
+      }
+    }
+    return { home: h, away: a };
+  }
 }
