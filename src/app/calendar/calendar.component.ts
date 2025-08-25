@@ -29,7 +29,7 @@ export class CalendarComponent implements OnInit {
   constructor(private matchService: MatchService) {}
 
   ngOnInit(): void {
-    this.days = this.matchService.getMockData();
+    this.days = this.matchService.getCalendarDays();
   }
 
   openDetails(match: Match): void {

@@ -37,7 +37,7 @@
       </div>
       <div class="image-container ms-md-5">
         <img
-          src="https://upload.wikimedia.org/wikipedia/commons/c/c3/Hala_sportowa_Torun_09_2014.JPG"
+          [src]="imageUrl$ | async"
           [alt]="(imageAlt$ | async)!"
           class="image"
         />

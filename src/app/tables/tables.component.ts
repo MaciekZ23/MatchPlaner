@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TopScorersComponent } from './components/top-scorers/top-scorers.component';
 import { GoalkeepersCleanSheetsComponent } from './components/goalkeepers-clean-sheets/goalkeepers-clean-sheets.component';
@@ -21,6 +21,7 @@ import { Observable } from 'rxjs';
   templateUrl: './tables.component.html',
   styleUrls: ['./tables.component.scss'],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TablesComponent implements OnInit {
   moduleStrings = stringsTables;
@@ -29,7 +30,7 @@ export class TablesComponent implements OnInit {
   constructor(private teamTable: TeamTableService) {}
 
   ngOnInit(): void {
-    this.groups$ = this.teamTable.getTables();
+    this.groups$ = this.teamTable.getTeamTables();
   }
 
   trackGroup = (_: number, g: PointsTableGroup) => g.groupId;

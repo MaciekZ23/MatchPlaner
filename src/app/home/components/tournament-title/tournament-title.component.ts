@@ -1,9 +1,7 @@
-import { Component, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { map } from 'rxjs';
+import { TournamentTitleService } from '../../services/tournament-title.service';
 import { stringsTournamentTitle } from '../../misc';
-import { TournamentStore } from '../../../core/services/tournament-store.service';
-import { formatFullDate, capitalizeFirst } from '../../../core/utils';
 
 @Component({
   selector: 'app-tournament-title',
@@ -11,24 +9,13 @@ import { formatFullDate, capitalizeFirst } from '../../../core/utils';
   templateUrl: './tournament-title.component.html',
   styleUrls: ['./tournament-title.component.scss'],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TournamentTitleComponent {
   moduleStrings = stringsTournamentTitle;
 
-  private readonly store = inject(TournamentStore);
+  private service = inject(TournamentTitleService);
 
-  title$ = this.store.tournament$.pipe(map((t) => t.name));
-  dateRange$ = this.store.tournament$.pipe(
-    map((t) => {
-      const tz = t.timezone ?? 'Europe/Warsaw';
-      const start = t.startDate
-        ? capitalizeFirst(formatFullDate(t.startDate, tz, 'pl-PL'))
-        : '';
-      const end = t.endDate
-        ? capitalizeFirst(formatFullDate(t.endDate, tz, 'pl-PL'))
-        : '';
-      if (start && end) return `${start} - ${end}`;
-      return start || end || '';
-    })
-  );
+  title$ = this.service.title$;
+  dateRange$ = this.service.dateRange$;
 }

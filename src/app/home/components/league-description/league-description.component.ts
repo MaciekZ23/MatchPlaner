@@ -1,7 +1,6 @@
-import { Component, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { map } from 'rxjs';
-import { TournamentStore } from '../../../core/services/tournament-store.service';
+import { LeagueDescriptionService } from '../../services/league-description.service';
 
 @Component({
   selector: 'app-league-description',
@@ -9,12 +8,11 @@ import { TournamentStore } from '../../../core/services/tournament-store.service
   templateUrl: './league-description.component.html',
   styleUrls: ['./league-description.component.scss'],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LeagueDescriptionComponent {
-  private readonly store = inject(TournamentStore);
+  private service = inject(LeagueDescriptionService);
 
-  description$ = this.store.tournament$.pipe(map((t) => t.description ?? ''));
-  additionalInfo$ = this.store.tournament$.pipe(
-    map((t) => t.additionalInfo ?? '')
-  );
+  description$ = this.service.description$;
+  additionalInfo$ = this.service.additionalInfo$;
 }

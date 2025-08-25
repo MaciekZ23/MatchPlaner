@@ -18,7 +18,7 @@ import {
 export class MatchService {
   private readonly store = inject(TournamentStore);
 
-  getMockData(): CalendarDay[] {
+  getCalendarDays(): CalendarDay[] {
     let snapshot: CalendarDay[] = [];
 
     combineLatest([
