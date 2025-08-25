@@ -16,8 +16,8 @@ export class MockTournamentApi implements ITournamentApi {
     additionalInfo:
       'Wyniki, strzelcy bramek oraz szczegóły meczów będą uzupełniane na bieżąco po zakończeniu każdego meczu. Do zobaczenia na hali sportowej!',
     season: 'Edycja 2025',
-    startDate: '2026-01-10',
-    endDate: '2026-02-22',
+    startDate: '2026-01-10T16:00:00Z',
+    endDate: '2026-02-22T20:00:00Z',
     timezone: 'Europe/Warsaw',
     venue: 'Arena Toruń',
     venueAddress: 'ul. Józefa Bema 73/89, 87-100 Toruń',
