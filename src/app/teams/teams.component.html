@@ -1,19 +1,21 @@
 <div class="container teams-page p-0 px-sm-1 py-sm-1">
   <app-page-header
     [title]="
-      !selectedTeam ? moduleStrings.headerTitle : moduleStrings.headerTitleTeam
+      (selectedTeam$ | async)
+        ? moduleStrings.headerTitle
+        : moduleStrings.headerTitleTeam
     "
   ></app-page-header>
 
   <div
-    *ngIf="!selectedTeam"
+    *ngIf="!(selectedTeam$ | async)"
     class="teams-list"
     tabindex="0"
     role="region"
     aria-label="Lista drużyn — przewijany obszar"
   >
     <div class="row g-1 g-md-3">
-      <div *ngFor="let team of teams" class="col-12 col-md-4">
+      <div *ngFor="let team of (teams$ | async) ?? []" class="col-12 col-md-4">
         <app-team-card
           [team]="team"
           (teamClick)="onTeamClick(team)"
@@ -23,7 +25,7 @@
   </div>
 
   <div
-    *ngIf="selectedTeam"
+    *ngIf="selectedTeam$ | async as selectedTeam"
     class="teams-list mt-1"
     tabindex="0"
     role="region"
