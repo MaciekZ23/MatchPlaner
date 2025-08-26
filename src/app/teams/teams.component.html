@@ -1,7 +1,7 @@
 <div class="container teams-page p-0 px-sm-1 py-sm-1">
   <app-page-header
     [title]="
-      (selectedTeam$ | async)
+      !(selectedTeam$ | async)
         ? moduleStrings.headerTitle
         : moduleStrings.headerTitleTeam
     "

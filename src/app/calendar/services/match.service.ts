@@ -92,12 +92,6 @@ export class MatchService {
     return snapshot;
   }
 
-  /**
-   * Budowanie listy detali i wyniku na podstawie eventów GOAL
-   * — Sortowanie eventów po minucie
-   * — Zliczanie „na żywo” (scoreA/scoreB) po każdym GOAL
-   * — Nadpisanie wyniku finalnego, jeśli m.score istnieje
-   */
   private toUiDetails(
     m: CoreMatch,
     playerMap: Map<string, CorePlayer>
@@ -109,28 +103,60 @@ export class MatchService {
     const events = (m.events ?? []).slice().sort((a, b) => a.minute - b.minute);
 
     for (const ev of events) {
-      if (ev.type !== 'GOAL') continue;
-
-      const isHome = ev.teamId === m.homeTeamId;
-      if (isHome) scoreA++;
-      else scoreB++;
-
       const playerName = playerMap.get(ev.playerId)?.name ?? ev.playerId;
+      const isHome = ev.teamId === m.homeTeamId;
+      const teamSide: 'A' | 'B' = isHome ? 'A' : 'B';
 
-      // Dodanie wpisu detalu (minuta, kto, aktualny stan, strona)
-      details.push({
-        player: playerName,
-        time: String(ev.minute),
-        score: `${scoreA} - ${scoreB}`,
-        scoringTeam: isHome ? 'A' : 'B',
-      });
+      switch (ev.type) {
+        case 'GOAL': {
+          if (isHome) scoreA++;
+          else scoreB++;
+
+          details.push({
+            player: playerName,
+            time: String(ev.minute),
+            score: `${scoreA} - ${scoreB}`,
+            scoringTeam: teamSide,
+            event: 'GOAL',
+          } as MatchDetail);
+          break;
+        }
+
+        case 'OWN_GOAL': {
+          const scoringSide: 'A' | 'B' = isHome ? 'B' : 'A';
+          if (isHome) scoreB++;
+          else scoreA++;
+
+          details.push({
+            player: playerName,
+            time: String(ev.minute),
+            score: `${scoreA} - ${scoreB}`,
+            scoringTeam: scoringSide,
+            event: 'OWN_GOAL',
+          } as MatchDetail);
+          break;
+        }
+
+        case 'CARD': {
+          details.push({
+            player: playerName,
+            time: String(ev.minute),
+            score: `${scoreA} - ${scoreB}`,
+            scoringTeam: teamSide,
+            event: 'CARD',
+            card: ev.card,
+          } as MatchDetail);
+          break;
+        }
+        default:
+          break;
+      }
     }
 
     if (m.score) {
       scoreA = m.score.home;
       scoreB = m.score.away;
     }
-
     return { scoreA, scoreB, details };
   }
 

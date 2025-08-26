@@ -41,53 +41,126 @@
         ></button>
       </div>
 
-      <div class="modal-body py-4" *ngIf="match">
+      <div class="modal-body py-2 py-md-4" *ngIf="match">
         <div class="row g-4">
-          <div class="col-12 col-md-6 side-left">
+          <div class="col-12">
             <ul class="list-unstyled m-0">
-              <ng-container *ngIf="teamAScorers.length; else noA">
-                <li
-                  class="event-row d-flex align-items-center"
-                  *ngFor="let d of teamAScorers"
-                >
+              <li
+                class="event-row d-flex align-items-center gap-1 gap-md-2 py-1"
+                *ngFor="let d of match?.details"
+                [ngClass]="{
+                  'justify-content-start': d.scoringTeam === 'A',
+                  'justify-content-end': d.scoringTeam === 'B'
+                }"
+              >
+                <ng-container *ngIf="d.scoringTeam === 'A'; else rightSide">
                   <span class="badge custom-badge align-self-center me-2 lh-1">
-                    <i class="fas fa-futbol me-1"></i>
+                    <ng-container [ngSwitch]="d.event">
+                      <i
+                        *ngSwitchCase="'GOAL'"
+                        class="fas fa-futbol me-1"
+                        aria-hidden="true"
+                      ></i>
+
+                      <ng-container *ngSwitchCase="'OWN_GOAL'">
+                        <i
+                          class="fas fa-futbol me-1 own-goal"
+                          aria-hidden="true"
+                        ></i>
+                        <span class="ms-2 lh-1">{{
+                          moduleStrings.ownGoal
+                        }}</span>
+                      </ng-container>
+
+                      <ng-container *ngSwitchCase="'CARD'">
+                        <i
+                          *ngIf="d.card === 'YELLOW'"
+                          class="fas fa-square card-icon card-icon-yellow me-1"
+                          aria-hidden="true"
+                        ></i>
+
+                        <span
+                          *ngIf="d.card === 'SECOND_YELLOW'"
+                          class="me-1"
+                          aria-hidden="true"
+                        >
+                          <i
+                            class="fas fa-square card-icon card-icon-second-yellow me-1"
+                          ></i>
+                        </span>
+
+                        <i
+                          *ngIf="d.card === 'RED'"
+                          class="fas fa-square card-icon card-icon-red me-1"
+                          aria-hidden="true"
+                        ></i>
+                      </ng-container>
+                    </ng-container>
+
                     {{ d.time }}{{ moduleStrings.minuteSuffix }}
                   </span>
-                  <span
-                    class="d-inline-block mw-100 fw-semibold text-truncate"
-                    >{{ d.player }}</span
-                  >
-                </li>
-              </ng-container>
-              <ng-template #noA>
-                <li class="text-muted small">{{ moduleStrings.noEvents }}</li>
-              </ng-template>
-            </ul>
-          </div>
 
-          <div class="col-12 col-md-6 side-right">
-            <ul class="list-unstyled m-0">
-              <ng-container *ngIf="teamBScorers.length; else noB">
-                <li
-                  class="event-row d-flex align-items-center justify-content-end"
-                  *ngFor="let d of teamBScorers"
-                >
+                  <span
+                    class="d-inline-block mw-100 fw-semibold text-truncate text-start"
+                  >
+                    {{ d.player }}
+                  </span>
+                </ng-container>
+
+                <ng-template #rightSide>
                   <span
                     class="d-inline-block mw-100 fw-semibold text-truncate text-end"
-                    >{{ d.player }}</span
                   >
+                    {{ d.player }}
+                  </span>
+
                   <span class="badge custom-badge align-self-center ms-2 lh-1">
                     {{ d.time }}{{ moduleStrings.minuteSuffix }}
-                    <i class="fas fa-futbol ms-1"></i>
+
+                    <ng-container [ngSwitch]="d.event">
+                      <i
+                        *ngSwitchCase="'GOAL'"
+                        class="fas fa-futbol ms-1"
+                        aria-hidden="true"
+                      ></i>
+
+                      <ng-container *ngSwitchCase="'OWN_GOAL'">
+                        <i
+                          class="fas fa-futbol ms-1 own-goal"
+                          aria-hidden="true"
+                        ></i>
+                        <span class="ms-2 lh-1">{{
+                          moduleStrings.ownGoal
+                        }}</span>
+                      </ng-container>
+
+                      <ng-container *ngSwitchCase="'CARD'">
+                        <i
+                          *ngIf="d.card === 'YELLOW'"
+                          class="fas fa-square card-icon card-icon-yellow ms-1"
+                          aria-hidden="true"
+                        ></i>
+
+                        <span
+                          *ngIf="d.card === 'SECOND_YELLOW'"
+                          class="ms-1"
+                          aria-hidden="true"
+                        >
+                          <i
+                            class="fas fa-square card-icon card-icon-second-yellow ms-1"
+                          ></i>
+                        </span>
+
+                        <i
+                          *ngIf="d.card === 'RED'"
+                          class="fas fa-square card-icon card-icon-red ms-1"
+                          aria-hidden="true"
+                        ></i>
+                      </ng-container>
+                    </ng-container>
                   </span>
-                </li>
-              </ng-container>
-              <ng-template #noB>
-                <li class="text-muted small text-end">
-                  {{ moduleStrings.noEvents }}
-                </li>
-              </ng-template>
+                </ng-template>
+              </li>
             </ul>
           </div>
         </div>

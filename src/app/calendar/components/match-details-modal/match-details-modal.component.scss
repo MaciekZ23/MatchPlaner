@@ -26,15 +26,39 @@
   }
 }
 
-.event-row {
-  gap: 0.5rem;
-  padding: 0.25rem 0;
-}
-
 .custom-badge {
   background-color: $match-card-badge;
 
   i {
     font-size: 0.85rem;
   }
+}
+
+.own-goal {
+  color: $modal-card-icon-own-goal;
+}
+
+.card-icon {
+  vertical-align: middle;
+  line-height: 1;
+}
+
+.card-icon-yellow {
+  color: $modal-card-icon-yellow;
+}
+
+.card-icon-red {
+  color: $modal-card-icon-red;
+}
+
+.card-icon-second-yellow {
+  background: linear-gradient(
+    135deg,
+    $modal-card-icon-yellow 0 50%,
+    $modal-card-icon-red 50% 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
 }

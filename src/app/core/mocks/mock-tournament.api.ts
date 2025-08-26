@@ -1548,14 +1548,57 @@ export class MockTournamentApi implements ITournamentApi {
       stageId: this.STAGE_GRP,
       groupId: 'A',
       round: 4,
-      date: '2025-08-24T16:00Z',
+      date: '2025-08-24T16:00:00Z',
       status: 'FINISHED' as MatchStatus,
       homeTeamId: 'T2',
       awayTeamId: 'T5',
+      score: { home: 2, away: 2 },
       events: [
         { minute: 10, type: 'GOAL', playerId: 'P5', teamId: 'T2' },
+        { minute: 10, type: 'ASSIST', playerId: 'P2', teamId: 'T2' },
+
         { minute: 23, type: 'GOAL', playerId: 'P37', teamId: 'T5' },
+        { minute: 23, type: 'ASSIST', playerId: 'P34', teamId: 'T5' },
+
+        { minute: 44, type: 'OWN_GOAL', playerId: 'P5', teamId: 'T2' },
+
+        { minute: 65, type: 'GOAL', playerId: 'P3', teamId: 'T2' },
+        { minute: 65, type: 'ASSIST', playerId: 'P4', teamId: 'T2' },
+
+        {
+          minute: 30,
+          type: 'CARD',
+          playerId: 'P33',
+          teamId: 'T5',
+          card: 'YELLOW',
+        },
+        {
+          minute: 50,
+          type: 'CARD',
+          playerId: 'P31',
+          teamId: 'T5',
+          card: 'SECOND_YELLOW',
+        },
+        {
+          minute: 51,
+          type: 'CARD',
+          playerId: 'P31',
+          teamId: 'T5',
+          card: 'RED',
+        },
+        {
+          minute: 72,
+          type: 'CARD',
+          playerId: 'P2',
+          teamId: 'T2',
+          card: 'YELLOW',
+        },
+        { minute: 89, type: 'CARD', playerId: 'P6', teamId: 'T2', card: 'RED' },
       ],
+      lineups: {
+        homeGKIds: ['P6'],
+        awayGKIds: ['P38'],
+      },
     },
     {
       id: 'M20',
