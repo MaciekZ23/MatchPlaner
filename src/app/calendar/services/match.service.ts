@@ -8,11 +8,7 @@ import {
   Match as CoreMatch,
   Player as CorePlayer,
 } from '../../core/models/tournament.models';
-import {
-  formatFullDate,
-  toLocalWallClockISO,
-  capitalizeFirst,
-} from '../../core/utils';
+import { formatFullDate, capitalizeFirst } from '../../core/utils';
 
 @Injectable({ providedIn: 'root' })
 export class MatchService {
@@ -52,8 +48,6 @@ export class MatchService {
             // Zliczenie wyniku z eventów + przełożenie na detale UI
             const { scoreA, scoreB, details } = this.toUiDetails(m, playerMap);
 
-            // Traktujemy datę ISO z backendu bez przesunięcia o ileś godzin
-            const localIso = toLocalWallClockISO(m.date);
             // Mapowanie: CoreMatch -> UiMatch
             const ui: UiMatch = {
               teamA: home?.name ?? m.homeTeamId,
@@ -65,12 +59,12 @@ export class MatchService {
               logoB: away?.logo,
               details,
               status: this.computeUiStatus(m),
-              kickoffISO: localIso,
+              kickoffISO: m.date,
             };
 
             // Nagłówek dnia liczony również po lokalnym ISO
             const dayKey = capitalizeFirst(
-              formatFullDate(localIso, tournamentTz, 'pl-PL')
+              formatFullDate(m.date, tournamentTz, 'pl-PL')
             );
 
             // Dodanie meczu do właściwego „wiadra” dnia
