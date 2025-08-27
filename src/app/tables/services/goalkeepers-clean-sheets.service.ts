@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { combineLatest, map, Observable, take } from 'rxjs';
+import { combineLatest, map, Observable } from 'rxjs';
 import { TournamentStore } from '../../core/services/tournament-store.service';
 import {
   Match as CoreMatch,
@@ -12,7 +12,7 @@ import { GoalkeepersCleanSheets } from '../models';
 export class GoalkeepersCleanSheetsService {
   private readonly store = inject(TournamentStore);
 
-  getCleanSheets(): Observable<GoalkeepersCleanSheets[]> {
+  getCleanSheets$(): Observable<GoalkeepersCleanSheets[]> {
     return combineLatest([
       this.store.matchesByStage$,
       this.store.playerMap$,
@@ -65,14 +65,6 @@ export class GoalkeepersCleanSheetsService {
         });
       })
     );
-  }
-
-  getCleanSheetsSnapshot(): GoalkeepersCleanSheets[] {
-    let snap: GoalkeepersCleanSheets[] = [];
-    this.getCleanSheets()
-      .pipe(take(1))
-      .subscribe((r) => (snap = r));
-    return snap;
   }
 
   private concededForSide(m: CoreMatch, side: 'HOME' | 'AWAY'): number {

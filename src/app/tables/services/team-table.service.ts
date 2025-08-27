@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { combineLatest, map, Observable, take } from 'rxjs';
+import { combineLatest, map, Observable } from 'rxjs';
 import { TournamentStore } from '../../core/services/tournament-store.service';
 import { Match as CoreMatch, Team as CoreTeam } from '../../core/models';
 import { TeamStats, PointsTableGroup } from '../models';
@@ -14,7 +14,7 @@ import {
 export class TeamTableService {
   private readonly store = inject(TournamentStore);
 
-  getTeamTables(): Observable<PointsTableGroup[]> {
+  getTeamTables$(): Observable<PointsTableGroup[]> {
     return combineLatest([
       this.store.tournament$,
       this.store.matchesByStage$,
@@ -67,19 +67,6 @@ export class TeamTableService {
         return groups;
       })
     );
-  }
-
-  getTablesSnapshot(): PointsTableGroup[] {
-    let snap: PointsTableGroup[] = [];
-    this.getTeamTables()
-      .pipe(take(1))
-      .subscribe((r) => (snap = r));
-    return snap;
-  }
-
-  getTable(): TeamStats[] {
-    const groups = this.getTablesSnapshot();
-    return groups[0]?.rows ?? [];
   }
 
   /** Liczenie surowych statystyk i sortowanie pełnymi tie-breakerami */

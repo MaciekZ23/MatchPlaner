@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { GoalkeepersCleanSheetsService } from '../../services/goalkeepers-clean-sheets.service';
 import { GoalkeepersCleanSheets } from '../../models';
 import { stringsGoalkeepersCleanSheets } from '../../misc';
+import { BehaviorSubject, combineLatest, map, Observable } from 'rxjs';
 
 @Component({
   selector: 'app-goalkeepers-clean-sheets',
@@ -13,40 +14,35 @@ import { stringsGoalkeepersCleanSheets } from '../../misc';
 })
 export class GoalkeepersCleanSheetsComponent implements OnInit {
   moduleStrings = stringsGoalkeepersCleanSheets;
-  cleanSheetsData: GoalkeepersCleanSheets[] = [];
+
   isCollapsed = true;
-  sortColumn: 'cleanSheets' | null = null;
-  sortDirection: 'asc' | 'desc' | '' = 'asc';
+  sortColumn: 'cleanSheets' = 'cleanSheets';
+  sortDirection: 'asc' | 'desc' = 'desc';
+
+  private sortDir$ = new BehaviorSubject<'asc' | 'desc'>(this.sortDirection);
+
+  cleanSheetsData$!: Observable<GoalkeepersCleanSheets[]>;
 
   constructor(private cleanSheetsService: GoalkeepersCleanSheetsService) {}
 
   ngOnInit(): void {
-    this.loadCleanSheets();
+    this.cleanSheetsData$ = combineLatest([
+      this.cleanSheetsService.getCleanSheets$(),
+      this.sortDir$,
+    ]).pipe(
+      map(([rows, dir]) => (dir === 'desc' ? rows : rows.slice().reverse()))
+    );
   }
 
-  loadCleanSheets(): void {
-    this.cleanSheetsService.getCleanSheets().subscribe((rows) => {
-      this.cleanSheetsData = rows;
-      this.sortColumn = 'cleanSheets';
-      this.sortDirection = 'desc';
-    });
+  sortData(column: 'cleanSheets'): void {
+    this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    this.sortDir$.next(this.sortDirection);
+    this.sortColumn = column;
   }
 
   toggleCollapse(): void {
     this.isCollapsed = !this.isCollapsed;
   }
 
-  sortData(column: 'cleanSheets'): void {
-    if (this.sortColumn === column) {
-      this.cleanSheetsData = [...this.cleanSheetsData].reverse();
-      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-      return;
-    }
-
-    this.cleanSheetsService.getCleanSheets().subscribe((rows) => {
-      this.cleanSheetsData = rows;
-      this.sortColumn = column;
-      this.sortDirection = 'desc';
-    });
-  }
+  trackRow = (_: number, r: GoalkeepersCleanSheets) => r.playerId;
 }

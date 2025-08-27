@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { combineLatest, map, Observable, take } from 'rxjs';
+import { combineLatest, map, Observable } from 'rxjs';
 import { TournamentStore } from '../../core/services/tournament-store.service';
 import {
   Match as CoreMatch,
@@ -13,7 +13,10 @@ import { TopScorersSortKey } from '../types';
 export class TopScorerService {
   private readonly store = inject(TournamentStore);
 
-  getTopScorers(sortBy: TopScorersSortKey = 'goals'): Observable<TopScorer[]> {
+  getTopScorers$(
+    sortBy: TopScorersSortKey = 'goals',
+    dir: 'asc' | 'desc' = 'desc'
+  ): Observable<TopScorer[]> {
     return combineLatest([
       this.store.matchesByStage$,
       this.store.playerMap$,
@@ -59,39 +62,38 @@ export class TopScorerService {
           });
         }
 
-        return this.sortRows(rows, sortBy);
+        return this.sortRows(rows, sortBy, dir);
       })
     );
   }
 
-  getTopScorersSnapshot(sortBy: TopScorersSortKey = 'goals'): TopScorer[] {
-    let snap: TopScorer[] = [];
-    this.getTopScorers(sortBy)
-      .pipe(take(1))
-      .subscribe((r) => (snap = r));
-    return snap;
-  }
-
-  private sortRows(rows: TopScorer[], sortBy: TopScorersSortKey): TopScorer[] {
+  private sortRows(
+    rows: TopScorer[],
+    sortBy: TopScorersSortKey,
+    dir: 'asc' | 'desc'
+  ): TopScorer[] {
     const main: TopScorersSortKey = sortBy ?? 'goals';
-    const tb: TopScorersSortKey[] =
+    const tiebreakers: TopScorersSortKey[] =
       main === 'goals'
         ? ['points', 'assists']
         : main === 'assists'
         ? ['points', 'goals']
         : ['goals', 'assists'];
 
-    const desc = (x: number, y: number) => y - x;
+    const cmpNum = (x: number, y: number) => (dir === 'asc' ? x - y : y - x);
 
     return rows.slice().sort((a, b) => {
-      const dMain = desc(a[main], b[main]);
-      if (dMain !== 0) return dMain;
-
-      for (const key of tb) {
-        const d = desc(a[key], b[key]);
-        if (d !== 0) return d;
+      const dMain = cmpNum(a[main], b[main]);
+      if (dMain !== 0) {
+        return dMain;
       }
 
+      for (const key of tiebreakers) {
+        const d = cmpNum(a[key], b[key]);
+        if (d !== 0) {
+          return d;
+        }
+      }
       return a.playerName.localeCompare(b.playerName, 'pl');
     });
   }

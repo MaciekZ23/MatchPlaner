@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { combineLatest, map, take } from 'rxjs';
+import { combineLatest, map } from 'rxjs';
 import { CalendarDay } from '../models/calendar-day.model';
 import { Match as UiMatch } from '../models/match.model';
 import { MatchDetail } from '../models/match-detail.model';
@@ -14,76 +14,58 @@ import { formatFullDate, capitalizeFirst } from '../../core/utils';
 export class MatchService {
   private readonly store = inject(TournamentStore);
 
-  getCalendarDays(): CalendarDay[] {
-    let snapshot: CalendarDay[] = [];
-
-    combineLatest([
+  getCalendarDays$() {
+    return combineLatest([
       this.store.tournament$,
       this.store.matchesByStage$,
       this.store.teamMap$,
       this.store.playerMap$,
-    ])
-      .pipe(
-        take(1),
-        map(([tournament, matchesByStage, teamMap, playerMap]) => {
-          const tournamentTz = tournament.timezone ?? 'Europe/Warsaw';
+    ]).pipe(
+      map(([tournament, matchesByStage, teamMap, playerMap]) => {
+        const tournamentTz = tournament.timezone ?? 'Europe/Warsaw';
 
-          // Mecze z pierwszego etapu fazy grupowej (kalendarz ligowy)
-          const groupStage = tournament.stages.find((s) => s.kind === 'GROUP');
-          // Pobranie meczów dla etapu
-          const matches: CoreMatch[] = groupStage
-            ? matchesByStage.get(groupStage.id) ?? []
-            : [];
+        const groupStage = tournament.stages.find((s) => s.kind === 'GROUP');
+        const matches: CoreMatch[] = groupStage
+          ? matchesByStage.get(groupStage.id) ?? []
+          : [];
 
-          // Utworzenie „wiader” na dni kalendarza
-          const buckets = new Map<string, UiMatch[]>();
+        const buckets = new Map<string, UiMatch[]>();
 
-          // Sortowanie po dacie rosnąco
-          for (const m of [...matches].sort(
-            (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-          )) {
-            // Lookup drużyn — nazwy, logotypy
-            const home = teamMap.get(m.homeTeamId);
-            const away = teamMap.get(m.awayTeamId);
-            // Zliczenie wyniku z eventów + przełożenie na detale UI
-            const { scoreA, scoreB, details } = this.toUiDetails(m, playerMap);
+        for (const m of [...matches].sort(
+          (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+        )) {
+          const home = teamMap.get(m.homeTeamId);
+          const away = teamMap.get(m.awayTeamId);
+          const { scoreA, scoreB, details } = this.toUiDetails(m, playerMap);
 
-            // Mapowanie: CoreMatch -> UiMatch
-            const ui: UiMatch = {
-              teamA: home?.name ?? m.homeTeamId,
-              teamB: away?.name ?? m.awayTeamId,
-              scoreA,
-              scoreB,
-              group: m.groupId,
-              logoA: home?.logo,
-              logoB: away?.logo,
-              details,
-              status: this.computeUiStatus(m),
-              kickoffISO: m.date,
-            };
+          const ui: UiMatch = {
+            teamA: home?.name ?? m.homeTeamId,
+            teamB: away?.name ?? m.awayTeamId,
+            scoreA,
+            scoreB,
+            group: m.groupId,
+            logoA: home?.logo,
+            logoB: away?.logo,
+            details,
+            status: this.computeUiStatus(m),
+            kickoffISO: m.date,
+          };
 
-            // Nagłówek dnia liczony również po lokalnym ISO
-            const dayKey = capitalizeFirst(
-              formatFullDate(m.date, tournamentTz, 'pl-PL')
-            );
+          const dayKey = capitalizeFirst(
+            formatFullDate(m.date, tournamentTz, 'pl-PL')
+          );
 
-            // Dodanie meczu do właściwego „wiadra” dnia
-            if (!buckets.has(dayKey)) buckets.set(dayKey, []);
-            buckets.get(dayKey)!.push(ui);
-          }
+          if (!buckets.has(dayKey)) buckets.set(dayKey, []);
+          buckets.get(dayKey)!.push(ui);
+        }
 
-          // Zamiana wiader na listę dni kalendarza
-          const days: CalendarDay[] = [];
-          for (const [date, dayMatches] of buckets) {
-            days.push({ date, matches: dayMatches });
-          }
-          return days;
-        })
-      )
-      .subscribe((days) => (snapshot = days));
-
-    // Zwrócenie snapshotu — pierwszy wynik z combineLatest
-    return snapshot;
+        const days: CalendarDay[] = [];
+        for (const [date, dayMatches] of buckets) {
+          days.push({ date, matches: dayMatches });
+        }
+        return days;
+      })
+    );
   }
 
   private toUiDetails(

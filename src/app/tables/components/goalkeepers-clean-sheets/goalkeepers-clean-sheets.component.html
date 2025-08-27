@@ -76,7 +76,13 @@
       >
         <table class="table table-dark table-hover align-middle w-100">
           <tbody>
-            <tr *ngFor="let keeper of cleanSheetsData; let i = index">
+            <tr
+              *ngFor="
+                let keeper of cleanSheetsData$ | async;
+                let i = index;
+                trackBy: trackRow
+              "
+            >
               <td>{{ i + 1 }}</td>
               <td>{{ keeper.playerName }}</td>
               <td class="d-none d-md-table-cell">{{ keeper.teamName }}</td>

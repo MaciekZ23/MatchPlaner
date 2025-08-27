@@ -30,7 +30,7 @@ export class TablesComponent implements OnInit {
   constructor(private teamTable: TeamTableService) {}
 
   ngOnInit(): void {
-    this.groups$ = this.teamTable.getTeamTables();
+    this.groups$ = this.teamTable.getTeamTables$();
   }
 
   trackGroup = (_: number, g: PointsTableGroup) => g.groupId;

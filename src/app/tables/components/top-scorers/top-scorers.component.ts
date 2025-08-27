@@ -1,9 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TopScorerService } from '../../services/top-scorer.service';
-import { TopScorer } from '../../models';
 import { TopScorersSortKey } from '../../types';
 import { stringsTopScorers } from '../../misc';
+import { BehaviorSubject, combineLatest, switchMap } from 'rxjs';
 
 @Component({
   selector: 'app-top-scorers',
@@ -12,45 +12,36 @@ import { stringsTopScorers } from '../../misc';
   styleUrls: ['./top-scorers.component.scss'],
   standalone: true,
 })
-export class TopScorersComponent implements OnInit {
+export class TopScorersComponent {
   moduleStrings = stringsTopScorers;
-  topScorers: TopScorer[] = [];
+
   isCollapsed = true;
-  sortColumn: TopScorersSortKey | null = null;
+  sortColumn: TopScorersSortKey = 'goals';
   sortDirection: 'asc' | 'desc' = 'desc';
+
+  private sortKey$ = new BehaviorSubject<TopScorersSortKey>(this.sortColumn);
+  private sortDir$ = new BehaviorSubject<'asc' | 'desc'>(this.sortDirection);
+
+  topScorers$ = combineLatest([this.sortKey$, this.sortDir$]).pipe(
+    switchMap(([key, dir]) => this.topScorerService.getTopScorers$(key, dir))
+  );
+
   constructor(private topScorerService: TopScorerService) {}
 
-  ngOnInit(): void {
-    this.loadTopScorers();
-  }
+  sortData(column: TopScorersSortKey): void {
+    if (this.sortColumn === column) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+      this.sortDir$.next(this.sortDirection);
+      return;
+    }
 
-  loadTopScorers(): void {
-    this.topScorerService
-      .getTopScorers('goals')
-      .subscribe((data: TopScorer[]) => {
-        this.topScorers = data;
-        this.sortColumn = 'goals';
-        this.sortDirection = 'desc';
-      });
+    this.sortColumn = column;
+    this.sortDirection = 'desc';
+    this.sortKey$.next(column);
+    this.sortDir$.next('desc');
   }
 
   toggleCollapse(): void {
     this.isCollapsed = !this.isCollapsed;
-  }
-
-  sortData(column: TopScorersSortKey): void {
-    if (this.sortColumn === column) {
-      this.topScorers = [...this.topScorers].reverse();
-      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-      return;
-    }
-
-    this.topScorerService
-      .getTopScorers(column)
-      .subscribe((data: TopScorer[]) => {
-        this.topScorers = data;
-        this.sortColumn = column;
-        this.sortDirection = 'desc';
-      });
   }
 }

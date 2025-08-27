@@ -6,13 +6,15 @@
       class="accordion d-flex flex-column gap-1 gap-md-2"
       id="calendarAccordion"
     >
-      <app-calendar-day
-        *ngFor="let day of days"
-        [date]="day.date"
-        [matches]="day.matches"
-        (matchClicked)="openDetails($event)"
-      >
-      </app-calendar-day>
+      <ng-container *ngIf="days$ | async as days">
+        <app-calendar-day
+          *ngFor="let day of days"
+          [date]="day.date"
+          [matches]="day.matches"
+          (matchClicked)="openDetails($event)"
+        >
+        </app-calendar-day>
+      </ng-container>
     </div>
   </div>
 </div>

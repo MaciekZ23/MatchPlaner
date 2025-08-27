@@ -119,7 +119,7 @@
       >
         <table class="table table-dark table-hover align-middle w-100">
           <tbody>
-            <tr *ngFor="let player of topScorers; let i = index">
+            <tr *ngFor="let player of topScorers$ | async; let i = index">
               <td>{{ i + 1 }}</td>
               <td>{{ player.playerName }}</td>
               <td class="d-none d-md-table-cell">{{ player.teamName }}</td>
