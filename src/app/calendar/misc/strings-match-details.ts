@@ -8,4 +8,12 @@ export const stringsMatchDetails = {
   scorerIconLabel: 'Strzelec bramki',
   ownGoal: 'Gol samobójczy',
   penalty: 'Rzut karny',
+  details: 'Szczegóły meczu',
+  vote: 'Zagłosuj',
+  vote_2: 'Głosuj na MVP',
+  load_voting: 'Ładowanie głosowania…',
+  voting_NOT_STARTED: 'Głosowanie ruszy po zakończeniu meczu',
+  voting_CLOSED: 'Głosowanie zakończone',
+  hasVoted: 'Twój głos został zapisany. Dziękujemy!',
+  actual_votes: 'Aktualne głosy:',
 };

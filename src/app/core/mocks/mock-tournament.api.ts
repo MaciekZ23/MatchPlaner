@@ -10,7 +10,7 @@ export class MockTournamentApi implements ITournamentApi {
   private tournament: Tournament = {
     id: 't1',
     name: 'Trawiasta Liga Piłki Nożnej Warszawa 2026',
-    mode: 'LEAGUE',
+    mode: 'LEAGUE_PLAYOFFS',
     description:
       'Trawiasta Liga Piłki Nożnej Warszawa to coroczne wydarzenie sportowe, które gromadzi drużyny z całego regionu. Edycja 2026 zapowiada się wyjątkowo emocjonująco – ponad 20 zespołów, setki kibiców i pasja, która napędza każdą akcję na boisku.',
     additionalInfo:
@@ -2366,7 +2366,7 @@ export class MockTournamentApi implements ITournamentApi {
       events: [
         { minute: 14, type: 'GOAL', playerId: 'P3', teamId: 'T1' },
         { minute: 14, type: 'ASSIST', playerId: 'P2', teamId: 'T1' },
-        { minute: 39, type: 'GOAL', playerId: 'P18', teamId: 'T2' },
+        { minute: 39, type: 'OWN_GOAL', playerId: 'P3', teamId: 'T1' },
         { minute: 39, type: 'ASSIST', playerId: 'P19', teamId: 'T2' },
         { minute: 68, type: 'GOAL', playerId: 'P5', teamId: 'T1' },
         { minute: 68, type: 'ASSIST', playerId: 'P7', teamId: 'T1' },

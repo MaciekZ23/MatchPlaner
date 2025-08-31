@@ -1,13 +1,13 @@
 import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Observable } from 'rxjs';
 import { TopScorersComponent } from './components/top-scorers/top-scorers.component';
 import { GoalkeepersCleanSheetsComponent } from './components/goalkeepers-clean-sheets/goalkeepers-clean-sheets.component';
 import { PointsTableComponent } from './components/points-table/points-table.component';
 import { PageHeaderComponent } from '../shared/components/page-header/page-header.component';
 import { TeamTableService } from './services/team-table.service';
-import { PointsTableGroup } from './models';
+import { PointsTableGroup, TablesVM } from './models';
 import { stringsTables } from './misc';
-import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-tables',
@@ -25,12 +25,12 @@ import { Observable } from 'rxjs';
 })
 export class TablesComponent implements OnInit {
   moduleStrings = stringsTables;
-  groups$!: Observable<PointsTableGroup[]>;
+  viewmodel$!: Observable<TablesVM>;
 
   constructor(private teamTable: TeamTableService) {}
 
   ngOnInit(): void {
-    this.groups$ = this.teamTable.getTeamTables$();
+    this.viewmodel$ = this.teamTable.getTablesVM$();
   }
 
   trackGroup = (_: number, g: PointsTableGroup) => g.groupId;

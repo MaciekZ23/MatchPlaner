@@ -33,6 +33,7 @@
           </div>
           <div class="team text-end">{{ match?.teamB }}</div>
         </div>
+
         <button
           type="button"
           class="btn-close btn-close-white ms-2"
@@ -42,136 +43,383 @@
       </div>
 
       <div class="modal-body py-2 py-md-4" *ngIf="match">
-        <div class="row g-4">
-          <div class="col-12">
-            <ul class="list-unstyled m-0">
-              <li
-                class="event-row d-flex align-items-center gap-1 gap-md-2 py-1"
-                *ngFor="let d of match?.details"
-                [ngClass]="{
-                  'justify-content-start': d.scoringTeam === 'A',
-                  'justify-content-end': d.scoringTeam === 'B'
-                }"
-              >
-                <ng-container *ngIf="d.scoringTeam === 'A'; else rightSide">
-                  <span class="badge custom-badge align-self-center me-2 lh-1">
-                    <ng-container [ngSwitch]="d.event">
-                      <i
-                        *ngSwitchCase="'GOAL'"
-                        class="fas fa-futbol me-1"
-                        aria-hidden="true"
-                      ></i>
-
-                      <ng-container *ngSwitchCase="'OWN_GOAL'">
+        <ng-container *ngIf="activeTab === 'DETAILS'">
+          <div class="row g-4">
+            <div class="col-12">
+              <ul class="list-unstyled m-0">
+                <li
+                  class="event-row d-flex align-items-center gap-1 gap-md-2 py-1"
+                  *ngFor="let d of match?.details"
+                  [ngClass]="{
+                    'justify-content-start': d.scoringTeam === 'A',
+                    'justify-content-end': d.scoringTeam === 'B'
+                  }"
+                >
+                  <ng-container *ngIf="d.scoringTeam === 'A'; else rightSide">
+                    <span
+                      class="badge custom-badge align-self-center me-2 lh-1"
+                    >
+                      <ng-container [ngSwitch]="d.event">
                         <i
-                          class="fas fa-futbol me-1 own-goal"
-                          aria-hidden="true"
-                        ></i>
-                        <span class="ms-2 lh-1">{{
-                          moduleStrings.ownGoal
-                        }}</span>
-                      </ng-container>
-
-                      <ng-container *ngSwitchCase="'CARD'">
-                        <i
-                          *ngIf="d.card === 'YELLOW'"
-                          class="fas fa-square card-icon card-icon-yellow me-1"
+                          *ngSwitchCase="'GOAL'"
+                          class="fas fa-futbol me-1"
                           aria-hidden="true"
                         ></i>
 
-                        <span
-                          *ngIf="d.card === 'SECOND_YELLOW'"
-                          aria-hidden="true"
-                        >
+                        <ng-container *ngSwitchCase="'OWN_GOAL'">
                           <i
-                            class="fas fa-square card-icon card-icon-second-yellow me-1"
+                            class="fas fa-futbol me-1 own-goal"
+                            aria-hidden="true"
                           ></i>
-                        </span>
+                          <span class="ms-2 lh-1">{{
+                            moduleStrings.ownGoal
+                          }}</span>
+                        </ng-container>
 
-                        <i
-                          *ngIf="d.card === 'RED'"
-                          class="fas fa-square card-icon card-icon-red me-1"
-                          aria-hidden="true"
-                        ></i>
-                      </ng-container>
-                    </ng-container>
-
-                    {{ d.time }}{{ moduleStrings.minuteSuffix }}
-                  </span>
-
-                  <span
-                    class="d-inline-block mw-100 fw-semibold text-truncate text-start"
-                  >
-                    {{ d.player }}
-                  </span>
-                </ng-container>
-
-                <ng-template #rightSide>
-                  <span
-                    class="d-inline-block mw-100 fw-semibold text-truncate text-end"
-                  >
-                    {{ d.player }}
-                  </span>
-
-                  <span class="badge custom-badge align-self-center ms-2 lh-1">
-                    {{ d.time }}{{ moduleStrings.minuteSuffix }}
-
-                    <ng-container [ngSwitch]="d.event">
-                      <i
-                        *ngSwitchCase="'GOAL'"
-                        class="fas fa-futbol ms-1"
-                        aria-hidden="true"
-                      ></i>
-
-                      <ng-container *ngSwitchCase="'OWN_GOAL'">
-                        <i
-                          class="fas fa-futbol ms-1 own-goal"
-                          aria-hidden="true"
-                        ></i>
-                        <span class="ms-2 lh-1">{{
-                          moduleStrings.ownGoal
-                        }}</span>
-                      </ng-container>
-
-                      <ng-container *ngSwitchCase="'CARD'">
-                        <i
-                          *ngIf="d.card === 'YELLOW'"
-                          class="fas fa-square card-icon card-icon-yellow ms-1"
-                          aria-hidden="true"
-                        ></i>
-
-                        <span
-                          *ngIf="d.card === 'SECOND_YELLOW'"
-                          aria-hidden="true"
-                        >
+                        <ng-container *ngSwitchCase="'CARD'">
                           <i
-                            class="fas fa-square card-icon card-icon-second-yellow ms-1"
+                            *ngIf="d.card === 'YELLOW'"
+                            class="fas fa-square card-icon card-icon-yellow me-1"
+                            aria-hidden="true"
                           ></i>
-                        </span>
 
+                          <span
+                            *ngIf="d.card === 'SECOND_YELLOW'"
+                            aria-hidden="true"
+                          >
+                            <i
+                              class="fas fa-square card-icon card-icon-second-yellow me-1"
+                            ></i>
+                          </span>
+
+                          <i
+                            *ngIf="d.card === 'RED'"
+                            class="fas fa-square card-icon card-icon-red me-1"
+                            aria-hidden="true"
+                          ></i>
+                        </ng-container>
+                      </ng-container>
+
+                      {{ d.time }}{{ moduleStrings.minuteSuffix }}
+                    </span>
+
+                    <span
+                      class="d-inline-block mw-100 fw-semibold text-truncate text-start"
+                    >
+                      {{ d.player }}
+                    </span>
+                  </ng-container>
+
+                  <ng-template #rightSide>
+                    <span
+                      class="d-inline-block mw-100 fw-semibold text-truncate text-end"
+                    >
+                      {{ d.player }}
+                    </span>
+
+                    <span
+                      class="badge custom-badge align-self-center ms-2 lh-1"
+                    >
+                      {{ d.time }}{{ moduleStrings.minuteSuffix }}
+
+                      <ng-container [ngSwitch]="d.event">
                         <i
-                          *ngIf="d.card === 'RED'"
-                          class="fas fa-square card-icon card-icon-red ms-1"
+                          *ngSwitchCase="'GOAL'"
+                          class="fas fa-futbol ms-1"
                           aria-hidden="true"
                         ></i>
+
+                        <ng-container *ngSwitchCase="'OWN_GOAL'">
+                          <i
+                            class="fas fa-futbol ms-1 own-goal"
+                            aria-hidden="true"
+                          ></i>
+                          <span class="ms-2 lh-1">{{
+                            moduleStrings.ownGoal
+                          }}</span>
+                        </ng-container>
+
+                        <ng-container *ngSwitchCase="'CARD'">
+                          <i
+                            *ngIf="d.card === 'YELLOW'"
+                            class="fas fa-square card-icon card-icon-yellow ms-1"
+                            aria-hidden="true"
+                          ></i>
+
+                          <span
+                            *ngIf="d.card === 'SECOND_YELLOW'"
+                            aria-hidden="true"
+                          >
+                            <i
+                              class="fas fa-square card-icon card-icon-second-yellow ms-1"
+                            ></i>
+                          </span>
+
+                          <i
+                            *ngIf="d.card === 'RED'"
+                            class="fas fa-square card-icon card-icon-red ms-1"
+                            aria-hidden="true"
+                          ></i>
+                        </ng-container>
                       </ng-container>
-                    </ng-container>
-                  </span>
-                </ng-template>
-              </li>
-            </ul>
+                    </span>
+                  </ng-template>
+                </li>
+              </ul>
+            </div>
           </div>
-        </div>
+        </ng-container>
+
+        <ng-container *ngIf="activeTab === 'MVP'">
+          <div *ngIf="!voting" class="text-center py-4">
+            <div
+              class="spinner-border text-light"
+              role="status"
+              aria-hidden="true"
+            ></div>
+            <div class="mt-2 text-muted">
+              {{ moduleStrings.load_voting }}
+            </div>
+          </div>
+
+          <ng-container *ngIf="voting as v">
+            <div
+              *ngIf="v.status === 'NOT_STARTED'"
+              class="d-flex justify-content-center align-items-center alert alert-info"
+            >
+              {{ moduleStrings.voting_NOT_STARTED }}
+            </div>
+            <div
+              *ngIf="v.status === 'CLOSED'"
+              class="d-flex justify-content-center align-items-center alert alert-info"
+            >
+              {{ moduleStrings.voting_CLOSED }}
+            </div>
+            <div
+              *ngIf="v.hasVoted && v.status === 'OPEN'"
+              class="d-flex justify-content-center align-items-center alert alert-success"
+            >
+              {{ moduleStrings.hasVoted }}
+            </div>
+
+            <div class="row g-4">
+              <div class="col-12 col-md-6">
+                <div class="d-flex flex-column gap-2">
+                  <div
+                    class="card vote-card"
+                    *ngFor="let c of v.candidates"
+                    [hidden]="
+                      c.teamId !== match.teamA || c.healthStatus !== 'HEALTHY'
+                    "
+                    (click)="
+                      v.status === 'OPEN' && onToggleCandidate(c.playerId)
+                    "
+                    role="button"
+                    [class.active]="selectedPlayerId === c.playerId"
+                  >
+                    <div class="card-body p-1 p-md-2">
+                      <div
+                        class="d-flex align-items-center justify-content-between"
+                      >
+                        <div class="d-flex align-items-center gap-2">
+                          <input
+                            class="form-check-input m-0 me-2"
+                            type="checkbox"
+                            [checked]="selectedPlayerId === c.playerId"
+                            [disabled]="v.status !== 'OPEN' || v.hasVoted"
+                            (click)="
+                              $event.stopPropagation();
+                              onToggleCandidate(c.playerId)
+                            "
+                            [attr.aria-label]="'Wybierz zawodnika ' + c.name"
+                          />
+                          <div>
+                            <div class="fw-semibold text-white">
+                              {{ c.name }} ({{ c.position }})
+                            </div>
+                          </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                          <span *ngIf="c.events?.goals">
+                            <i
+                              class="fas fa-futbol custom-fa-futbol me-1"
+                              aria-hidden="true"
+                            ></i>
+                            {{ c.events?.goals }}
+                          </span>
+
+                          <span *ngIf="c.events?.assists">
+                            <i
+                              class="fas fa-hands-helping text-info me-1"
+                              aria-hidden="true"
+                            ></i>
+                            {{ c.events?.assists }}
+                          </span>
+
+                          <span *ngIf="c.events?.yellow">
+                            <i
+                              class="fas fa-square card-icon card-icon-yellow me-1"
+                              aria-hidden="true"
+                            ></i>
+                            {{ c.events?.yellow }}
+                          </span>
+
+                          <span *ngIf="c.events?.red">
+                            <i
+                              class="fas fa-square card-icon card-icon-red me-1"
+                              aria-hidden="true"
+                            ></i>
+                            {{ c.events?.red }}
+                          </span>
+
+                          <span *ngIf="c.events?.ownGoals">
+                            <i
+                              class="fas fa-futbol text-danger me-1 own-goal"
+                              aria-hidden="true"
+                            ></i>
+                            {{ c.events?.ownGoals }}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-12 col-md-6">
+                <div class="d-flex flex-column gap-2">
+                  <div
+                    class="card vote-card"
+                    *ngFor="let c of v.candidates"
+                    [hidden]="
+                      c.teamId !== match.teamB || c.healthStatus !== 'HEALTHY'
+                    "
+                    (click)="
+                      v.status === 'OPEN' && onToggleCandidate(c.playerId)
+                    "
+                    role="button"
+                    [class.active]="selectedPlayerId === c.playerId"
+                  >
+                    <div class="card-body p-1 p-md-2">
+                      <div
+                        class="d-flex align-items-center justify-content-between"
+                      >
+                        <div class="d-flex align-items-center gap-2">
+                          <input
+                            class="form-check-input m-0 me-2"
+                            type="checkbox"
+                            [checked]="selectedPlayerId === c.playerId"
+                            [disabled]="v.status !== 'OPEN' || v.hasVoted"
+                            (click)="
+                              $event.stopPropagation();
+                              onToggleCandidate(c.playerId)
+                            "
+                            [attr.aria-label]="'Wybierz zawodnika ' + c.name"
+                          />
+                          <div>
+                            <div class="fw-semibold text-white">
+                              {{ c.name }} ({{ c.position }})
+                            </div>
+                          </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                          <span *ngIf="c.events?.goals">
+                            <i
+                              class="fas fa-futbol custom-fa-futbol ms-1"
+                              aria-hidden="true"
+                            ></i>
+                            {{ c.events?.goals }}
+                          </span>
+
+                          <span *ngIf="c.events?.assists">
+                            <i
+                              class="fas fa-hands-helping text-info ms-1"
+                              aria-hidden="true"
+                            ></i>
+                            {{ c.events?.assists }}
+                          </span>
+
+                          <span *ngIf="c.events?.yellow">
+                            <i
+                              class="fas fa-square card-icon card-icon-yellow ms-1"
+                              aria-hidden="true"
+                            ></i>
+                            {{ c.events?.yellow }}
+                          </span>
+
+                          <span *ngIf="c.events?.red">
+                            <i
+                              class="fas fa-square card-icon card-icon-red ms-1"
+                              aria-hidden="true"
+                            ></i>
+                            {{ c.events?.red }}
+                          </span>
+
+                          <span *ngIf="c.events?.ownGoals">
+                            <i
+                              class="fas fa-futbol text-danger ms-1 own-goal"
+                              aria-hidden="true"
+                            ></i>
+                            {{ c.events?.ownGoals }}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ng-container>
+        </ng-container>
       </div>
 
       <div class="modal-footer border-0 pt-0">
-        <button
-          type="button"
-          class="btn btn-primary px-4"
-          (click)="onRequestClose()"
-        >
-          {{ moduleStrings.close }}
-        </button>
+        <div class="d-flex align-items-center gap-2">
+          <div
+            class="btn-group me-auto"
+            role="group"
+            aria-label="Przełącz widok"
+          >
+            <button
+              type="button"
+              class="btn custom-btn"
+              [class.active]="activeTab === 'DETAILS'"
+              (click)="switchTab('DETAILS')"
+            >
+              {{ moduleStrings.details }}
+            </button>
+            <button
+              type="button"
+              class="btn custom-btn"
+              [class.active]="activeTab === 'MVP'"
+              (click)="switchTab('MVP')"
+            >
+              {{ moduleStrings.vote_2 }}
+            </button>
+          </div>
+        </div>
+
+        <div class="d-flex align-items-center gap-2 ms-auto">
+          <button
+            type="button"
+            class="btn btn-primary px-4"
+            *ngIf="activeTab === 'MVP'"
+            [disabled]="
+              !selectedPlayerId || voting?.status !== 'OPEN' || voting?.hasVoted
+            "
+            (click)="onVoteConfirm()"
+          >
+            {{ moduleStrings.vote }}
+          </button>
+
+          <button
+            type="button"
+            class="btn btn-secondary px-4"
+            (click)="onRequestClose()"
+          >
+            {{ moduleStrings.close }}
+          </button>
+        </div>
       </div>
     </div>
   </div>

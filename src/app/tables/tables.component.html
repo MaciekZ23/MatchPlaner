@@ -1,13 +1,36 @@
 <div class="container tables-page p-0 px-sm-1 py-sm-1">
   <app-page-header [title]="moduleStrings.headerTitle"></app-page-header>
 
-  <div class="tables-list d-flex flex-column gap-1 gap-md-2">
-    <app-points-table
-      *ngFor="let g of groups$ | async; trackBy: trackGroup"
-      [rows]="g.rows"
-      [groupTitle]="g.groupTitle"
-    ></app-points-table>
-    <app-top-scorers></app-top-scorers>
-    <app-goalkeepers-clean-sheets></app-goalkeepers-clean-sheets>
-  </div>
+  <ng-container *ngIf="viewmodel$ | async as vm">
+    <div class="tables-list d-flex flex-column gap-1 gap-md-2">
+      <ng-container *ngIf="vm.mode === 'LEAGUE'">
+        <app-points-table
+          *ngIf="vm.groups?.length"
+          [rows]="vm.groups[0].rows"
+          [groupTitle]="vm.groups[0].groupTitle"
+        >
+        </app-points-table>
+      </ng-container>
+
+      <ng-container *ngIf="vm.mode === 'LEAGUE_PLAYOFFS'">
+        <app-points-table
+          *ngFor="let g of vm.groups; trackBy: trackGroup"
+          [rows]="g.rows"
+          [groupTitle]="g.groupTitle"
+        >
+        </app-points-table>
+      </ng-container>
+
+      <ng-container *ngIf="vm.mode === 'KNOCKOUT'">
+        <!-- Podmieniamy na <app-playoffs-bracket -->
+        <div class="alert alert-info">
+          Tryb pucharowy – tabele ligowe są niedostępne. Wkrótce pojawi się
+          drabinka play-off.
+        </div>
+      </ng-container>
+
+      <app-top-scorers></app-top-scorers>
+      <app-goalkeepers-clean-sheets></app-goalkeepers-clean-sheets>
+    </div>
+  </ng-container>
 </div>

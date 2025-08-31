@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { combineLatest, map, Observable } from 'rxjs';
 import { TournamentStore } from '../../core/services/tournament-store.service';
 import { Match as CoreMatch, Team as CoreTeam } from '../../core/models';
-import { TeamStats, PointsTableGroup } from '../models';
+import { TeamStats, PointsTableGroup, TablesVM } from '../models';
 import {
   getScore,
   buildDisciplineIndex,
@@ -14,59 +14,88 @@ import {
 export class TeamTableService {
   private readonly store = inject(TournamentStore);
 
-  getTeamTables$(): Observable<PointsTableGroup[]> {
+  getTablesVM$(): Observable<TablesVM> {
     return combineLatest([
       this.store.tournament$,
       this.store.matchesByStage$,
       this.store.teamMap$,
     ]).pipe(
       map(([tournament, matchesByStage, teamMap]) => {
-        // Etap ligowy
-        const groupStage = tournament.stages.find((s) => s.kind === 'GROUP');
-        if (!groupStage) return [];
+        const mode = tournament.mode as TablesVM['mode'];
 
-        // Mecze tego etapu
-        const all = (matchesByStage.get(groupStage.id) ?? []).slice();
+        // Zbuduj wszystkie potencjalne tabele (po grupach), na bazie meczów etapu GROUP
+        const allGroups = this.buildAllGroupsTables(
+          tournament,
+          matchesByStage,
+          teamMap
+        );
 
-        // Mapowanie id->name z mocka
-        const groupNameById = new Map<string, string>();
-        for (const g of tournament.groups ?? []) {
-          if (g?.id) groupNameById.set(g.id, g.name ?? `Grupa ${g.id}`);
+        // Przytnij ekspozycję wg trybu
+        let groups: PointsTableGroup[] = [];
+        if (mode === 'LEAGUE') {
+          groups = allGroups.length ? [allGroups[0]] : [];
+        } else if (mode === 'LEAGUE_PLAYOFFS') {
+          groups = allGroups;
+        } else if (mode === 'KNOCKOUT') {
+          groups = []; // w pucharze nie pokazujemy tabel ligowych
         }
 
-        // Grupowanie po groupId
-        const byGroup = new Map<string, CoreMatch[]>();
-        for (const m of all) {
-          const key = m.groupId ?? 'UNGROUPED';
-          if (!byGroup.has(key)) byGroup.set(key, []);
-          byGroup.get(key)!.push(m);
-        }
-
-        // Posortowane klucze po NAZWIE (Grupa A, Grupa B, ...)
-        const sortedIds = Array.from(byGroup.keys()).sort((a, b) => {
-          const nameA =
-            a === 'UNGROUPED' ? 'Tabela' : groupNameById.get(a) ?? `Grupa ${a}`;
-          const nameB =
-            b === 'UNGROUPED' ? 'Tabela' : groupNameById.get(b) ?? `Grupa ${b}`;
-          return nameA.localeCompare(nameB, 'pl', { numeric: true });
-        });
-
-        // Budowa tabel dla każdej grupy
-        const groups: PointsTableGroup[] = [];
-        for (const groupId of sortedIds) {
-          const matches = byGroup.get(groupId)!;
-          const rows = this.buildAndSortGroupTable(matches, teamMap);
-
-          const groupTitle =
-            groupId === 'UNGROUPED'
-              ? 'Tabela'
-              : groupNameById.get(groupId) ?? `Grupa ${groupId}`;
-
-          groups.push({ groupId, groupTitle, rows });
-        }
-        return groups;
+        return { mode, groups };
       })
     );
+  }
+
+  private buildAllGroupsTables(
+    tournament: any,
+    matchesByStage: Map<string, CoreMatch[]>,
+    teamMap: Map<string, CoreTeam>
+  ): PointsTableGroup[] {
+    // Znajdź etap ligowy (GROUP)
+    const groupStage = tournament.stages?.find((s: any) => s.kind === 'GROUP');
+    if (!groupStage) {
+      // Brak etapu grupowego (np. czysty KNOCKOUT) → nie ma tabel do policzenia
+      return [];
+    }
+
+    // Mecze tego etapu
+    const all = (matchesByStage.get(groupStage.id) ?? []).slice();
+
+    // Mapowanie id -> nazwa grupy
+    const groupNameById = new Map<string, string>();
+    for (const g of tournament.groups ?? []) {
+      if (g?.id) groupNameById.set(g.id, g.name ?? `Grupa ${g.id}`);
+    }
+
+    // Grupowanie meczów po groupId
+    const byGroup = new Map<string, CoreMatch[]>();
+    for (const m of all) {
+      const key = m.groupId ?? 'UNGROUPED';
+      if (!byGroup.has(key)) byGroup.set(key, []);
+      byGroup.get(key)!.push(m);
+    }
+
+    // Kolejność grup po nazwie (Grupa A, Grupa B, ... / „Tabela” dla UNGROUPED)
+    const sortedIds = Array.from(byGroup.keys()).sort((a, b) => {
+      const nameA =
+        a === 'UNGROUPED' ? 'Tabela' : groupNameById.get(a) ?? `Grupa ${a}`;
+      const nameB =
+        b === 'UNGROUPED' ? 'Tabela' : groupNameById.get(b) ?? `Grupa ${b}`;
+      return nameA.localeCompare(nameB, 'pl', { numeric: true });
+    });
+
+    // Zbuduj tabelę dla każdej grupy
+    const groups: PointsTableGroup[] = [];
+    for (const groupId of sortedIds) {
+      const matches = byGroup.get(groupId)!;
+      const rows = this.buildAndSortGroupTable(matches, teamMap);
+      const groupTitle =
+        groupId === 'UNGROUPED'
+          ? 'Tabela'
+          : groupNameById.get(groupId) ?? `Grupa ${groupId}`;
+      groups.push({ groupId, groupTitle, rows });
+    }
+
+    return groups;
   }
 
   /** Liczenie surowych statystyk i sortowanie pełnymi tie-breakerami */
