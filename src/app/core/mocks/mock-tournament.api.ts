@@ -3043,7 +3043,7 @@ export class MockTournamentApi implements ITournamentApi {
           type: 'CARD',
           playerId: 'P229',
           teamId: 'T16',
-          card: 'YELLOW',
+          card: 'RED',
         },
       ],
       lineups: {

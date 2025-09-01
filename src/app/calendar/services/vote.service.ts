@@ -288,7 +288,7 @@ export class VoteService {
           teamId: p.teamId,
           name: p.name,
           position: p.position,
-          healthStatus: p.healthStatus, // 'HEALTHY'
+          healthStatus: p.healthStatus,
           shirtNumber: p.shirtNumber,
           events: evByPlayer.get(p.id),
           isGoalkeeper: isGK,
