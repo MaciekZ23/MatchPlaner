@@ -26,6 +26,7 @@ export interface VotingCandidate {
   events?: PlayerEventStats;
   shirtNumber?: number;
   isGoalkeeper?: boolean;
+  playedAsGK?: boolean;
 }
 
 // Podsumowanie głosów dla każdego zawodnika

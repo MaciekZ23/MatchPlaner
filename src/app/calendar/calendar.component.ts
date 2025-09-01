@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Observable } from 'rxjs';
 import { CalendarDay } from './models/calendar-day.model';
@@ -7,6 +7,8 @@ import { Match } from './models/match.model';
 import { MatchService } from './services/match.service';
 import { MatchDetailsModalComponent } from './components/match-details-modal/match-details-modal.component';
 import { PageHeaderComponent } from '../shared/components/page-header/page-header.component';
+import { Team as CoreTeam, Player as CorePlayer } from '../core/models';
+import { TournamentStore } from '../core/services/tournament-store.service';
 import { stringsCalendar } from './misc';
 
 @Component({
@@ -21,16 +23,18 @@ import { stringsCalendar } from './misc';
   styleUrl: './calendar.component.scss',
   standalone: true,
 })
-export class CalendarComponent implements OnInit {
+export class CalendarComponent {
   moduleStrings = stringsCalendar;
-  days$!: Observable<CalendarDay[]>;
   selectedMatch: Match | null = null;
 
-  constructor(private matchService: MatchService) {}
+  private readonly matchService = inject(MatchService);
+  private readonly store = inject(TournamentStore);
 
-  ngOnInit(): void {
-    this.days$ = this.matchService.getCalendarDays$();
-  }
+  readonly days$: Observable<CalendarDay[]> =
+    this.matchService.getCalendarDays$();
+  readonly teamMap$: Observable<Map<string, CoreTeam>> = this.store.teamMap$;
+  readonly playerMap$: Observable<Map<string, CorePlayer>> =
+    this.store.playerMap$;
 
   openDetails(match: Match): void {
     this.selectedMatch = match;

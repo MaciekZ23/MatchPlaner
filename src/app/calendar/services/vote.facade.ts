@@ -29,10 +29,8 @@ export class VoteFacade {
       status: match.status,
     });
 
-    const { matchId, homeTeamId, awayTeamId, events } = this.adaptMatch(
-      match,
-      playerMap
-    );
+    const { matchId, homeTeamId, awayTeamId, events, lineups } =
+      this.adaptMatch(match, playerMap);
 
     const seed = this.vote.buildSeedForMatch({
       matchId: matchId as MatchId,
@@ -40,6 +38,7 @@ export class VoteFacade {
       homeTeamId,
       awayTeamId,
       events,
+      lineups,
       teamMap: new Map(
         [...teamMap.entries()].map(([id, t]) => [
           id,
@@ -81,12 +80,17 @@ export class VoteFacade {
           const player = playerMap.get(c.playerId);
           const teamId = player?.teamId ?? c.teamId;
           const conceded = this.goalsConcededForTeam(match, teamId);
+          const hasCleanSheet = !!(
+            c.isGoalkeeper &&
+            c.playedAsGK &&
+            conceded === 0
+          );
 
           return {
             ...c,
             positionPl: positionPl(c.position),
             healthPl: healthPl(c.healthStatus),
-            hasCleanSheet: conceded === 0,
+            hasCleanSheet,
           };
         })
       )
@@ -135,6 +139,7 @@ export class VoteFacade {
       type: 'GOAL' | 'OWN_GOAL' | 'ASSIST' | 'CARD';
       card?: 'YELLOW' | 'SECOND_YELLOW' | 'RED';
     }>;
+    lineups?: { homeGKIds?: string[]; awayGKIds?: string[] };
   } {
     if (this.isCoreMatch(match)) {
       return {
@@ -147,6 +152,7 @@ export class VoteFacade {
             type: e.type,
             card: e.card,
           })) ?? [],
+        lineups: match.lineups,
       };
     }
 
@@ -159,6 +165,7 @@ export class VoteFacade {
         type: d.event,
         card: d.card,
       })),
+      lineups: match.lineups,
     };
   }
 

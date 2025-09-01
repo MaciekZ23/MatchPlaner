@@ -52,6 +52,7 @@ export class MatchService {
             details,
             status: this.computeUiStatus(m),
             date: m.date,
+            lineups: m.lineups,
           };
 
           const dayKey = capitalizeFirst(

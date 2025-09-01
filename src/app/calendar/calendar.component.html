@@ -21,5 +21,7 @@
 
 <app-match-details-modal
   [match]="selectedMatch"
+  [teamMap]="teamMap$ | async"
+  [playerMap]="playerMap$ | async"
   (close)="closeDetails()"
 ></app-match-details-modal>

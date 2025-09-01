@@ -15,4 +15,8 @@ export interface Match {
   details: MatchDetail[];
   status: MatchStatus;
   date: string;
+  lineups?: {
+    homeGKIds?: string[];
+    awayGKIds?: string[];
+  };
 }

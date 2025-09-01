@@ -35,8 +35,8 @@ export class MatchDetailsModalComponent
   implements OnChanges, AfterViewInit, OnDestroy
 {
   @Input() match: Match | null = null;
-  @Input() teamMap!: Map<string, CoreTeam>;
-  @Input() playerMap!: Map<string, CorePlayer>;
+  @Input() teamMap: Map<string, CoreTeam> | null = null;
+  @Input() playerMap: Map<string, CorePlayer> | null = null;
   @Output() close = new EventEmitter<void>();
 
   @ViewChild('modalRef', { static: true })
@@ -77,7 +77,7 @@ export class MatchDetailsModalComponent
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['match']) {
+    if (changes['match'] || changes['teamMap'] || changes['playerMap']) {
       if (this.match) {
         if (this.modalInstance) {
           this.modalInstance.show();

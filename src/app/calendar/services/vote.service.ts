@@ -97,29 +97,33 @@ export class VoteService {
 
   // Upewnienie się, że istnieje stan głosowania dla meczu, jeśli nie, stworzenie go
   private ensureState(matchId: MatchId, seed: VotingSeed): void {
-    if (this.states.has(matchId)) {
+    const existing = this.states.get(matchId);
+    const healthy = seed.candidates.filter((c) => c.healthStatus === 'HEALTHY');
+
+    if (!existing || (existing.candidates?.length ?? 0) === 0) {
+      const next: VotingState = {
+        matchId,
+        status: seed.status,
+        hasVoted: this.readHasVoted(matchId),
+        candidates: healthy,
+        summary: deepClone(seed.summary ?? []),
+        closesPolicy: seed.closesPolicy,
+        closesAtISO: seed.closesAtISO,
+      };
+
+      this.states.set(matchId, next);
+
+      const subj = this.subjects.get(matchId);
+      if (subj) {
+        subj.next(deepClone(next));
+      } else {
+        this.subjects.set(
+          matchId,
+          new BehaviorSubject<VotingState>(deepClone(next))
+        );
+      }
       return;
     }
-
-    const candidates = seed.candidates.filter(
-      (c) => c.healthStatus === 'HEALTHY'
-    );
-
-    const init: VotingState = {
-      matchId,
-      status: seed.status,
-      hasVoted: this.readHasVoted(matchId),
-      candidates,
-      summary: deepClone(seed.summary ?? []),
-      closesPolicy: seed.closesPolicy,
-      closesAtISO: seed.closesAtISO,
-    };
-
-    this.states.set(matchId, init);
-    this.subjects.set(
-      matchId,
-      new BehaviorSubject<VotingState>(deepClone(init))
-    );
   }
 
   // Pobieranie BehaviorSubject dla meczu (tworzy pusty jeśli brak)
@@ -192,6 +196,10 @@ export class VoteService {
         shirtNumber?: number;
       }
     >;
+    lineups?: {
+      homeGKIds?: string[];
+      awayGKIds?: string[];
+    };
   }): VotingSeed {
     const {
       matchId,
@@ -201,6 +209,7 @@ export class VoteService {
       events = [],
       teamMap,
       playerMap,
+      lineups,
     } = args;
 
     const evByPlayer = new Map<
@@ -254,18 +263,25 @@ export class VoteService {
         Array.isArray(team.playerIds) && team.playerIds.length > 0
           ? team.playerIds
           : [...playerMap.values()]
-              .filter((pp) => pp.teamId === teamId)
-              .map((pp) => pp.id);
+              .filter((p) => p.teamId === teamId)
+              .map((p) => p.id);
+
+      const gkPlayedIds =
+        teamId === homeTeamId
+          ? lineups?.homeGKIds ?? []
+          : lineups?.awayGKIds ?? [];
 
       for (const pid of teamPlayerIds) {
         const p = playerMap.get(pid);
         if (!p) {
           continue;
         }
-
         if (p.healthStatus !== 'HEALTHY') {
           continue;
         }
+
+        const isGK = p.position === 'GK';
+        const playedAsGK = isGK && gkPlayedIds.includes(p.id);
 
         candidates.push({
           playerId: p.id,
@@ -275,6 +291,8 @@ export class VoteService {
           healthStatus: p.healthStatus, // 'HEALTHY'
           shirtNumber: p.shirtNumber,
           events: evByPlayer.get(p.id),
+          isGoalkeeper: isGK,
+          playedAsGK,
         });
       }
     };
