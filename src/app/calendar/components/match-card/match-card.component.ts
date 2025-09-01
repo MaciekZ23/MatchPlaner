@@ -49,12 +49,8 @@ export class MatchCardComponent implements OnInit, OnDestroy {
   }
 
   get isLive(): boolean {
-    if (this.isFinished || !this.match?.kickoffISO) return false;
-    return isWithinLive(
-      this.match.kickoffISO,
-      this.LIVE_WINDOW_MS,
-      this.LIVE_PRE_MS
-    );
+    if (this.isFinished || !this.match?.date) return false;
+    return isWithinLive(this.match.date, this.LIVE_WINDOW_MS, this.LIVE_PRE_MS);
   }
 
   get isScheduled(): boolean {

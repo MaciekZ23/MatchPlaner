@@ -49,17 +49,17 @@
     >
       <span>{{ moduleStrings.group }} {{ match.group }}</span>
 
-      <ng-container *ngIf="match.kickoffISO">
+      <ng-container *ngIf="match.date">
         <span class="mx-2"></span>
         <ng-container *ngIf="isLive; else notLive">
           <span class="live-dot me-1" aria-hidden="true"></span>
-          <span>{{ match.kickoffISO | date : "HH:mm" }}</span>
+          <span>{{ match.date | date : "HH:mm" }}</span>
         </ng-container>
 
         <ng-template #notLive>
           <span class="d-inline-flex align-items-center lh-1 gap-1">
             <i class="fa-solid fa-clock fa-fw" aria-hidden="true"></i>
-            <span class="lh-1">{{ match.kickoffISO | date : "HH:mm" }}</span>
+            <span class="lh-1">{{ match.date | date : "HH:mm" }}</span>
           </span>
         </ng-template>
       </ng-container>

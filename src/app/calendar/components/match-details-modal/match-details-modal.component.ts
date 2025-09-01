@@ -9,14 +9,17 @@ import {
   SimpleChanges,
   AfterViewInit,
   OnDestroy,
+  ChangeDetectionStrategy,
   inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Observable } from 'rxjs';
 import { Match } from '../../models/match.model';
-import { stringsMatchDetails } from '../../misc';
+import { UiCandidate } from '../../models/candidate.model';
 import { MatchDetailsActiveTab } from '../../../core/types';
-import { VotingState, VotingCandidate } from '../../../core/models';
-import { VoteService } from '../../services/vote.service';
+import { Team as CoreTeam, Player as CorePlayer } from '../../../core/models';
+import { stringsMatchDetails } from '../../misc';
+import { VoteFacade } from '../../services/vote.facade';
 
 declare const bootstrap: any;
 
@@ -26,11 +29,14 @@ declare const bootstrap: any;
   templateUrl: './match-details-modal.component.html',
   styleUrl: './match-details-modal.component.scss',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MatchDetailsModalComponent
   implements OnChanges, AfterViewInit, OnDestroy
 {
   @Input() match: Match | null = null;
+  @Input() teamMap!: Map<string, CoreTeam>;
+  @Input() playerMap!: Map<string, CorePlayer>;
   @Output() close = new EventEmitter<void>();
 
   @ViewChild('modalRef', { static: true })
@@ -40,11 +46,13 @@ export class MatchDetailsModalComponent
   private modalInstance: any;
 
   activeTab: MatchDetailsActiveTab = 'DETAILS';
-  voting: VotingState | null = null;
   selectedPlayerId: string | null = null;
-  candidateById: Record<string, VotingCandidate> = {};
 
-  private vote = inject(VoteService);
+  voting$!: Observable<any>;
+  homeCandidates$!: Observable<UiCandidate[]>;
+  awayCandidates$!: Observable<UiCandidate[]>;
+
+  private facade = inject(VoteFacade);
 
   ngAfterViewInit(): void {
     this.modalInstance = bootstrap.Modal.getOrCreateInstance(
@@ -60,10 +68,9 @@ export class MatchDetailsModalComponent
       this.close.emit();
     });
 
-    // Jeśli @Input(match) już był ustawiony przez AfterViewInit
     if (this.match) {
       this.modalInstance.show();
-      this.bootstrapVotingState();
+      this.setupVotingStreams(this.match);
       this.activeTab = 'DETAILS';
       this.selectedPlayerId = null;
     }
@@ -75,14 +82,14 @@ export class MatchDetailsModalComponent
         if (this.modalInstance) {
           this.modalInstance.show();
         }
+        this.setupVotingStreams(this.match);
         this.activeTab = 'DETAILS';
         this.selectedPlayerId = null;
-        this.bootstrapVotingState();
       } else {
-        if (this.modalInstance) this.modalInstance.hide();
-        this.voting = null;
+        if (this.modalInstance) {
+          this.modalInstance.hide();
+        }
         this.selectedPlayerId = null;
-        this.candidateById = {};
       }
     }
   }
@@ -91,6 +98,26 @@ export class MatchDetailsModalComponent
     try {
       this.modalInstance?.dispose?.();
     } catch {}
+  }
+
+  private setupVotingStreams(match: Match) {
+    if (!this.teamMap || !this.playerMap) {
+      return;
+    }
+    this.facade.initMatch(match, this.teamMap, this.playerMap);
+    this.voting$ = this.facade.voting$(match.id);
+    this.homeCandidates$ = this.facade.homeCandidates$(
+      match.id,
+      match.homeTeamId,
+      match,
+      this.playerMap
+    );
+    this.awayCandidates$ = this.facade.awayCandidates$(
+      match.id,
+      match.awayTeamId,
+      match,
+      this.playerMap
+    );
   }
 
   onRequestClose(): void {
@@ -103,9 +130,6 @@ export class MatchDetailsModalComponent
 
   switchTab(tab: MatchDetailsActiveTab) {
     this.activeTab = tab;
-    if (tab === 'MVP' && !this.voting) {
-      this.bootstrapVotingState();
-    }
   }
 
   onToggleCandidate(playerId: string) {
@@ -114,25 +138,16 @@ export class MatchDetailsModalComponent
   }
 
   onVoteConfirm() {
-    if (!this.match || !this.voting || !this.selectedPlayerId) {
+    if (!this.match || !this.selectedPlayerId) {
       return;
     }
-    if (this.voting.status !== 'OPEN' || this.voting.hasVoted) {
-      return;
-    }
-
-    const candidate =
-      this.voting.candidates.find((c) => c.playerId === this.selectedPlayerId)
-        ?.name ?? '';
-
-    const ok = window.confirm(`Głosujesz na: ${candidate}. Potwierdzasz?`);
+    const ok = window.confirm(
+      `Głosujesz na: ${this.selectedPlayerId}. Potwierdzasz?`
+    );
     if (!ok) {
       return;
     }
-
-    const matchId = this.computeMatchId(this.match);
-    this.voting = this.vote.vote(matchId, this.selectedPlayerId);
-    this.rebuildCandidateIndex();
+    this.facade.voteFor(this.match.id, this.selectedPlayerId);
   }
 
   get teamAScorers() {
@@ -156,115 +171,23 @@ export class MatchDetailsModalComponent
   }
 
   get showScore(): boolean {
-    if (!this.match) return false;
+    if (!this.match) {
+      return false;
+    }
     return this.isFinished || this.goalsA + this.goalsB > 0;
   }
 
   get scoreText(): string {
-    if (!this.match) return '';
-    if (this.isFinished) return `${this.match.scoreA} - ${this.match.scoreB}`;
+    if (!this.match) {
+      return '';
+    }
+    if (this.isFinished) {
+      return `${this.match.scoreA} - ${this.match.scoreB}`;
+    }
     return `${this.goalsA} - ${this.goalsB}`;
   }
 
-  private rebuildCandidateIndex(): void {
-    this.candidateById = Object.fromEntries(
-      (this.voting?.candidates ?? []).map((c) => [c.playerId, c] as const)
-    );
-  }
-
-  private bootstrapVotingState() {
-    if (!this.match) {
-      this.voting = null;
-      return;
-    }
-
-    const matchId = this.computeMatchId(this.match);
-    const status = this.isFinished ? 'OPEN' : 'NOT_STARTED';
-    const candidates = this.buildCandidatesFromMatch(this.match);
-    this.voting = this.vote.getState(matchId, {
-      matchId,
-      status,
-      candidates,
-      summary: [],
-    });
-    this.rebuildCandidateIndex();
-  }
-
-  private computeMatchId(m: Match): string {
-    return `${m.teamA}|${m.teamB}|${m.kickoffISO ?? ''}`;
-  }
-
-  private buildCandidatesFromMatch(m: Match): VotingCandidate[] {
-    type Tmp = {
-      name: string;
-      teamCode: 'A' | 'B';
-      goals?: number;
-      assists?: number;
-      yellow?: number;
-      red?: number;
-      ownGoals?: number;
-    };
-
-    const tmp = new Map<string, Tmp>();
-
-    for (const d of m.details ?? []) {
-      const key = `${d.player}|${d.scoringTeam}`;
-      if (!tmp.has(key)) {
-        tmp.set(key, { name: d.player, teamCode: d.scoringTeam as 'A' | 'B' });
-      }
-      const row = tmp.get(key)!;
-
-      switch (d.event) {
-        case 'GOAL':
-          row.goals = (row.goals ?? 0) + 1;
-          break;
-        case 'OWN_GOAL':
-          row.ownGoals = (row.ownGoals ?? 0) + 1;
-          break;
-        case 'CARD':
-          if (d.card === 'RED') {
-            row.red = (row.red ?? 0) + 1;
-          } else {
-            row.yellow = (row.yellow ?? 0) + 1;
-            break;
-          }
-      }
-    }
-
-    const list: VotingCandidate[] = [];
-    for (const [key, v] of tmp) {
-      const teamName = v.teamCode === 'A' ? m.teamA : m.teamB;
-      list.push({
-        playerId: key, // na mocku klucz łączony; docelowo: realne Player.id
-        teamId: teamName, // na mocku nazwa; docelowo: Team.id
-        name: v.name,
-        position: 'MID', // docelowo weź z Player.position
-        healthStatus: 'HEALTHY', // docelowo weź z Player.healthStatus
-        events: {
-          goals: v.goals,
-          assists: v.assists,
-          yellow: v.yellow,
-          red: v.red,
-          ownGoals: v.ownGoals,
-        },
-      });
-    }
-
-    return list.sort((a, b) => {
-      const wa =
-        (a.events?.goals ?? 0) +
-        (a.events?.assists ?? 0) +
-        (a.events?.yellow ?? 0) +
-        (a.events?.red ?? 0) +
-        (a.events?.ownGoals ?? 0);
-      const wb =
-        (b.events?.goals ?? 0) +
-        (b.events?.assists ?? 0) +
-        (b.events?.yellow ?? 0) +
-        (b.events?.red ?? 0) +
-        (b.events?.ownGoals ?? 0);
-      if (wa !== wb) return wb - wa;
-      return a.name.localeCompare(b.name, 'pl');
-    });
+  trackByPlayerId(_: number, c: UiCandidate) {
+    return c.playerId;
   }
 }

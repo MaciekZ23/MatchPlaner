@@ -50,7 +50,7 @@ export interface Player {
   teamId: string;
   name: string;
   position: Position;
-  shirtNumber: number;
+  shirtNumber?: number;
   healthStatus: HealthStatus;
 }
 

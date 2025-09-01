@@ -171,18 +171,7 @@
         </ng-container>
 
         <ng-container *ngIf="activeTab === 'MVP'">
-          <div *ngIf="!voting" class="text-center py-4">
-            <div
-              class="spinner-border text-light"
-              role="status"
-              aria-hidden="true"
-            ></div>
-            <div class="mt-2 text-muted">
-              {{ moduleStrings.load_voting }}
-            </div>
-          </div>
-
-          <ng-container *ngIf="voting as v">
+          <ng-container *ngIf="voting$ | async as v">
             <div
               *ngIf="v.status === 'NOT_STARTED'"
               class="d-flex justify-content-center align-items-center alert alert-info"
@@ -207,9 +196,9 @@
                 <div class="d-flex flex-column gap-2">
                   <div
                     class="card vote-card"
-                    *ngFor="let c of v.candidates"
-                    [hidden]="
-                      c.teamId !== match.teamA || c.healthStatus !== 'HEALTHY'
+                    *ngFor="
+                      let c of homeCandidates$ | async;
+                      trackBy: trackByPlayerId
                     "
                     (click)="
                       v.status === 'OPEN' && onToggleCandidate(c.playerId)
@@ -250,7 +239,7 @@
 
                           <span *ngIf="c.events?.assists">
                             <i
-                              class="fas fa-hands-helping text-info me-1"
+                              class="fas fa-hands-helping custom-assists me-1"
                               aria-hidden="true"
                             ></i>
                             {{ c.events?.assists }}
@@ -274,10 +263,17 @@
 
                           <span *ngIf="c.events?.ownGoals">
                             <i
-                              class="fas fa-futbol text-danger me-1 own-goal"
+                              class="fas fa-futbol own-goal me-1"
                               aria-hidden="true"
                             ></i>
                             {{ c.events?.ownGoals }}
+                          </span>
+
+                          <span *ngIf="c.hasCleanSheet">
+                            <i
+                              class="fas fa-door-closed text-success me-1"
+                              aria-hidden="true"
+                            ></i>
                           </span>
                         </div>
                       </div>
@@ -290,9 +286,9 @@
                 <div class="d-flex flex-column gap-2">
                   <div
                     class="card vote-card"
-                    *ngFor="let c of v.candidates"
-                    [hidden]="
-                      c.teamId !== match.teamB || c.healthStatus !== 'HEALTHY'
+                    *ngFor="
+                      let c of awayCandidates$ | async;
+                      trackBy: trackByPlayerId
                     "
                     (click)="
                       v.status === 'OPEN' && onToggleCandidate(c.playerId)
@@ -357,10 +353,17 @@
 
                           <span *ngIf="c.events?.ownGoals">
                             <i
-                              class="fas fa-futbol text-danger ms-1 own-goal"
+                              class="fas fa-futbol own-goal ms-1"
                               aria-hidden="true"
                             ></i>
                             {{ c.events?.ownGoals }}
+                          </span>
+
+                          <span *ngIf="c.hasCleanSheet">
+                            <i
+                              class="fas fa-door-closed text-success ms-1"
+                              aria-hidden="true"
+                            ></i>
                           </span>
                         </div>
                       </div>
@@ -373,6 +376,7 @@
         </ng-container>
       </div>
 
+      <!-- Przyciski -->
       <div class="modal-footer border-0 pt-0">
         <div class="d-flex align-items-center gap-2">
           <div
@@ -403,10 +407,8 @@
           <button
             type="button"
             class="btn btn-primary px-4"
-            *ngIf="activeTab === 'MVP'"
-            [disabled]="
-              !selectedPlayerId || voting?.status !== 'OPEN' || voting?.hasVoted
-            "
+            *ngIf="activeTab === 'MVP' && (voting$ | async) as v"
+            [disabled]="!selectedPlayerId || v.status !== 'OPEN' || v.hasVoted"
             (click)="onVoteConfirm()"
           >
             {{ moduleStrings.vote }}

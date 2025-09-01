@@ -24,6 +24,8 @@ export interface VotingCandidate {
   position: Position;
   healthStatus: HealthStatus;
   events?: PlayerEventStats;
+  shirtNumber?: number;
+  isGoalkeeper?: boolean;
 }
 
 // Podsumowanie głosów dla każdego zawodnika

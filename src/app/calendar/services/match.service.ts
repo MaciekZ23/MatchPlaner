@@ -39,6 +39,9 @@ export class MatchService {
           const { scoreA, scoreB, details } = this.toUiDetails(m, playerMap);
 
           const ui: UiMatch = {
+            id: m.id,
+            homeTeamId: m.homeTeamId,
+            awayTeamId: m.awayTeamId,
             teamA: home?.name ?? m.homeTeamId,
             teamB: away?.name ?? m.awayTeamId,
             scoreA,
@@ -48,7 +51,7 @@ export class MatchService {
             logoB: away?.logo,
             details,
             status: this.computeUiStatus(m),
-            kickoffISO: m.date,
+            date: m.date,
           };
 
           const dayKey = capitalizeFirst(
@@ -72,8 +75,8 @@ export class MatchService {
     m: CoreMatch,
     playerMap: Map<string, CorePlayer>
   ): { scoreA: number; scoreB: number; details: MatchDetail[] } {
-    let scoreA = 0;
-    let scoreB = 0;
+    let liveA = 0;
+    let liveB = 0;
     const details: MatchDetail[] = [];
 
     const events = (m.events ?? []).slice().sort((a, b) => a.minute - b.minute);
@@ -85,13 +88,13 @@ export class MatchService {
 
       switch (ev.type) {
         case 'GOAL': {
-          if (isHome) scoreA++;
-          else scoreB++;
+          if (isHome) liveA++;
+          else liveB++;
 
           details.push({
             player: playerName,
             time: String(ev.minute),
-            score: `${scoreA} - ${scoreB}`,
+            score: `${liveA} - ${liveB}`,
             scoringTeam: teamSide,
             event: 'GOAL',
           } as MatchDetail);
@@ -100,13 +103,13 @@ export class MatchService {
 
         case 'OWN_GOAL': {
           const scoringSide: 'A' | 'B' = isHome ? 'B' : 'A';
-          if (isHome) scoreB++;
-          else scoreA++;
+          if (isHome) liveB++;
+          else liveA++;
 
           details.push({
             player: playerName,
             time: String(ev.minute),
-            score: `${scoreA} - ${scoreB}`,
+            score: `${liveA} - ${liveB}`,
             scoringTeam: scoringSide,
             event: 'OWN_GOAL',
           } as MatchDetail);
@@ -117,7 +120,7 @@ export class MatchService {
           details.push({
             player: playerName,
             time: String(ev.minute),
-            score: `${scoreA} - ${scoreB}`,
+            score: `${liveA} - ${liveB}`,
             scoringTeam: teamSide,
             event: 'CARD',
             card: ev.card,
@@ -129,10 +132,8 @@ export class MatchService {
       }
     }
 
-    if (m.score) {
-      scoreA = m.score.home;
-      scoreB = m.score.away;
-    }
+    const scoreA = m.score?.home ?? 0;
+    const scoreB = m.score?.away ?? 0;
     return { scoreA, scoreB, details };
   }
 
