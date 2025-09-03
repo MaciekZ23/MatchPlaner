@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.8.0
+
+### (FEATURE) Bazowy model turnieju, model glosowania na MVP zawodnika meczu
+* Modele core: Tournament, Stage, Group, Team, Player, Match
+* Nowa zakładka MVP w modalu meczu z pełnym przepływem głosowania
+* Serwisy przepisane na strumienie (Observable) i użycie async pipe w komponentach
+* Routing zespołów: /teams/:id — widok składu po wejściu z listy
+* Modal meczu: wsparcie goli samobójczych i kartek (żółta, druga żółta, czerwona) z ikonami
+
 ## 1.7.0
 
 ### (FEATURE) Widok mobilny – Karta Tabele
