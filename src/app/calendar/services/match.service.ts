@@ -128,6 +128,17 @@ export class MatchService {
           } as MatchDetail);
           break;
         }
+        case 'ASSIST': {
+          details.push({
+            player: playerName,
+            time: String(ev.minute),
+            score: `${liveA} - ${liveB}`,
+            scoringTeam: teamSide,
+            event: 'ASSIST',
+          } as MatchDetail);
+          break;
+        }
+
         default:
           break;
       }

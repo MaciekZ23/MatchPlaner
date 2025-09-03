@@ -13,13 +13,22 @@ import {
   inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Observable } from 'rxjs';
+import {
+  Observable,
+  shareReplay,
+  of,
+  map,
+  distinctUntilChanged,
+  switchMap,
+} from 'rxjs';
 import { Match } from '../../models/match.model';
 import { UiCandidate } from '../../models/candidate.model';
 import { MatchDetailsActiveTab } from '../../../core/types';
 import { Team as CoreTeam, Player as CorePlayer } from '../../../core/models';
 import { stringsMatchDetails } from '../../misc';
 import { VoteFacade } from '../../services/vote.facade';
+import { UiVoteSummary } from '../../models/vote-summary.model';
+import { countdownTo } from '../../services/helpers';
 
 declare const bootstrap: any;
 
@@ -51,6 +60,8 @@ export class MatchDetailsModalComponent
   voting$!: Observable<any>;
   homeCandidates$!: Observable<UiCandidate[]>;
   awayCandidates$!: Observable<UiCandidate[]>;
+  summary$!: Observable<UiVoteSummary[]>;
+  countdown$!: Observable<string>;
 
   private facade = inject(VoteFacade);
 
@@ -118,6 +129,17 @@ export class MatchDetailsModalComponent
       match,
       this.playerMap
     );
+    this.summary$ = this.facade.summary$(
+      match.id,
+      this.teamMap,
+      this.playerMap
+    );
+    this.countdown$ = this.voting$.pipe(
+      map((v) => v?.closesAtISO ?? null),
+      distinctUntilChanged(),
+      switchMap((iso) => (iso ? countdownTo(iso) : of(''))),
+      shareReplay(1)
+    );
   }
 
   onRequestClose(): void {
@@ -148,6 +170,14 @@ export class MatchDetailsModalComponent
       return;
     }
     this.facade.voteFor(this.match.id, this.selectedPlayerId);
+  }
+
+  // Wyświetlenie w timeline tylko goli, samobóji i kartek (bez ASSIST)
+  get detailsForTimeline() {
+    const allowed = new Set(['GOAL', 'OWN_GOAL', 'CARD'] as const);
+    return (this.match?.details ?? []).filter((d) =>
+      allowed.has(d.event as any)
+    );
   }
 
   get teamAScorers() {

@@ -16,4 +16,12 @@ export const stringsMatchDetails = {
   voting_CLOSED: 'Głosowanie zakończone',
   hasVoted: 'Twój głos został zapisany. Dziękujemy!',
   actual_votes: 'Aktualne głosy:',
+  player: 'Zawodnik',
+  team: 'Drużyna',
+  votes: 'Głosy',
+  noVotes: 'Brak oddanych głosów',
+  votingResults: 'Wyniki głosowania',
+  closed: 'Zamknięte:',
+  winner: 'Zwycięzca',
+  endVoting: ' Koniec głosowania za:',
 };

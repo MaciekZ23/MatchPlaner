@@ -11,6 +11,7 @@ import { VotingState } from '../../core/models';
 import { VoteService } from './vote.service';
 import { statusFromMatch, positionPl, healthPl } from './helpers';
 import { UiCandidate } from '../models/candidate.model';
+import { UiVoteSummary } from '../models/vote-summary.model';
 
 type AnyMatch = CoreMatch | CalendarMatch;
 
@@ -118,6 +119,44 @@ export class VoteFacade {
   ): Observable<UiCandidate[]> {
     return this.candidates$(matchId, match, playerMap).pipe(
       map((list) => list.filter((c) => c.teamId === awayTeamId))
+    );
+  }
+
+  // Podsumowanie głosów (nazwy, drużyny, %, zwycięzcy) posortowane malejąco
+  summary$(
+    matchId: MatchId,
+    teamMap: Map<string, CoreTeam>,
+    playerMap: Map<string, CorePlayer>
+  ): Observable<UiVoteSummary[]> {
+    return this.vote.selectState$(matchId).pipe(
+      map((state) => {
+        const total = state.summary.reduce((acc, x) => acc + x.votes, 0);
+        const byId = new Map(state.candidates.map((c) => [c.playerId, c]));
+        const max = state.summary.reduce((m, x) => Math.max(m, x.votes), 0);
+
+        const rows: UiVoteSummary[] = state.summary.map((x) => {
+          const cand = byId.get(x.playerId);
+          const p = playerMap.get(x.playerId);
+
+          const name = p?.name ?? cand?.name ?? x.playerId;
+          const teamId = p?.teamId ?? cand?.teamId ?? '';
+          const teamName = teamId
+            ? teamMap.get(teamId)?.name ?? teamId
+            : undefined;
+
+          return {
+            playerId: x.playerId,
+            name,
+            teamId,
+            teamName,
+            votes: x.votes,
+            percent: total ? Math.round((x.votes / total) * 100) : 0,
+            isWinner: max > 0 && x.votes === max,
+          };
+        });
+
+        return rows.sort((a, b) => b.votes - a.votes);
+      })
     );
   }
 

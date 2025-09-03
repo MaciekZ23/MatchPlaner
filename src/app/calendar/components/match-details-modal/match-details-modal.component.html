@@ -49,7 +49,7 @@
               <ul class="list-unstyled m-0">
                 <li
                   class="event-row d-flex align-items-center gap-1 gap-md-2 py-1"
-                  *ngFor="let d of match?.details"
+                  *ngFor="let d of detailsForTimeline"
                   [ngClass]="{
                     'justify-content-start': d.scoringTeam === 'A',
                     'justify-content-end': d.scoringTeam === 'B'
@@ -190,188 +190,273 @@
             >
               {{ moduleStrings.hasVoted }}
             </div>
-
-            <div class="row g-4">
-              <div class="col-12 col-md-6">
-                <div class="d-flex flex-column gap-2">
-                  <div
-                    class="card vote-card"
-                    *ngFor="
-                      let c of homeCandidates$ | async;
-                      trackBy: trackByPlayerId
-                    "
-                    (click)="
-                      v.status === 'OPEN' && onToggleCandidate(c.playerId)
-                    "
-                    role="button"
-                    [class.active]="selectedPlayerId === c.playerId"
+            <ng-container
+              *ngIf="
+                v.status === 'CLOSED' || (v.status === 'OPEN' && v.hasVoted);
+                else openVotingTpl
+              "
+            >
+              <div class="card bg-secondary-subtle border-0 mb-2">
+                <div
+                  class="card-body d-flex justify-content-between align-items-center py-2"
+                >
+                  <div class="fw-semibold">
+                    {{ moduleStrings.votingResults }}
+                  </div>
+                  <ng-container
+                    *ngIf="v.status === 'CLOSED'; else openCountdownTpl"
                   >
-                    <div class="card-body p-1 p-md-2">
-                      <div
-                        class="d-flex align-items-center justify-content-between"
+                    <small class="text-muted" *ngIf="v.closesAtISO">
+                      {{ moduleStrings.closed }}
+                      {{ v.closesAtISO | date : "short" }}
+                    </small>
+                  </ng-container>
+
+                  <ng-template #openCountdownTpl>
+                    <ng-container *ngIf="v.closesAtISO">
+                      <small
+                        class="text-muted"
+                        aria-live="polite"
+                        *ngIf="countdown$ | async as countdown"
                       >
-                        <div class="d-flex align-items-center gap-2">
-                          <input
-                            class="form-check-input m-0 me-2"
-                            type="checkbox"
-                            [checked]="selectedPlayerId === c.playerId"
-                            [disabled]="v.status !== 'OPEN' || v.hasVoted"
-                            (click)="
-                              $event.stopPropagation();
-                              onToggleCandidate(c.playerId)
-                            "
-                            [attr.aria-label]="'Wybierz zawodnika ' + c.name"
-                          />
-                          <div>
-                            <div class="fw-semibold text-white">
-                              {{ c.name }} ({{ c.positionPl }})
+                        {{ moduleStrings.endVoting }} {{ countdown }}
+                      </small>
+                    </ng-container>
+                  </ng-template>
+                </div>
+              </div>
+
+              <ng-container *ngIf="summary$ | async as rows">
+                <div class="table-responsive">
+                  <table
+                    class="table table-dark table-striped table-sm align-middle"
+                  >
+                    <thead>
+                      <tr>
+                        <th class="col-trophy" scope="col">
+                          <span class="visually-hidden">{{
+                            moduleStrings.winner
+                          }}</span>
+                        </th>
+                        <th scope="col">{{ moduleStrings.player }}</th>
+                        <th scope="col" class="d-none d-md-table-cell">
+                          {{ moduleStrings.team }}
+                        </th>
+                        <th scope="col" class="text-end">
+                          {{ moduleStrings.votes }}
+                        </th>
+                        <th scope="col" class="text-end">%</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngIf="!rows.length">
+                        <td colspan="5" class="text-center text-white">
+                          {{ moduleStrings.noVotes }}
+                        </td>
+                      </tr>
+                      <tr *ngFor="let row of rows">
+                        <td class="text-center">
+                          <i
+                            class="fas fa-trophy color-trophy"
+                            *ngIf="row.isWinner"
+                            aria-hidden="true"
+                          ></i>
+                        </td>
+                        <td>{{ row.name }}</td>
+                        <td class="d-none d-md-table-cell">
+                          {{ row.teamName }}
+                        </td>
+                        <td class="text-end">{{ row.votes }}</td>
+                        <td class="text-end">{{ row.percent }}%</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </ng-container>
+            </ng-container>
+            <ng-template #openVotingTpl>
+              <div class="row g-4">
+                <div class="col-12 col-md-6">
+                  <div class="d-flex flex-column gap-2">
+                    <div
+                      class="card vote-card"
+                      *ngFor="
+                        let c of homeCandidates$ | async;
+                        trackBy: trackByPlayerId
+                      "
+                      (click)="
+                        v.status === 'OPEN' && onToggleCandidate(c.playerId)
+                      "
+                      role="button"
+                      [class.active]="selectedPlayerId === c.playerId"
+                    >
+                      <div class="card-body p-1 p-md-2">
+                        <div
+                          class="d-flex align-items-center justify-content-between"
+                        >
+                          <div class="d-flex align-items-center gap-2">
+                            <input
+                              class="form-check-input m-0 me-2"
+                              type="checkbox"
+                              [checked]="selectedPlayerId === c.playerId"
+                              [disabled]="v.status !== 'OPEN' || v.hasVoted"
+                              (click)="
+                                $event.stopPropagation();
+                                onToggleCandidate(c.playerId)
+                              "
+                              [attr.aria-label]="'Wybierz zawodnika ' + c.name"
+                            />
+                            <div>
+                              <div class="fw-semibold text-white">
+                                {{ c.name }} ({{ c.positionPl }})
+                              </div>
                             </div>
                           </div>
+                          <div class="d-flex align-items-center gap-2">
+                            <span *ngIf="c.events?.goals">
+                              <i
+                                class="fas fa-futbol custom-fa-futbol me-1"
+                                aria-hidden="true"
+                              ></i>
+                              {{ c.events?.goals }}
+                            </span>
+
+                            <span *ngIf="c.events?.assists">
+                              <i
+                                class="fas fa-hands-helping custom-assists me-1"
+                                aria-hidden="true"
+                              ></i>
+                              {{ c.events?.assists }}
+                            </span>
+
+                            <span *ngIf="c.events?.yellow">
+                              <i
+                                class="fas fa-square card-icon card-icon-yellow me-1"
+                                aria-hidden="true"
+                              ></i>
+                              {{ c.events?.yellow }}
+                            </span>
+
+                            <span *ngIf="c.events?.red">
+                              <i
+                                class="fas fa-square card-icon card-icon-red me-1"
+                                aria-hidden="true"
+                              ></i>
+                              {{ c.events?.red }}
+                            </span>
+
+                            <span *ngIf="c.events?.ownGoals">
+                              <i
+                                class="fas fa-futbol own-goal me-1"
+                                aria-hidden="true"
+                              ></i>
+                              {{ c.events?.ownGoals }}
+                            </span>
+
+                            <span *ngIf="c.hasCleanSheet">
+                              <i
+                                class="fas fa-door-closed text-success me-1"
+                                aria-hidden="true"
+                              ></i>
+                            </span>
+                          </div>
                         </div>
-                        <div class="d-flex align-items-center gap-2">
-                          <span *ngIf="c.events?.goals">
-                            <i
-                              class="fas fa-futbol custom-fa-futbol me-1"
-                              aria-hidden="true"
-                            ></i>
-                            {{ c.events?.goals }}
-                          </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
-                          <span *ngIf="c.events?.assists">
-                            <i
-                              class="fas fa-hands-helping custom-assists me-1"
-                              aria-hidden="true"
-                            ></i>
-                            {{ c.events?.assists }}
-                          </span>
+                <div class="col-12 col-md-6">
+                  <div class="d-flex flex-column gap-2">
+                    <div
+                      class="card vote-card"
+                      *ngFor="
+                        let c of awayCandidates$ | async;
+                        trackBy: trackByPlayerId
+                      "
+                      (click)="
+                        v.status === 'OPEN' && onToggleCandidate(c.playerId)
+                      "
+                      role="button"
+                      [class.active]="selectedPlayerId === c.playerId"
+                    >
+                      <div class="card-body p-1 p-md-2">
+                        <div
+                          class="d-flex align-items-center justify-content-between"
+                        >
+                          <div class="d-flex align-items-center gap-2">
+                            <input
+                              class="form-check-input m-0 me-2"
+                              type="checkbox"
+                              [checked]="selectedPlayerId === c.playerId"
+                              [disabled]="v.status !== 'OPEN' || v.hasVoted"
+                              (click)="
+                                $event.stopPropagation();
+                                onToggleCandidate(c.playerId)
+                              "
+                              [attr.aria-label]="'Wybierz zawodnika ' + c.name"
+                            />
+                            <div>
+                              <div class="fw-semibold text-white">
+                                {{ c.name }} ({{ c.positionPl }})
+                              </div>
+                            </div>
+                          </div>
+                          <div class="d-flex align-items-center gap-2">
+                            <span *ngIf="c.events?.goals">
+                              <i
+                                class="fas fa-futbol custom-fa-futbol ms-1"
+                                aria-hidden="true"
+                              ></i>
+                              {{ c.events?.goals }}
+                            </span>
 
-                          <span *ngIf="c.events?.yellow">
-                            <i
-                              class="fas fa-square card-icon card-icon-yellow me-1"
-                              aria-hidden="true"
-                            ></i>
-                            {{ c.events?.yellow }}
-                          </span>
+                            <span *ngIf="c.events?.assists">
+                              <i
+                                class="fas fa-hands-helping custom-assists ms-1"
+                                aria-hidden="true"
+                              ></i>
+                              {{ c.events?.assists }}
+                            </span>
 
-                          <span *ngIf="c.events?.red">
-                            <i
-                              class="fas fa-square card-icon card-icon-red me-1"
-                              aria-hidden="true"
-                            ></i>
-                            {{ c.events?.red }}
-                          </span>
+                            <span *ngIf="c.events?.yellow">
+                              <i
+                                class="fas fa-square card-icon card-icon-yellow ms-1"
+                                aria-hidden="true"
+                              ></i>
+                              {{ c.events?.yellow }}
+                            </span>
 
-                          <span *ngIf="c.events?.ownGoals">
-                            <i
-                              class="fas fa-futbol own-goal me-1"
-                              aria-hidden="true"
-                            ></i>
-                            {{ c.events?.ownGoals }}
-                          </span>
+                            <span *ngIf="c.events?.red">
+                              <i
+                                class="fas fa-square card-icon card-icon-red ms-1"
+                                aria-hidden="true"
+                              ></i>
+                              {{ c.events?.red }}
+                            </span>
 
-                          <span *ngIf="c.hasCleanSheet">
-                            <i
-                              class="fas fa-door-closed text-success me-1"
-                              aria-hidden="true"
-                            ></i>
-                          </span>
+                            <span *ngIf="c.events?.ownGoals">
+                              <i
+                                class="fas fa-futbol own-goal ms-1"
+                                aria-hidden="true"
+                              ></i>
+                              {{ c.events?.ownGoals }}
+                            </span>
+
+                            <span *ngIf="c.hasCleanSheet">
+                              <i
+                                class="fas fa-door-closed text-success ms-1"
+                                aria-hidden="true"
+                              ></i>
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-
-              <div class="col-12 col-md-6">
-                <div class="d-flex flex-column gap-2">
-                  <div
-                    class="card vote-card"
-                    *ngFor="
-                      let c of awayCandidates$ | async;
-                      trackBy: trackByPlayerId
-                    "
-                    (click)="
-                      v.status === 'OPEN' && onToggleCandidate(c.playerId)
-                    "
-                    role="button"
-                    [class.active]="selectedPlayerId === c.playerId"
-                  >
-                    <div class="card-body p-1 p-md-2">
-                      <div
-                        class="d-flex align-items-center justify-content-between"
-                      >
-                        <div class="d-flex align-items-center gap-2">
-                          <input
-                            class="form-check-input m-0 me-2"
-                            type="checkbox"
-                            [checked]="selectedPlayerId === c.playerId"
-                            [disabled]="v.status !== 'OPEN' || v.hasVoted"
-                            (click)="
-                              $event.stopPropagation();
-                              onToggleCandidate(c.playerId)
-                            "
-                            [attr.aria-label]="'Wybierz zawodnika ' + c.name"
-                          />
-                          <div>
-                            <div class="fw-semibold text-white">
-                              {{ c.name }} ({{ c.positionPl }})
-                            </div>
-                          </div>
-                        </div>
-                        <div class="d-flex align-items-center gap-2">
-                          <span *ngIf="c.events?.goals">
-                            <i
-                              class="fas fa-futbol custom-fa-futbol ms-1"
-                              aria-hidden="true"
-                            ></i>
-                            {{ c.events?.goals }}
-                          </span>
-
-                          <span *ngIf="c.events?.assists">
-                            <i
-                              class="fas fa-hands-helping text-info ms-1"
-                              aria-hidden="true"
-                            ></i>
-                            {{ c.events?.assists }}
-                          </span>
-
-                          <span *ngIf="c.events?.yellow">
-                            <i
-                              class="fas fa-square card-icon card-icon-yellow ms-1"
-                              aria-hidden="true"
-                            ></i>
-                            {{ c.events?.yellow }}
-                          </span>
-
-                          <span *ngIf="c.events?.red">
-                            <i
-                              class="fas fa-square card-icon card-icon-red ms-1"
-                              aria-hidden="true"
-                            ></i>
-                            {{ c.events?.red }}
-                          </span>
-
-                          <span *ngIf="c.events?.ownGoals">
-                            <i
-                              class="fas fa-futbol own-goal ms-1"
-                              aria-hidden="true"
-                            ></i>
-                            {{ c.events?.ownGoals }}
-                          </span>
-
-                          <span *ngIf="c.hasCleanSheet">
-                            <i
-                              class="fas fa-door-closed text-success ms-1"
-                              aria-hidden="true"
-                            ></i>
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            </ng-template>
           </ng-container>
         </ng-container>
       </div>

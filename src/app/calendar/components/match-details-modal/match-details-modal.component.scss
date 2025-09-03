@@ -43,7 +43,7 @@
 }
 
 .custom-assists {
-  color: $sky-blue;
+  color: $light-blue;
 }
 
 .card-icon {
@@ -57,6 +57,14 @@
 
 .card-icon-red {
   color: $modal-card-icon-red;
+}
+
+.color-trophy {
+  color: $modal-card-icon-yellow;
+}
+
+.col-trophy {
+  width: 36px;
 }
 
 .card-icon-second-yellow {
@@ -114,4 +122,8 @@
     cursor: not-allowed;
     opacity: 0.65;
   }
+}
+
+.th {
+  width: 36px;
 }

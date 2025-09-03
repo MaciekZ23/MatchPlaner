@@ -7,7 +7,12 @@ import {
   Position,
   HealthStatus,
 } from '../../core/types';
-import { VotingState, VotingSeed, VotingCandidate } from '../../core/models';
+import {
+  VotingState,
+  VotingSeed,
+  VotingCandidate,
+  VoteSummaryEntry,
+} from '../../core/models';
 import { Player as UiPlayer } from '../../teams/models/team';
 import { deepClone, positionPl, healthPl } from './helpers';
 
@@ -15,6 +20,7 @@ import { deepClone, positionPl, healthPl } from './helpers';
 export class VoteService {
   private states = new Map<MatchId, VotingState>();
   private subjects = new Map<MatchId, BehaviorSubject<VotingState>>();
+  private autoCloseTimers = new Map<MatchId, any>();
 
   // Pobieranie aktualnego stanu głosowania dla meczu (synchron)
   getState(matchId: MatchId, seed: VotingSeed): VotingState {
@@ -64,6 +70,7 @@ export class VoteService {
 
     state.hasVoted = true;
     this.markHasVoted(matchId, true);
+    this.saveSummary(matchId);
 
     this.push(matchId, state);
     return deepClone(state);
@@ -101,12 +108,16 @@ export class VoteService {
     const healthy = seed.candidates.filter((c) => c.healthStatus === 'HEALTHY');
 
     if (!existing || (existing.candidates?.length ?? 0) === 0) {
+      const initialSummary =
+        seed.summary && seed.summary.length > 0
+          ? deepClone(seed.summary)
+          : this.loadSummary(matchId);
       const next: VotingState = {
         matchId,
         status: seed.status,
         hasVoted: this.readHasVoted(matchId),
         candidates: healthy,
-        summary: deepClone(seed.summary ?? []),
+        summary: initialSummary,
         closesPolicy: seed.closesPolicy,
         closesAtISO: seed.closesAtISO,
       };
@@ -122,6 +133,7 @@ export class VoteService {
           new BehaviorSubject<VotingState>(deepClone(next))
         );
       }
+      this.scheduleAutoClose(matchId, next.closesAtISO);
       return;
     }
   }
@@ -171,6 +183,69 @@ export class VoteService {
   // Klucz dla localStorage do przechowywania flagi "hasVoted"
   private lsKey(matchId: MatchId) {
     return `mvp:hasVoted:${matchId}`;
+  }
+
+  private summaryKey(matchId: MatchId) {
+    return `mvp:summary:${matchId}`;
+  }
+
+  private saveSummary(matchId: MatchId): void {
+    const s = this.states.get(matchId);
+    if (!s) return;
+    try {
+      localStorage.setItem(
+        this.summaryKey(matchId),
+        JSON.stringify(s.summary ?? [])
+      );
+    } catch {}
+  }
+
+  private loadSummary(
+    matchId: MatchId
+  ): Array<{ playerId: PlayerId; votes: number }> {
+    try {
+      const raw = localStorage.getItem(this.summaryKey(matchId));
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed;
+      return [];
+    } catch {
+      return [];
+    }
+  }
+
+  private scheduleAutoClose(matchId: MatchId, closesAtISO?: string) {
+    if (!closesAtISO) {
+      return;
+    }
+
+    const msLeft = new Date(closesAtISO).getTime() - Date.now();
+
+    if (msLeft <= 0) {
+      const s = this.states.get(matchId);
+      if (s && s.status !== 'CLOSED') {
+        s.status = 'CLOSED';
+        this.push(matchId, s);
+      }
+      return;
+    }
+
+    const existing = this.autoCloseTimers.get(matchId);
+    if (existing) {
+      clearTimeout(existing);
+    }
+
+    const id = setTimeout(() => {
+      const s = this.states.get(matchId);
+      if (!s) return;
+      if (s.status !== 'CLOSED') {
+        s.status = 'CLOSED';
+        this.push(matchId, s);
+      }
+      this.autoCloseTimers.delete(matchId);
+    }, msLeft);
+
+    this.autoCloseTimers.set(matchId, id);
   }
 
   // Budowanie seeda głosowania dla meczu na podstawie eventów i składów
