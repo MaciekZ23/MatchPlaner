@@ -1,0 +1,71 @@
+<div class="bracket">
+  <ng-container *ngIf="matches$ | async as matches">
+    <ng-container *ngIf="rounds$ | async as rounds">
+      <div
+        class="round"
+        *ngFor="let r of rounds; let i = index"
+        [style.gridColumn]="i + 1"
+      >
+        <div class="round-title">
+          {{
+            r === 1
+              ? "Finał"
+              : r === 2
+              ? "Półfinał"
+              : r === 3
+              ? "Ćwierćfinał"
+              : "Runda " + r
+          }}
+        </div>
+
+        <div class="round-col">
+          <ng-container
+            *ngFor="let m of matches | bracketRound : r; let j = index"
+          >
+            <div
+              class="match-block"
+              [style.marginTop.px]="
+                j === 0 ? offsetTopPx(rounds[rounds.length - 1], r) : 0
+              "
+              [style.marginBottom.px]="blockGapPx(rounds[rounds.length - 1], r)"
+            >
+              <div class="match-card">
+                <div class="row">
+                  <span class="team" [class.bye]="isBye(m.home.type)">
+                    {{
+                      m.home.type === "TEAM"
+                        ? m.home.ref
+                        : m.home.type === "BYE"
+                        ? "BYE"
+                        : "Zwyc. " + m.home.ref
+                    }}
+                  </span>
+                  <span class="score" *ngIf="m.score"
+                    >{{ m.score.home }} : {{ m.score.away }}</span
+                  >
+                </div>
+                <div class="row">
+                  <span class="team" [class.bye]="isBye(m.away.type)">
+                    {{
+                      m.away.type === "TEAM"
+                        ? m.away.ref
+                        : m.away.type === "BYE"
+                        ? "BYE"
+                        : "Zwyc. " + m.away.ref
+                    }}
+                  </span>
+                </div>
+              </div>
+
+              <div class="connector" aria-hidden="true">
+                <span class="line h"></span>
+                <span class="line v"></span>
+                <span class="line h right"></span>
+              </div>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+    </ng-container>
+  </ng-container>
+</div>
