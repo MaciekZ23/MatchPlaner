@@ -1,8 +1,10 @@
 <div class="card bg-dark text-white text-center shadow-sm border-0">
   <div class="card-body py-4">
-    <h1 class="card-title fw-bold mb-2">{{ moduleStrings.title }}</h1>
+    <h1 class="card-title fw-bold mb-2">
+      {{ title$ | async }}
+    </h1>
     <p class="card-text fs-7 fs-md-5">
-      {{ moduleStrings.startDate }} - {{ moduleStrings.endDate }}
+      {{ dateRange$ | async }}
     </p>
   </div>
 </div>

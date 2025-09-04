@@ -3,7 +3,7 @@
     id="pointsTableTitle"
     class="fs-5 text p-3 card-title card-header bg-transparent"
   >
-    {{ moduleStrings.title }}
+    {{ groupTitle }}
   </h2>
   <div class="table-responsive card-body" tabindex="0">
     <table class="table table-dark table-hover align-middle w-100">
@@ -45,9 +45,9 @@
     <div class="table-body-container" tabindex="0">
       <table class="table table-dark table-hover align-middle w-100">
         <tbody>
-          <tr *ngFor="let team of tableData; let i = index">
+          <tr *ngFor="let team of rows; let i = index; trackBy: trackRow">
             <td class="text-center">{{ i + 1 }}</td>
-            <td class="text-center">
+            <td class="text-start">
               <div
                 class="d-flex align-items-center justify-content-center justify-content-md-start"
               >

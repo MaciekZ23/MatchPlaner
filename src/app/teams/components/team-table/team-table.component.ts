@@ -19,10 +19,6 @@ export class TeamTableComponent {
 
   isCollapsed: boolean = true;
 
-  toggleCollapse(): void {
-    this.isCollapsed = !this.isCollapsed;
-  }
-
   sortColumn: string = 'name';
   sortDirection: 'asc' | 'desc' = 'asc';
 

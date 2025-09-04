@@ -30,25 +30,41 @@
     role="region"
     aria-label="Sekcja timera"
   >
-    <div
-      class="d-flex flex-column flex-sm-row justify-content-center align-items-center"
-    >
-      <div class="text-content">
-        <div class="timer" role="timer" aria-atomic="true" aria-live="polite">
-          <span class="time-item"
-            >{{ timeLeft.days }} {{ moduleStrings.days }}</span
-          >
-          <span class="time-item"
-            >{{ timeLeft.hours }} {{ moduleStrings.hours }}</span
-          >
-          <span class="time-item"
-            >{{ timeLeft.minutes }} {{ moduleStrings.minutes }}</span
-          >
-          <span class="time-item"
-            >{{ timeLeft.seconds }} {{ moduleStrings.seconds }}</span
-          >
+    <ng-container *ngIf="countdown$ | async as c">
+      <div
+        class="d-flex flex-column flex-sm-row justify-content-center align-items-center"
+      >
+        <div class="text-content">
+          <div class="timer" role="timer" aria-atomic="true" aria-live="polite">
+            <ng-container [ngSwitch]="c.status">
+              <ng-container *ngSwitchCase="'before'">
+                <span class="time-item"
+                  >{{ c.days }} {{ moduleStrings.days }}</span
+                >
+                <span class="time-item"
+                  >{{ c.hours }} {{ moduleStrings.hours }}</span
+                >
+                <span class="time-item"
+                  >{{ c.minutes }} {{ moduleStrings.minutes }}</span
+                >
+                <span class="time-item"
+                  >{{ c.seconds }} {{ moduleStrings.seconds }}</span
+                >
+              </ng-container>
+
+              <ng-container *ngSwitchCase="'running'">
+                <span class="time-item">{{
+                  moduleStrings.alreadyStarted
+                }}</span>
+              </ng-container>
+
+              <ng-container *ngSwitchCase="'ended'">
+                <span class="time-item">{{ moduleStrings.alreadyEnded }}</span>
+              </ng-container>
+            </ng-container>
+          </div>
         </div>
       </div>
-    </div>
+    </ng-container>
   </div>
 </div>

@@ -1,6 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { stringsLeagueDescription } from '../../misc';
+import { LeagueDescriptionService } from '../../services/league-description.service';
 
 @Component({
   selector: 'app-league-description',
@@ -8,7 +8,11 @@ import { stringsLeagueDescription } from '../../misc';
   templateUrl: './league-description.component.html',
   styleUrls: ['./league-description.component.scss'],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LeagueDescriptionComponent {
-  moduleStrings = stringsLeagueDescription;
+  private service = inject(LeagueDescriptionService);
+
+  description$ = this.service.description$;
+  additionalInfo$ = this.service.additionalInfo$;
 }

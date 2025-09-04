@@ -1,49 +1,100 @@
-import { Injectable } from "@angular/core";
-import { Observable, of } from "rxjs";
+import { Injectable, inject } from '@angular/core';
+import { combineLatest, map, Observable } from 'rxjs';
+import { TournamentStore } from '../../core/services/tournament-store.service';
+import {
+  Match as CoreMatch,
+  Player as CorePlayer,
+  Team as CoreTeam,
+} from '../../core/models';
+import { TopScorer } from '../models';
+import { TopScorersSortKey } from '../types';
 
-@Injectable({
-    providedIn: 'root'
-})
-
+@Injectable({ providedIn: 'root' })
 export class TopScorerService {
-    constructor() { }
+  private readonly store = inject(TournamentStore);
 
-    //Funkcja do obliczania klasyfikacji kanadyjskiej
-    calculateCanadianPoints(player: any): number {
-        return player.goals + player.assists;
-    }
+  getTopScorers$(
+    sortBy: TopScorersSortKey = 'goals',
+    dir: 'asc' | 'desc' = 'desc'
+  ): Observable<TopScorer[]> {
+    return combineLatest([
+      this.store.matchesByStage$,
+      this.store.playerMap$,
+      this.store.teamMap$,
+    ]).pipe(
+      map(([matchesByStage, playerMap, teamMap]) => {
+        const allMatches: CoreMatch[] = Array.from(
+          matchesByStage.values()
+        ).flat();
 
-    // Funkcja do sortowania zawodnikow po liczbie goli
-    sortByGoals(topScorers: any[]): any[] {
-        return topScorers.sort((a, b) => b.goals - a.goals);
-    }
+        const goals = new Map<string, number>();
+        const assists = new Map<string, number>();
 
-    getTopScorers(): Observable<any[]> {
-        const topScorers = [
-            { name: 'Adam Pacholski', team: 'Transport Michalski', goals: 12, assists: 2, },
-            { name: 'Dawid Kuschek', team: 'AKP Magros Konin', goals: 9, assists: 3 },
-            { name: 'Patryk Janicki', team: 'Stajnia Kuniccy', goals: 9, assists: 5 },
-            { name: 'Jarosław Gorgolewski', team: 'Tradycja Sarbicko', goals: 8, assists: 1 },
-            { name: 'Kacper Kubiak', team: 'RKN Konin', goals: 8, assists: 3 },
-            { name: 'Tobiasz Grześkiewicz', team: 'DP Meble', goals: 6, assists: 1 },
-            { name: 'Stanisław Mikołajczyk', team: 'Stajnia Kuniccy', goals: 5, assists: 5 },
-            { name: 'Szymon Matuszak', team: 'Transport Michalski', goals: 5, assists: 4 },
-            { name: 'Łukasz Pakulski', team: 'MKS Żychlin', goals: 5, assists: 3 },
-            { name: 'Miłosz Oblizajek', team: 'Stajnia Kuniccy', goals: 4, assists: 1, },
-            { name: 'Michał Nowak', team: 'Stajnia Kuniccy', goals: 7, assists: 2 },
-            { name: 'Maciej Kowalski', team: 'AKP Magros Konin', goals: 5, assists: 3 },
-            { name: 'Paweł Zawisza', team: 'DP Meble', goals: 6, assists: 0 },
-            { name: 'Krystian Zieliński', team: 'RKN Konin', goals: 4, assists: 5 },
-            { name: 'Janusz Majewski', team: 'Transport Michalski', goals: 13, assists: 6 }
-        ];
+        for (const m of allMatches) {
+          for (const ev of m.events ?? []) {
+            if (ev.type === 'GOAL') {
+              goals.set(ev.playerId, (goals.get(ev.playerId) ?? 0) + 1);
+            } else if (ev.type === 'ASSIST') {
+              assists.set(ev.playerId, (assists.get(ev.playerId) ?? 0) + 1);
+            }
+          }
+        }
 
-        const sortedTopScorers = this.sortByGoals(topScorers);
+        const playerIds = new Set<string>([...goals.keys(), ...assists.keys()]);
+        const rows: TopScorer[] = [];
 
-        const topScorersWithPoints = sortedTopScorers.map(player => ({
-            ...player,
-            points: this.calculateCanadianPoints(player)
-        }));
+        for (const pid of playerIds) {
+          const p: CorePlayer | undefined = playerMap.get(pid);
+          if (!p) continue;
 
-        return of(topScorersWithPoints);
-    }
+          const t: CoreTeam | undefined = teamMap.get(p.teamId);
+          const g = goals.get(pid) ?? 0;
+          const a = assists.get(pid) ?? 0;
+
+          rows.push({
+            playerId: pid,
+            playerName: p.name,
+            teamId: p.teamId,
+            teamName: t?.name ?? p.teamId,
+            goals: g,
+            assists: a,
+            points: g + a,
+          });
+        }
+
+        return this.sortRows(rows, sortBy, dir);
+      })
+    );
+  }
+
+  private sortRows(
+    rows: TopScorer[],
+    sortBy: TopScorersSortKey,
+    dir: 'asc' | 'desc'
+  ): TopScorer[] {
+    const main: TopScorersSortKey = sortBy ?? 'goals';
+    const tiebreakers: TopScorersSortKey[] =
+      main === 'goals'
+        ? ['points', 'assists']
+        : main === 'assists'
+        ? ['points', 'goals']
+        : ['goals', 'assists'];
+
+    const cmpNum = (x: number, y: number) => (dir === 'asc' ? x - y : y - x);
+
+    return rows.slice().sort((a, b) => {
+      const dMain = cmpNum(a[main], b[main]);
+      if (dMain !== 0) {
+        return dMain;
+      }
+
+      for (const key of tiebreakers) {
+        const d = cmpNum(a[key], b[key]);
+        if (d !== 0) {
+          return d;
+        }
+      }
+      return a.playerName.localeCompare(b.playerName, 'pl');
+    });
+  }
 }

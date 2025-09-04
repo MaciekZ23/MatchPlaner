@@ -1,334 +1,155 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { combineLatest, map } from 'rxjs';
 import { CalendarDay } from '../models/calendar-day.model';
+import { Match as UiMatch } from '../models/match.model';
+import { MatchDetail } from '../models/match-detail.model';
+import { TournamentStore } from '../../core/services/tournament-store.service';
+import {
+  Match as CoreMatch,
+  Player as CorePlayer,
+} from '../../core/models/tournament.models';
+import { formatFullDate, capitalizeFirst } from '../../core/utils';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class MatchService {
-  constructor() {}
+  private readonly store = inject(TournamentStore);
 
-  getMockData(): CalendarDay[] {
-    return [
-      {
-        date: 'Sobota, 3 stycznia 2026',
-        matches: [
-          {
-            teamA: 'DP Meble',
-            teamB: 'RKN Konin',
-            scoreA: 2,
-            scoreB: 1,
-            group: 'A',
-            details: [
-              {
-                player: 'Tobiasz Grześkiewicz',
-                time: '19',
-                score: '2 - 1',
-                scoringTeam: 'A',
-              },
-              {
-                player: 'Norbert Szymankiewicz',
-                time: '7',
-                score: '1 - 1',
-                scoringTeam: 'A',
-              },
-              {
-                player: 'Kacper Kubiak',
-                time: '11',
-                score: '0 - 1',
-                scoringTeam: 'B',
-              },
-            ],
-          },
-          {
-            teamA: 'AKP Magros Konin',
-            teamB: 'Tradycja Sarbicko',
-            scoreA: 2,
-            scoreB: 2,
-            group: 'A',
-            details: [],
-          },
-          {
-            teamA: 'DP Meble',
-            teamB: 'RKN Konin',
-            scoreA: 2,
-            scoreB: 1,
-            group: 'A',
-            details: [
-              {
-                player: 'Tobiasz Grześkiewicz',
-                time: '19',
-                score: '2 - 1',
-                scoringTeam: 'A',
-              },
-              {
-                player: 'Norbert Szymankiewicz',
-                time: '7',
-                score: '1 - 1',
-                scoringTeam: 'A',
-              },
-              {
-                player: 'Kacper Kubiak',
-                time: '11',
-                score: '0 - 1',
-                scoringTeam: 'B',
-              },
-            ],
-          },
-          {
-            teamA: 'DP Meble',
-            teamB: 'RKN Konin',
-            scoreA: 2,
-            scoreB: 2,
-            logoA:
-              'https://sport.travel.pl/wp-content/uploads/2022/07/Real-Madryt-logo-600x700.jpg',
-            logoB:
-              'https://sport.travel.pl/wp-content/uploads/2022/07/Real-Madryt-logo-600x700.jpg',
-            group: 'A',
-            details: [
-              {
-                player: 'Tobiasz Grześkiewicz',
-                time: '19',
-                score: '2 - 1',
-                scoringTeam: 'A',
-              },
-              {
-                player: 'Norbert Szymankiewicz',
-                time: '7',
-                score: '1 - 1',
-                scoringTeam: 'A',
-              },
-              {
-                player: 'Kacper Kubiak',
-                time: '11',
-                score: '0 - 1',
-                scoringTeam: 'B',
-              },
-            ],
-          },
-          {
-            teamA: 'DP Meble',
-            teamB: 'RKN Konin',
-            scoreA: 2,
-            scoreB: 1,
-            group: 'A',
-            details: [
-              {
-                player: 'Tobiasz Grześkiewicz',
-                time: '19',
-                score: '2 - 1',
-                scoringTeam: 'A',
-              },
-              {
-                player: 'Norbert Szymankiewicz',
-                time: '7',
-                score: '1 - 1',
-                scoringTeam: 'A',
-              },
-              {
-                player: 'Kacper Kubiak',
-                time: '11',
-                score: '0 - 1',
-                scoringTeam: 'B',
-              },
-            ],
-          },
-          {
-            teamA: 'DP Meble',
-            teamB: 'RKN Konin',
-            scoreA: 2,
-            scoreB: 1,
-            group: 'A',
-            details: [
-              {
-                player: 'Tobiasz Grześkiewicz',
-                time: '19',
-                score: '2 - 1',
-                scoringTeam: 'A',
-              },
-              {
-                player: 'Norbert Szymankiewicz',
-                time: '7',
-                score: '1 - 1',
-                scoringTeam: 'A',
-              },
-              {
-                player: 'Kacper Kubiak',
-                time: '11',
-                score: '0 - 1',
-                scoringTeam: 'B',
-              },
-            ],
-          },
-        ],
-      },
+  getCalendarDays$() {
+    return combineLatest([
+      this.store.tournament$,
+      this.store.matchesByStage$,
+      this.store.teamMap$,
+      this.store.playerMap$,
+    ]).pipe(
+      map(([tournament, matchesByStage, teamMap, playerMap]) => {
+        const tournamentTz = tournament.timezone ?? 'Europe/Warsaw';
 
-      {
-        date: 'Sobota, 10 stycznia 2026',
-        matches: [
-          {
-            teamA: 'Orły Gniezno',
-            teamB: 'Wilki Kalisz',
-            scoreA: 3,
-            scoreB: 2,
-            group: 'A',
-            details: [
-              {
-                player: 'Łukasz Nowak',
-                time: '9',
-                score: '2 - 0',
-                scoringTeam: 'A',
-              },
-              {
-                player: 'Adam Wiśniewski',
-                time: '15',
-                score: '2 - 1',
-                scoringTeam: 'B',
-              },
-              {
-                player: 'Kamil Zieliński',
-                time: '22',
-                score: '3 - 1',
-                scoringTeam: 'A',
-              },
-              {
-                player: 'Tomasz Lis',
-                time: '28',
-                score: '3 - 2',
-                scoringTeam: 'B',
-              },
-            ],
-          },
-        ],
-      },
-      {
-        date: 'Sobota, 17 stycznia 2026',
-        matches: [
-          {
-            teamA: 'Orły Gniezno',
-            teamB: 'Wilki Kalisz',
-            scoreA: 3,
-            scoreB: 1,
-            logoA:
-              'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ5X9Ni2yvuJk46KrCeZwMDzl-RYtqcfI9ogw&s',
-            logoB:
-              'https://upload.wikimedia.org/wikipedia/en/e/eb/KKS_1925_Kalisz_new_crest.png',
-            group: 'B',
-            details: [
-              {
-                player: 'Michał Kowalski',
-                time: '5',
-                score: '1 - 0',
-                scoringTeam: 'A',
-              },
-              {
-                player: 'Łukasz Nowak',
-                time: '14',
-                score: '2 - 0',
-                scoringTeam: 'A',
-              },
-              {
-                player: 'Kamil Zieliński',
-                time: '21',
-                score: '3 - 0',
-                scoringTeam: 'A',
-              },
-              {
-                player: 'Adam Wiśniewski',
-                time: '27',
-                score: '3 - 1',
-                scoringTeam: 'B',
-              },
-            ],
-          },
-        ],
-      },
+        const groupStage = tournament.stages.find((s) => s.kind === 'GROUP');
+        const matches: CoreMatch[] = groupStage
+          ? matchesByStage.get(groupStage.id) ?? []
+          : [];
 
-      {
-        date: 'Sobota, 24 stycznia 2026',
-        matches: [
-          {
-            teamA: 'Stal Pleszew',
-            teamB: 'KKS Kalisz',
-            scoreA: 3,
-            scoreB: 1,
-            logoA:
-              'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ5X9Ni2yvuJk46KrCeZwMDzl-RYtqcfI9ogw&s',
-            logoB:
-              'https://upload.wikimedia.org/wikipedia/en/e/eb/KKS_1925_Kalisz_new_crest.png',
-            group: 'B',
-            details: [
-              {
-                player: 'Michał Kowalski',
-                time: '5',
-                score: '1 - 0',
-                scoringTeam: 'A',
-              },
-              {
-                player: 'Łukasz Nowak',
-                time: '14',
-                score: '2 - 0',
-                scoringTeam: 'A',
-              },
-              {
-                player: 'Kamil Zieliński',
-                time: '21',
-                score: '3 - 0',
-                scoringTeam: 'A',
-              },
-              {
-                player: 'Adam Wiśniewski',
-                time: '27',
-                score: '3 - 1',
-                scoringTeam: 'B',
-              },
-            ],
-          },
-        ],
-      },
-      {
-        date: 'Sobota, 31 styczeń 2026',
-        matches: [],
-      },
-      {
-        date: 'Piątek, 6 luty 2026',
-        matches: [],
-      },
-      {
-        date: 'Sobota, 14 luty 2026',
-        matches: [
-          {
-            teamA: 'Mocni Mogilno',
-            teamB: 'Pogoń Nowe Skalmierzyce',
-            scoreA: 1,
-            scoreB: 2,
-            logoA:
-              'https://yt3.googleusercontent.com/3MuJZcfzJCWFim5oUnn-umt_9zxmt8Okb8IlT6zMEkWyjDMgxgETaU9jd2WZO434ZVbzWaTWFKo=s900-c-k-c0x00ffffff-no-rj',
-            logoB:
-              'https://lh3.googleusercontent.com/proxy/-xrbTLuaa0frI7b69byY_kq2ourDeU13vg53eG1rW-8M-fcqFDPCdjQpe9sDDx0BM3CdPme69JhhGp1Q8ctIKtT-tPaYfbo0l4E',
-            group: 'D',
-            details: [
-              {
-                player: 'Łukasz Nowak',
-                time: '9',
-                score: '1 - 0',
-                scoringTeam: 'A',
-              },
-              {
-                player: 'Adam Wiśniewski',
-                time: '15',
-                score: '1 - 1',
-                scoringTeam: 'B',
-              },
-              {
-                player: 'Tomasz Lis',
-                time: '49',
-                score: '1 - 2',
-                scoringTeam: 'B',
-              },
-            ],
-          },
-        ],
-      },
-    ];
+        const buckets = new Map<string, UiMatch[]>();
+
+        for (const m of [...matches].sort(
+          (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+        )) {
+          const home = teamMap.get(m.homeTeamId);
+          const away = teamMap.get(m.awayTeamId);
+          const { scoreA, scoreB, details } = this.toUiDetails(m, playerMap);
+
+          const ui: UiMatch = {
+            id: m.id,
+            homeTeamId: m.homeTeamId,
+            awayTeamId: m.awayTeamId,
+            teamA: home?.name ?? m.homeTeamId,
+            teamB: away?.name ?? m.awayTeamId,
+            scoreA,
+            scoreB,
+            group: m.groupId,
+            logoA: home?.logo,
+            logoB: away?.logo,
+            details,
+            status: this.computeUiStatus(m),
+            date: m.date,
+            lineups: m.lineups,
+          };
+
+          const dayKey = capitalizeFirst(
+            formatFullDate(m.date, tournamentTz, 'pl-PL')
+          );
+
+          if (!buckets.has(dayKey)) buckets.set(dayKey, []);
+          buckets.get(dayKey)!.push(ui);
+        }
+
+        const days: CalendarDay[] = [];
+        for (const [date, dayMatches] of buckets) {
+          days.push({ date, matches: dayMatches });
+        }
+        return days;
+      })
+    );
+  }
+
+  private toUiDetails(
+    m: CoreMatch,
+    playerMap: Map<string, CorePlayer>
+  ): { scoreA: number; scoreB: number; details: MatchDetail[] } {
+    let liveA = 0;
+    let liveB = 0;
+    const details: MatchDetail[] = [];
+
+    const events = (m.events ?? []).slice().sort((a, b) => a.minute - b.minute);
+
+    for (const ev of events) {
+      const playerName = playerMap.get(ev.playerId)?.name ?? ev.playerId;
+      const isHome = ev.teamId === m.homeTeamId;
+      const teamSide: 'A' | 'B' = isHome ? 'A' : 'B';
+
+      switch (ev.type) {
+        case 'GOAL': {
+          if (isHome) liveA++;
+          else liveB++;
+
+          details.push({
+            player: playerName,
+            time: String(ev.minute),
+            score: `${liveA} - ${liveB}`,
+            scoringTeam: teamSide,
+            event: 'GOAL',
+          } as MatchDetail);
+          break;
+        }
+
+        case 'OWN_GOAL': {
+          const scoringSide: 'A' | 'B' = isHome ? 'B' : 'A';
+          if (isHome) liveB++;
+          else liveA++;
+
+          details.push({
+            player: playerName,
+            time: String(ev.minute),
+            score: `${liveA} - ${liveB}`,
+            scoringTeam: scoringSide,
+            event: 'OWN_GOAL',
+          } as MatchDetail);
+          break;
+        }
+
+        case 'CARD': {
+          details.push({
+            player: playerName,
+            time: String(ev.minute),
+            score: `${liveA} - ${liveB}`,
+            scoringTeam: teamSide,
+            event: 'CARD',
+            card: ev.card,
+          } as MatchDetail);
+          break;
+        }
+        case 'ASSIST': {
+          details.push({
+            player: playerName,
+            time: String(ev.minute),
+            score: `${liveA} - ${liveB}`,
+            scoringTeam: teamSide,
+            event: 'ASSIST',
+          } as MatchDetail);
+          break;
+        }
+
+        default:
+          break;
+      }
+    }
+
+    const scoreA = m.score?.home ?? 0;
+    const scoreB = m.score?.away ?? 0;
+    return { scoreA, scoreB, details };
+  }
+
+  private computeUiStatus(m: CoreMatch): 'SCHEDULED' | 'FINISHED' {
+    return m.status === 'FINISHED' ? 'FINISHED' : 'SCHEDULED';
   }
 }

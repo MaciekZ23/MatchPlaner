@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { stringsMatchTimer } from '../../misc';
+import { MatchTimerService } from '../../services/match-timer.service';
 
 @Component({
   selector: 'app-match-timer',
@@ -8,40 +9,15 @@ import { stringsMatchTimer } from '../../misc';
   templateUrl: './match-timer.component.html',
   styleUrls: ['./match-timer.component.scss'],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MatchTimerComponent {
   moduleStrings = stringsMatchTimer;
-  targetDate: Date = new Date('2026-01-10T00:00:00');
-  timeLeft: any = {};
   isTimerOpen = false;
 
-  ngOnInit(): void {
-    this.updateTimeLeft();
-    setInterval(() => {
-      this.updateTimeLeft();
-    }, 1000);
-  }
+  private service = inject(MatchTimerService);
 
-  updateTimeLeft(): void {
-    const now = new Date();
-    const timeDiff = this.targetDate.getTime() - now.getTime();
-
-    if (timeDiff > 0) {
-      const days = Math.floor(timeDiff / (1000 * 3600 * 24));
-      const hours = Math.floor((timeDiff % (1000 * 3600 * 24)) / (1000 * 3600));
-      const minutes = Math.floor((timeDiff % (1000 * 3600)) / (1000 * 60));
-      const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
-
-      this.timeLeft = {
-        days,
-        hours,
-        minutes,
-        seconds,
-      };
-    } else {
-      this.timeLeft = { days: 0, hours: 0, minutes: 0, seconds: 0 };
-    }
-  }
+  countdown$ = this.service.countdown$;
 
   toggleTimer(): void {
     this.isTimerOpen = !this.isTimerOpen;

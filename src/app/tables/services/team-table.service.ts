@@ -1,31 +1,187 @@
-import { Injectable } from "@angular/core";
-import { TeamStats } from "../models/team-table.model";
+import { Injectable, inject } from '@angular/core';
+import { combineLatest, map, Observable } from 'rxjs';
+import { TournamentStore } from '../../core/services/tournament-store.service';
+import { Match as CoreMatch, Team as CoreTeam } from '../../core/models';
+import { TeamStats, PointsTableGroup, TablesVM } from '../models';
+import {
+  getScore,
+  buildDisciplineIndex,
+  buildAwayWinsIndex,
+  makeStandingsComparator,
+} from './helpers';
 
-@Injectable({
-    providedIn: 'root'
-})
-
+@Injectable({ providedIn: 'root' })
 export class TeamTableService {
-    getTable(): TeamStats[] {
-        return [
-            { id: 1, name: 'Stajnia Kuniccy', rm: 7, w: 7, r: 0, p: 0, pkt: 20, bz: 29, bs: 7, diff: 22, logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR_PwRy6Kx9DqJCU3Wy_Ww8P01wP5gg1pxpOw&s" },
-            { id: 2, name: 'DP Meble', rm: 7, w: 5, r: 1, p: 1, pkt: 2, bz: 24, bs: 12, diff: 12, logo: "https://yt3.googleusercontent.com/nnUt-yW5Y9hD7gVz18g8cobi3QIpsht3OBnO5e9trnJRe5nrs212CudWS6AdXNxjdgnimz7Kdw=s900-c-k-c0x00ffffff-no-rj" },
-            { id: 3, name: 'Tradycja Sarbicko', rm: 7, w: 5, r: 0, p: 2, pkt: 15, bz: 22, bs: 16, diff: 6, logo: "https://yt3.googleusercontent.com/3MuJZcfzJCWFim5oUnn-umt_9zxmt8Okb8IlT6zMEkWyjDMgxgETaU9jd2WZO434ZVbzWaTWFKo=s900-c-k-c0x00ffffff-no-rj" },
-            { id: 4, name: 'Transport Michalski', rm: 7, w: 3, r: 0, p: 4, pkt: 9, bz: 24, bs: 18, diff: 6, logo: "https://autoline.com.pl/img/dealers/logos/d/0/1575490699151597729.png?1576499575" },
-            { id: 5, name: 'OSP Słodków', rm: 7, w: 2, r: 2, p: 3, pkt: 8, bz: 13, bs: 14, diff: -1, logo: "https://www.sokolkleczew.pl/wp-content/themes/sokolkleczew/img/logofb.png" },
-            { id: 6, name: 'RKN Konin', rm: 7, w: 2, r: 1, p: 4, pkt: 7, bz: 18, bs: 19, diff: -1, logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR98XyRz__qMBiKHDJ9x3Rf795XGy41jYT-uw&s" },
-            { id: 7, name: 'AKP Magros Konin', rm: 7, w: 1, r: 2, p: 4, pkt: 5, bz: 19, bs: 37, diff: -18, logo: "https://play-lh.googleusercontent.com/Aqp_wNSGx1JGiuOD5FHk3fa5iQcZ2NzB9hy75N5lBrDm2OrQ_Jnka7__-yXQe1pjHCM" },
-            { id: 8, name: 'MKS Żychlin', rm: 7, w: 0, r: 0, p: 7, pkt: 20, bz: 11, bs: 34, diff: -23, logo: "https://upload.wikimedia.org/wikipedia/commons/f/f5/ElanaTorun2016.png" },
-            { id: 9, name: 'Czerwone Diabły', rm: 7, w: 6, r: 0, p: 1, pkt: 18, bz: 30, bs: 10, diff: 20, logo: "https://upload.wikimedia.org/wikipedia/en/thumb/a/aa/Herb_Pogo%C5%84.cdr.svg/1200px-Herb_Pogo%C5%84.cdr.svg.png" },
-            { id: 10, name: 'FC Łaziki', rm: 7, w: 4, r: 1, p: 2, pkt: 13, bz: 21, bs: 15, diff: 6, logo: undefined },
-            { id: 11, name: 'Warta Wilczyn', rm: 7, w: 8, r: 0, p: 4, pkt: 24, bz: 17, bs: 13, diff: 4, logo: "https://upload.wikimedia.org/wikipedia/commons/0/0e/Wisla_P%C5%82ock.png" },
-            { id: 12, name: 'Zryw Zalesie', rm: 7, w: 2, r: 3, p: 2, pkt: 9, bz: 14, bs: 14, diff: 0, logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ4rcV9ZBqCeFvUdlVo0W9bFW64m8g-zc4rPQ&s" },
-            { id: 18, name: 'Huragan Golina', rm: 7, w: 2, r: 1, p: 4, pkt: 7, bz: 13, bs: 20, diff: -7, logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDO7F1yDmXTTN5k3LMAxI1A-VYe36khoWEdQ&s" },
-            { id: 14, name: 'Start Jarocin', rm: 7, w: 1, r: 2, p: 4, pkt: 5, bz: 11, bs: 22, diff: -11, logo: undefined },
-            { id: 15, name: 'Górnik Lubin', rm: 7, w: 1, r: 1, p: 5, pkt: 4, bz: 9, bs: 25, diff: -16, logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRGF1uEzEYNEeZ0qzg_GcllYg2rN29yjBu2Aw&s" },
-            { id: 16, name: 'Polonia Skulsk', rm: 7, w: 0, r: 3, p: 4, pkt: 3, bz: 10, bs: 21, diff: -11, logo: "https://lh3.googleusercontent.com/proxy/-xrbTLuaa0frI7b69byY_kq2ourDeU13vg53eG1rW-8M-fcqFDPCdjQpe9sDDx0BM3CdPme69JhhGp1Q8ctIKtT-tPaYfbo0l4E" },
-            { id: 17, name: 'Orzeł Czarnków', rm: 7, w: 0, r: 1, p: 6, pkt: 1, bz: 8, bs: 28, diff: -20, logo: undefined },
-            { id: 13, name: 'Sokół Dąbie', rm: 7, w: 0, r: 0, p: 7, pkt: 0, bz: 5, bs: 35, diff: -30, logo: "https://sport.travel.pl/wp-content/uploads/2022/07/Real-Madryt-logo-600x700.jpg" }
-        ];
+  private readonly store = inject(TournamentStore);
+
+  getTablesVM$(): Observable<TablesVM> {
+    return combineLatest([
+      this.store.tournament$,
+      this.store.matchesByStage$,
+      this.store.teamMap$,
+    ]).pipe(
+      map(([tournament, matchesByStage, teamMap]) => {
+        const mode = tournament.mode as TablesVM['mode'];
+
+        // Zbuduj wszystkie potencjalne tabele (po grupach), na bazie meczów etapu GROUP
+        const allGroups = this.buildAllGroupsTables(
+          tournament,
+          matchesByStage,
+          teamMap
+        );
+
+        // Przytnij ekspozycję wg trybu
+        let groups: PointsTableGroup[] = [];
+        if (mode === 'LEAGUE') {
+          groups = allGroups.length ? [allGroups[0]] : [];
+        } else if (mode === 'LEAGUE_PLAYOFFS') {
+          groups = allGroups;
+        } else if (mode === 'KNOCKOUT') {
+          groups = []; // w pucharze nie pokazujemy tabel ligowych
+        }
+
+        return { mode, groups };
+      })
+    );
+  }
+
+  private buildAllGroupsTables(
+    tournament: any,
+    matchesByStage: Map<string, CoreMatch[]>,
+    teamMap: Map<string, CoreTeam>
+  ): PointsTableGroup[] {
+    // Znajdź etap ligowy (GROUP)
+    const groupStage = tournament.stages?.find((s: any) => s.kind === 'GROUP');
+    if (!groupStage) {
+      // Brak etapu grupowego (np. czysty KNOCKOUT) → nie ma tabel do policzenia
+      return [];
     }
+
+    // Mecze tego etapu
+    const all = (matchesByStage.get(groupStage.id) ?? []).slice();
+
+    // Mapowanie id -> nazwa grupy
+    const groupNameById = new Map<string, string>();
+    for (const g of tournament.groups ?? []) {
+      if (g?.id) groupNameById.set(g.id, g.name ?? `Grupa ${g.id}`);
+    }
+
+    // Grupowanie meczów po groupId
+    const byGroup = new Map<string, CoreMatch[]>();
+    for (const m of all) {
+      const key = m.groupId ?? 'UNGROUPED';
+      if (!byGroup.has(key)) byGroup.set(key, []);
+      byGroup.get(key)!.push(m);
+    }
+
+    // Kolejność grup po nazwie (Grupa A, Grupa B, ... / „Tabela” dla UNGROUPED)
+    const sortedIds = Array.from(byGroup.keys()).sort((a, b) => {
+      const nameA =
+        a === 'UNGROUPED' ? 'Tabela' : groupNameById.get(a) ?? `Grupa ${a}`;
+      const nameB =
+        b === 'UNGROUPED' ? 'Tabela' : groupNameById.get(b) ?? `Grupa ${b}`;
+      return nameA.localeCompare(nameB, 'pl', { numeric: true });
+    });
+
+    // Zbuduj tabelę dla każdej grupy
+    const groups: PointsTableGroup[] = [];
+    for (const groupId of sortedIds) {
+      const matches = byGroup.get(groupId)!;
+      const rows = this.buildAndSortGroupTable(matches, teamMap);
+      const groupTitle =
+        groupId === 'UNGROUPED'
+          ? 'Tabela'
+          : groupNameById.get(groupId) ?? `Grupa ${groupId}`;
+      groups.push({ groupId, groupTitle, rows });
+    }
+
+    return groups;
+  }
+
+  /** Liczenie surowych statystyk i sortowanie pełnymi tie-breakerami */
+  private buildAndSortGroupTable(
+    matches: CoreMatch[],
+    teamMap: Map<string, CoreTeam>
+  ): TeamStats[] {
+    const finished = matches.filter((m) => m.status === 'FINISHED');
+
+    // Zespoły obecne w zakończonych meczach
+    const teamIds = new Set<string>();
+    for (const m of finished) {
+      teamIds.add(m.homeTeamId);
+      teamIds.add(m.awayTeamId);
+    }
+
+    // Baza wierszy
+    const base = new Map<string, TeamStats>();
+    for (const id of teamIds) {
+      const t = teamMap.get(id);
+      base.set(id, {
+        id: 0,
+        name: t?.name ?? id,
+        logo: t?.logo,
+        rm: 0,
+        w: 0,
+        r: 0,
+        p: 0,
+        pkt: 0,
+        bz: 0,
+        bs: 0,
+        diff: 0,
+      });
+    }
+
+    // Zliczanie meczów
+    for (const m of finished) {
+      const { home, away } = getScore(m);
+
+      const homeRow = base.get(m.homeTeamId)!;
+      const awayRow = base.get(m.awayTeamId)!;
+
+      homeRow.rm++;
+      awayRow.rm++;
+
+      homeRow.bz += home;
+      homeRow.bs += away;
+      awayRow.bz += away;
+      awayRow.bs += home;
+
+      if (home > away) {
+        homeRow.w++;
+        awayRow.p++;
+        homeRow.pkt += 3;
+      } else if (home < away) {
+        awayRow.w++;
+        homeRow.p++;
+        awayRow.pkt += 3;
+      } else {
+        homeRow.r++;
+        awayRow.r++;
+        homeRow.pkt++;
+        awayRow.pkt++;
+      }
+    }
+
+    for (const row of base.values()) {
+      row.diff = row.bz - row.bs;
+    }
+
+    // Sortowanie z pełnym łańcuchem tie-breakerów (zgodnie z przepisami)
+    const cardsPointsByTeam = buildDisciplineIndex(finished);
+    const awayWinsIndex = buildAwayWinsIndex(finished);
+    const comparator = makeStandingsComparator(
+      finished,
+      cardsPointsByTeam,
+      awayWinsIndex
+    );
+
+    const rows = Array.from(base.entries()).map(([teamId, row]) => ({
+      teamId,
+      row,
+    }));
+    rows.sort((a, b) => comparator(a.teamId, b.teamId, a.row, b.row));
+    rows.forEach((it, idx) => (it.row.id = idx + 1));
+
+    return rows.map((it) => it.row);
+  }
 }

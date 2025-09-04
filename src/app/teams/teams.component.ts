@@ -1,5 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router, ActivatedRoute } from '@angular/router';
+import { map, of, switchMap, tap, delay, Observable } from 'rxjs';
 import { TeamCardComponent } from './components/team-card/team-card.component';
 import { TeamTableComponent } from './components/team-table/team-table.component';
 import { TeamService } from './services/team.service';
@@ -22,38 +24,36 @@ import { stringsTeams } from './misc';
   standalone: true,
 })
 export class TeamsComponent implements OnInit {
-  teams: Team[] = [];
-  selectedTeam: Team | null = null;
-  isLoading = false;
+  private readonly teamService = inject(TeamService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
 
   moduleStrings = stringsTeams;
 
-  constructor(private teamService: TeamService) {}
+  teams$!: Observable<Team[]>;
+  selectedTeam$!: Observable<Team | null>;
+
+  isLoading = false;
 
   ngOnInit(): void {
-    this.teams = this.teamService.getTeams();
+    this.teams$ = this.teamService.getTeams$();
+
+    this.selectedTeam$ = this.route.data.pipe(
+      map((d) => d['team'] as Team | null)
+    );
+
+    this.route.data.subscribe(() => {
+      this.isLoading = false;
+    });
   }
 
   onTeamClick(team: Team): void {
     this.isLoading = true;
-
-    setTimeout(() => {
-      this.selectedTeam = { ...team, logo: team.logo || undefined };
-      this.isLoading = false;
-    }, 1000);
-
-    // this.selectedTeam = team;
-    // this.selectedTeam.logo = this.selectedTeam.logo || undefined;
+    this.router.navigate(['/teams', team.id]);
   }
 
   onBackClick(): void {
     this.isLoading = true;
-
-    setTimeout(() => {
-      this.selectedTeam = null;
-      this.isLoading = false;
-    }, 1000);
-
-    // this.selectedTeam = null;
+    this.router.navigate(['/teams']);
   }
 }

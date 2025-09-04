@@ -1,0 +1,54 @@
+<div
+  #modalRef
+  class="modal fade"
+  tabindex="-1"
+  aria-hidden="true"
+  role="dialog"
+  [attr.aria-modal]="true"
+  [attr.aria-labelledby]="'confirm-modal-title'"
+  [attr.aria-describedby]="'confirm-modal-desc'"
+>
+  <div
+    class="modal-dialog"
+    [ngClass]="{
+      'modal-dialog-centered': true,
+      'modal-sm': currentSize === 'sm',
+      'modal-lg': currentSize === 'lg',
+      'modal-xl': currentSize === 'xl'
+    }"
+  >
+    <div class="modal-content bg-dark text-white">
+      <div class="modal-header">
+        <h2 class="modal-title fs-6" id="confirm-modal-title">
+          {{ currentTitle }}
+        </h2>
+        <button
+          type="button"
+          class="btn-close btn-close-white"
+          [attr.aria-label]="currentLabels.closeAria"
+          (click)="cancel()"
+        ></button>
+      </div>
+
+      <div class="modal-body">
+        <p class="mb-0" id="confirm-modal-desc">
+          {{ currentMessage }}
+        </p>
+      </div>
+
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-secondary" (click)="cancel()">
+          {{ currentLabels.cancel }}
+        </button>
+        <button
+          type="button"
+          class="btn"
+          [ngClass]="'btn-' + currentVariant"
+          (click)="confirm()"
+        >
+          {{ currentLabels.confirm }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

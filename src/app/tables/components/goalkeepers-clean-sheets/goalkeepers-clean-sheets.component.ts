@@ -1,7 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { GoalkeepersCleanSheetsService } from '../../services/goalkeepers-clean-sheets.service';
+import { GoalkeepersCleanSheets } from '../../models';
 import { stringsGoalkeepersCleanSheets } from '../../misc';
+import { BehaviorSubject, combineLatest, map, Observable } from 'rxjs';
 
 @Component({
   selector: 'app-goalkeepers-clean-sheets',
@@ -12,47 +14,35 @@ import { stringsGoalkeepersCleanSheets } from '../../misc';
 })
 export class GoalkeepersCleanSheetsComponent implements OnInit {
   moduleStrings = stringsGoalkeepersCleanSheets;
-  cleanSheetsData: any[] = [];
+
   isCollapsed = true;
-  sortColumn: string | null = null;
-  sortDirection: 'asc' | 'desc' | '' = 'asc';
+  sortColumn: 'cleanSheets' = 'cleanSheets';
+  sortDirection: 'asc' | 'desc' = 'desc';
+
+  private sortDir$ = new BehaviorSubject<'asc' | 'desc'>(this.sortDirection);
+
+  cleanSheetsData$!: Observable<GoalkeepersCleanSheets[]>;
 
   constructor(private cleanSheetsService: GoalkeepersCleanSheetsService) {}
 
   ngOnInit(): void {
-    this.loadCleanSheets();
+    this.cleanSheetsData$ = combineLatest([
+      this.cleanSheetsService.getCleanSheets$(),
+      this.sortDir$,
+    ]).pipe(
+      map(([rows, dir]) => (dir === 'desc' ? rows : rows.slice().reverse()))
+    );
   }
 
-  loadCleanSheets(): void {
-    this.cleanSheetsData = this.cleanSheetsService.getCleanSheets();
-    this.sortData('cleanSheets');
+  sortData(column: 'cleanSheets'): void {
+    this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    this.sortDir$.next(this.sortDirection);
+    this.sortColumn = column;
   }
 
   toggleCollapse(): void {
     this.isCollapsed = !this.isCollapsed;
   }
 
-  sortData(column: string): void {
-    if (this.sortColumn === column) {
-      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-    } else {
-      this.sortColumn = column;
-      this.sortDirection = 'desc';
-    }
-
-    this.cleanSheetsData = [...this.cleanSheetsData].sort((a, b) => {
-      const valueA = this.getSortableValue(a, column);
-      const valueB = this.getSortableValue(b, column);
-
-      if (valueA === null || valueB === null) {
-        return 0;
-      }
-      return this.sortDirection === 'asc' ? valueA - valueB : valueB - valueA;
-    });
-  }
-
-  getSortableValue(player: any, column: string): number {
-    const value = player[column];
-    return value ? value : 0;
-  }
+  trackRow = (_: number, r: GoalkeepersCleanSheets) => r.playerId;
 }

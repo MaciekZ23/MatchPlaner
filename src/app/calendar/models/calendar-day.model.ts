@@ -1,7 +1,6 @@
-import { Match } from "./match.model";
+import { Match } from './match.model';
 
 export interface CalendarDay {
-    date: string;
-    matches: Match[];
+  date: string;
+  matches: Match[];
 }
-

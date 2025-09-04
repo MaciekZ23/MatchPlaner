@@ -6,18 +6,32 @@
       class="accordion d-flex flex-column gap-1 gap-md-2"
       id="calendarAccordion"
     >
-      <app-calendar-day
-        *ngFor="let day of days"
-        [date]="day.date"
-        [matches]="day.matches"
-        (matchClicked)="openDetails($event)"
-      >
-      </app-calendar-day>
+      <ng-container *ngIf="days$ | async as days">
+        <app-calendar-day
+          *ngFor="let day of days"
+          [date]="day.date"
+          [matches]="day.matches"
+          (matchClicked)="openDetails($event)"
+        >
+        </app-calendar-day>
+      </ng-container>
     </div>
   </div>
 </div>
 
 <app-match-details-modal
   [match]="selectedMatch"
+  [teamMap]="teamMap$ | async"
+  [playerMap]="playerMap$ | async"
   (close)="closeDetails()"
+  (requestVoteConfirm)="onRequestVoteConfirm($event)"
 ></app-match-details-modal>
+
+<app-confirm-modal
+  #confirmModal
+  [title]="confirmStrings.title"
+  [message]="confirmStrings.message"
+  [labels]="confirmStrings.labels"
+  [size]="'md'"
+  [confirmVariant]="'primary'"
+></app-confirm-modal>

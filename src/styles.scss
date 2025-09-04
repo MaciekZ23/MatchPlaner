@@ -6,6 +6,7 @@ $table-highlight: #007bfe;
 $table-highlight-2: #0073ec;
 $button-hover: #0056b3;
 $sky-blue: #add8e6;
+$light-blue: #0dcaf0;
 
 $text-gray: #dedede;
 $menu-text: #adadad;
@@ -17,17 +18,20 @@ $match-card: #404040;
 $match-card-hover: #505050;
 $match-card-badge: #555555;
 $match-card-text-group: #cccccc;
+$match-card-background-dot: #c51022;
+$match-card-background-badge-live: #c51022;
+$match-card-background-badge-scheduled: #777777;
+
+/* KOLORY MODALA (OKIENKA WYSKAKUJĄCEGO z WYDARZENIAMI MECZU) */
+$modal-card-icon-yellow: #f4c024;
+$modal-card-icon-red: #c51022;
+$modal-card-icon-own-goal: #ff4d4d;
+$modal-card-icon-futbol: #49a97e;
 
 /* KOLORY W TABELACH */
 $border-table: #505053;
 $text-diff-plus: #49a97e;
 $text-diff-minus: #ff4d4d;
-.text-diff-minus {
-  color: $text-diff-minus !important;
-}
-.text-diff-plus {
-  color: $text-diff-plus !important;
-}
 
 /* KOLORY NAVBARA i TOPBARA*/
 $navbar-topbar-background-color: #1c1c1c;

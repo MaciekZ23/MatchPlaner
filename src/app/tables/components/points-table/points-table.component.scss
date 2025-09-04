@@ -58,6 +58,14 @@ table {
   font-size: 1rem;
 }
 
+.text-diff-minus {
+  color: $text-diff-minus;
+}
+
+.text-diff-plus {
+  color: $text-diff-plus;
+}
+
 @media (max-width: 767.98px) {
   h2.card-title {
     font-size: 1rem !important;
