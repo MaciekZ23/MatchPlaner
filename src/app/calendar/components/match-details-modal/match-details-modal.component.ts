@@ -47,6 +47,11 @@ export class MatchDetailsModalComponent
   @Input() teamMap: Map<string, CoreTeam> | null = null;
   @Input() playerMap: Map<string, CorePlayer> | null = null;
   @Output() close = new EventEmitter<void>();
+  @Output() requestVoteConfirm = new EventEmitter<{
+    matchId: string;
+    playerId: string;
+    playerName: string;
+  }>();
 
   @ViewChild('modalRef', { static: true })
   modalRef!: ElementRef<HTMLDivElement>;
@@ -163,13 +168,14 @@ export class MatchDetailsModalComponent
     if (!this.match || !this.selectedPlayerId) {
       return;
     }
-    const ok = window.confirm(
-      `Głosujesz na: ${this.selectedPlayerId}. Potwierdzasz?`
-    );
-    if (!ok) {
-      return;
-    }
-    this.facade.voteFor(this.match.id, this.selectedPlayerId);
+    const playerName =
+      this.playerMap?.get(this.selectedPlayerId)?.name ?? this.selectedPlayerId;
+
+    this.requestVoteConfirm.emit({
+      matchId: this.match.id,
+      playerId: this.selectedPlayerId,
+      playerName,
+    });
   }
 
   // Wyświetlenie w timeline tylko goli, samobóji i kartek (bez ASSIST)

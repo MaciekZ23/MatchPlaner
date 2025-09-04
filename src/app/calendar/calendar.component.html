@@ -24,4 +24,14 @@
   [teamMap]="teamMap$ | async"
   [playerMap]="playerMap$ | async"
   (close)="closeDetails()"
+  (requestVoteConfirm)="onRequestVoteConfirm($event)"
 ></app-match-details-modal>
+
+<app-confirm-modal
+  #confirmModal
+  [title]="confirmStrings.title"
+  [message]="confirmStrings.message"
+  [labels]="confirmStrings.labels"
+  [size]="'md'"
+  [confirmVariant]="'primary'"
+></app-confirm-modal>

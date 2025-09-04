@@ -3,11 +3,16 @@
 ## 1.8.0
 
 ### (FEATURE) Bazowy model turnieju, model glosowania na MVP zawodnika meczu
-* Modele core: Tournament, Stage, Group, Team, Player, Match
-* Nowa zakładka MVP w modalu meczu z pełnym przepływem głosowania
-* Serwisy przepisane na strumienie (Observable) i użycie async pipe w komponentach
-* Routing zespołów: /teams/:id — widok składu po wejściu z listy
-* Modal meczu: wsparcie goli samobójczych i kartek (żółta, druga żółta, czerwona) z ikonami
+* Dodano bazowe modele turnieju: Tournament, Stage, Group, Team, Player, Match
+* Dodano zakładkę MVP w modalu meczu z pełnym przepływem głosowania
+* Dodano podsumowanie głosów (liczba, procenty, oznaczenie zwycięzcy)
+* Dodano odliczanie do końca głosowania na podstawie closesAtISO
+* Zmieniono serwisy na strumieniowe (Observable) i użyto async pipe
+* Zmieniono routing drużyn: /teams/:id – szybki podgląd składu z listy
+* Dodano obsługę goli samobójczych i kartek (żółta / druga żółta / czerwona) z ikonami
+* Dodano uniwersalny ConfirmModal (tytuł, wiadomość, etykiety, wariant przycisku)
+* Zmieniono widok szczegółów: asysty nie są już pokazywane w timeline (zostają w MVP)
+* Poprawiono WCAG/ARIA
 
 ## 1.7.0
 
