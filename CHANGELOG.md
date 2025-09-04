@@ -12,7 +12,7 @@
 * Dodano obsługę goli samobójczych i kartek (żółta / druga żółta / czerwona) z ikonami
 * Dodano uniwersalny ConfirmModal (tytuł, wiadomość, etykiety, wariant przycisku)
 * Zmieniono widok szczegółów: asysty nie są już pokazywane w timeline (zostają w MVP)
-* Poprawiono WCAG/ARIA
+* Naprawiono błędy WCAG (ARIA, fokusowalność)
 
 ## 1.7.0
 
