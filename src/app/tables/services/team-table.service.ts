@@ -30,6 +30,9 @@ export class TeamTableService {
           teamMap
         );
 
+        const playoffStageId: string | null =
+          tournament.stages?.find((s: any) => s.kind === 'PLAYOFF')?.id ?? null;
+
         // Przytnij ekspozycję wg trybu
         let groups: PointsTableGroup[] = [];
         if (mode === 'LEAGUE') {
@@ -40,7 +43,7 @@ export class TeamTableService {
           groups = []; // w pucharze nie pokazujemy tabel ligowych
         }
 
-        return { mode, groups };
+        return { mode, groups, playoffStageId };
       })
     );
   }

@@ -1,71 +1,154 @@
-<div class="bracket">
-  <ng-container *ngIf="matches$ | async as matches">
-    <ng-container *ngIf="rounds$ | async as rounds">
-      <div
-        class="round"
-        *ngFor="let r of rounds; let i = index"
-        [style.gridColumn]="i + 1"
-      >
-        <div class="round-title">
-          {{
-            r === 1
-              ? "Finał"
-              : r === 2
-              ? "Półfinał"
-              : r === 3
-              ? "Ćwierćfinał"
-              : "Runda " + r
-          }}
-        </div>
-
-        <div class="round-col">
-          <ng-container
-            *ngFor="let m of matches | bracketRound : r; let j = index"
-          >
+<div class="card bg-dark text-white">
+  <h2
+    id="playoffsTitle"
+    class="card-title card-header bg-transparent d-flex justify-content-between align-items-center fs-5 text p-3"
+  >
+    <span>{{ moduleStrings.title }}</span>
+    <button
+      class="btn btn-link text-white p-0 btn-sm"
+      type="button"
+      (click)="toggleCollapse()"
+      [attr.aria-label]="isCollapsed ? 'Rozwiń sekcję' : 'Zwiń sekcję'"
+      [attr.aria-expanded]="!isCollapsed"
+      aria-controls="playoffsCollapse"
+    >
+      <i
+        class="fas"
+        [ngClass]="{
+          'fa-chevron-down': isCollapsed,
+          'fa-chevron-up': !isCollapsed
+        }"
+        aria-hidden="true"
+      ></i>
+    </button>
+  </h2>
+  <div
+    class="collapse"
+    [ngClass]="{ show: !isCollapsed }"
+    id="playoffsCollapse"
+  >
+    <div
+      class="card-body"
+      tabindex="0"
+      role="region"
+      aria-labelledby="playoffsTitle"
+    >
+      <ng-container *ngIf="matches$ | async as matches">
+        <ng-container *ngIf="roundSides$ | async as sides; else emptyTpl">
+          <ng-container *ngIf="uiMatchById$ | async as ui">
             <div
-              class="match-block"
-              [style.marginTop.px]="
-                j === 0 ? offsetTopPx(rounds[rounds.length - 1], r) : 0
-              "
-              [style.marginBottom.px]="blockGapPx(rounds[rounds.length - 1], r)"
+              class="bracket-grid"
+              [style.--card-h.px]="matchCardHeight"
+              [style.--v-gap.px]="vGap"
             >
-              <div class="match-card">
-                <div class="row">
-                  <span class="team" [class.bye]="isBye(m.home.type)">
-                    {{
-                      m.home.type === "TEAM"
-                        ? m.home.ref
-                        : m.home.type === "BYE"
-                        ? "BYE"
-                        : "Zwyc. " + m.home.ref
-                    }}
-                  </span>
-                  <span class="score" *ngIf="m.score"
-                    >{{ m.score.home }} : {{ m.score.away }}</span
-                  >
-                </div>
-                <div class="row">
-                  <span class="team" [class.bye]="isBye(m.away.type)">
-                    {{
-                      m.away.type === "TEAM"
-                        ? m.away.ref
-                        : m.away.type === "BYE"
-                        ? "BYE"
-                        : "Zwyc. " + m.away.ref
-                    }}
-                  </span>
-                </div>
+              <div class="side left">
+                <ng-container *ngFor="let r of sides.left; trackBy: trackRound">
+                  <ng-container *ngIf="r > 1">
+                    <div
+                      class="round"
+                      [attr.data-round]="r"
+                      [style.--offset-mult]="
+                        (roundOffsetMult$ | async)?.get(r) ?? 0
+                      "
+                    >
+                      <div class="round-col">
+                        <ng-container *ngIf="matches | bracketRound : r as arr">
+                          <div
+                            class="match-wrap"
+                            *ngFor="
+                              let m of leftHalf(matches, r);
+                              trackBy: trackMatch
+                            "
+                          >
+                            <div class="text-white text-center">
+                              {{ bracket.matchTitle(m.round, m.index) }}
+                            </div>
+                            <app-match-card
+                              #cardProbe
+                              class="match-card-compact"
+                              [match]="ui.get(m.id)!"
+                              (openDetails)="openDetails($event)"
+                            ></app-match-card>
+                          </div>
+                        </ng-container>
+                      </div>
+                    </div>
+                  </ng-container>
+                </ng-container>
               </div>
 
-              <div class="connector" aria-hidden="true">
-                <span class="line h"></span>
-                <span class="line v"></span>
-                <span class="line h right"></span>
+              <div class="center-col">
+                <ng-container *ngIf="matches | bracketRound : 1 as finalsArr">
+                  <div class="center-final" *ngIf="finalsArr.length > 0">
+                    <div class="round-title text-center">
+                      {{ bracket.matchTitle(1, 1) }}
+                    </div>
+                    <app-match-card
+                      class="match-card-compact"
+                      [match]="ui.get(finalsArr[0].id)!"
+                      (openDetails)="openDetails($event)"
+                    ></app-match-card>
+                  </div>
+
+                  <div class="center-third" *ngIf="finalsArr.length > 1">
+                    <div class="round-title text-center">
+                      {{ bracket.matchTitle(1, 2) }}
+                    </div>
+                    <app-match-card
+                      class="match-card-compact"
+                      [match]="ui.get(finalsArr[1].id)!"
+                      (openDetails)="openDetails($event)"
+                    ></app-match-card>
+                  </div>
+                </ng-container>
+              </div>
+
+              <div class="side right">
+                <ng-container
+                  *ngFor="let r of sides.right; trackBy: trackRound"
+                >
+                  <ng-container *ngIf="r > 1">
+                    <div
+                      class="round"
+                      [attr.data-round]="r"
+                      [style.--offset-mult]="
+                        (roundOffsetMult$ | async)?.get(r) ?? 0
+                      "
+                    >
+                      <div class="round-col">
+                        <ng-container *ngIf="matches | bracketRound : r as arr">
+                          <div
+                            class="match-wrap"
+                            *ngFor="
+                              let m of rightHalf(matches, r);
+                              trackBy: trackMatch
+                            "
+                          >
+                            <div class="text-white text-center">
+                              {{ bracket.matchTitle(m.round, m.index) }}
+                            </div>
+                            <app-match-card
+                              #cardProbe
+                              class="match-card-compact"
+                              [match]="ui.get(m.id)!"
+                              (openDetails)="openDetails($event)"
+                            ></app-match-card>
+                          </div>
+                        </ng-container>
+                      </div>
+                    </div>
+                  </ng-container>
+                </ng-container>
               </div>
             </div>
           </ng-container>
+        </ng-container>
+      </ng-container>
+      <ng-template #emptyTpl>
+        <div class="alert alert-secondary m-0">
+          Brak danych drabinki do wyświetlenia.
         </div>
-      </div>
-    </ng-container>
-  </ng-container>
+      </ng-template>
+    </div>
+  </div>
 </div>

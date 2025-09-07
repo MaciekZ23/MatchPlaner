@@ -18,3 +18,9 @@ export interface BracketMatch {
   date: string;
   parentMatchId?: string;
 }
+
+export interface QualifiedTeam {
+  teamId: string;
+  group: string;
+  place: number;
+}
