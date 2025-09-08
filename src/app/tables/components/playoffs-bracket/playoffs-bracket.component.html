@@ -37,6 +37,7 @@
         <ng-container *ngIf="roundSides$ | async as sides; else emptyTpl">
           <ng-container *ngIf="uiMatchById$ | async as ui">
             <div
+              #grid
               class="bracket-grid"
               [style.--card-h.px]="matchCardHeight"
               [style.--v-gap.px]="vGap"
@@ -83,22 +84,26 @@
                     <div class="round-title text-center">
                       {{ bracket.matchTitle(1, 1) }}
                     </div>
-                    <app-match-card
-                      class="match-card-compact"
-                      [match]="ui.get(finalsArr[0].id)!"
-                      (openDetails)="openDetails($event)"
-                    ></app-match-card>
+                    <div class="match-wrap center">
+                      <app-match-card
+                        class="match-card-compact"
+                        [match]="ui.get(finalsArr[0].id)!"
+                        (openDetails)="openDetails($event)"
+                      ></app-match-card>
+                    </div>
                   </div>
 
                   <div class="center-third" *ngIf="finalsArr.length > 1">
                     <div class="round-title text-center">
                       {{ bracket.matchTitle(1, 2) }}
                     </div>
-                    <app-match-card
-                      class="match-card-compact"
-                      [match]="ui.get(finalsArr[1].id)!"
-                      (openDetails)="openDetails($event)"
-                    ></app-match-card>
+                    <div class="match-wrap center">
+                      <app-match-card
+                        class="match-card-compact"
+                        [match]="ui.get(finalsArr[1].id)!"
+                        (openDetails)="openDetails($event)"
+                      ></app-match-card>
+                    </div>
                   </div>
                 </ng-container>
               </div>
@@ -149,6 +154,21 @@
           Brak danych drabinki do wyświetlenia.
         </div>
       </ng-template>
+      <app-match-details-modal
+        [match]="selectedMatch"
+        [teamMap]="teamMap$ | async"
+        [playerMap]="playerMap$ | async"
+        (close)="closeDetails()"
+        (requestVoteConfirm)="onRequestVoteConfirm($event)"
+      ></app-match-details-modal>
+      <app-confirm-modal
+        #confirmModal
+        [title]="confirmStrings.title"
+        [message]="confirmStrings.message"
+        [labels]="confirmStrings.labels"
+        [size]="'md'"
+        [confirmVariant]="'primary'"
+      ></app-confirm-modal>
     </div>
   </div>
 </div>
