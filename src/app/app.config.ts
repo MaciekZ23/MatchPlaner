@@ -10,12 +10,15 @@ import localePl from '@angular/common/locales/pl';
 registerLocaleData(localePl);
 import { TOURNAMENT_API } from './core/api/tournament.api';
 import { MockTournamentApi } from './core/mocks/mock-tournament.api';
+import { HttpTournamentApi } from './core/api/http-tournament.api';
+import { provideHttpClient } from '@angular/common/http';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
+    provideHttpClient(),
     { provide: LOCALE_ID, useValue: 'pl' },
-    { provide: TOURNAMENT_API, useClass: MockTournamentApi },
+    { provide: TOURNAMENT_API, useClass: HttpTournamentApi },
   ],
 };
