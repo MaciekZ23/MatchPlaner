@@ -1,0 +1,64 @@
+.bracket-grid {
+  --card-h: 150px;
+  --v-gap: 30px;
+}
+
+.bracket-grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr minmax(300px, auto) 1fr;
+  column-gap: 60px;
+  align-items: start;
+  overflow-x: auto;
+}
+
+.side {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: max-content;
+  column-gap: 60px;
+  min-width: max-content;
+}
+
+.side.left {
+  justify-self: end;
+}
+
+.side.right {
+  justify-self: start;
+}
+
+.round {
+  display: flex;
+  flex-direction: column;
+  padding-top: calc(
+    var(--offset-mult, 0) * (var(--card-h, 150px) + var(--v-gap, 30px)) / 2
+  );
+}
+
+.round-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--v-gap, 30px);
+}
+
+.center-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 30px;
+  min-width: 300px;
+}
+
+.center-final,
+.center-third {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.match-card-compact {
+  display: block;
+  width: 300px;
+  max-width: 100%;
+}

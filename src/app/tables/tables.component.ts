@@ -8,6 +8,7 @@ import { PageHeaderComponent } from '../shared/components/page-header/page-heade
 import { TeamTableService } from './services/team-table.service';
 import { PointsTableGroup, TablesVM } from './models';
 import { stringsTables } from './misc';
+import { PlayoffsBracketComponent } from './components/playoffs-bracket/playoffs-bracket.component';
 
 @Component({
   selector: 'app-tables',
@@ -17,6 +18,7 @@ import { stringsTables } from './misc';
     GoalkeepersCleanSheetsComponent,
     PointsTableComponent,
     PageHeaderComponent,
+    PlayoffsBracketComponent,
   ],
   templateUrl: './tables.component.html',
   styleUrls: ['./tables.component.scss'],

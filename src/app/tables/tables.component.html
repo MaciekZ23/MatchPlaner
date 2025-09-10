@@ -1,32 +1,39 @@
 <div class="container tables-page p-0 px-sm-1 py-sm-1">
   <app-page-header [title]="moduleStrings.headerTitle"></app-page-header>
 
-  <ng-container *ngIf="viewmodel$ | async as vm">
+  <ng-container *ngIf="viewmodel$ | async as viewmmodel">
     <div class="tables-list d-flex flex-column gap-1 gap-md-2">
-      <ng-container *ngIf="vm.mode === 'LEAGUE'">
+      <ng-container *ngIf="viewmmodel.mode === 'LEAGUE'">
         <app-points-table
-          *ngIf="vm.groups?.length"
-          [rows]="vm.groups[0].rows"
-          [groupTitle]="vm.groups[0].groupTitle"
+          *ngIf="viewmmodel.groups?.length"
+          [rows]="viewmmodel.groups[0].rows"
+          [groupTitle]="viewmmodel.groups[0].groupTitle"
         >
         </app-points-table>
       </ng-container>
 
-      <ng-container *ngIf="vm.mode === 'LEAGUE_PLAYOFFS'">
+      <ng-container *ngIf="viewmmodel.mode === 'LEAGUE_PLAYOFFS'">
         <app-points-table
-          *ngFor="let g of vm.groups; trackBy: trackGroup"
+          *ngFor="let g of viewmmodel.groups; trackBy: trackGroup"
           [rows]="g.rows"
           [groupTitle]="g.groupTitle"
         >
         </app-points-table>
+
+        <app-playoffs-bracket
+          *ngIf="viewmmodel.playoffStageId as sid"
+          [stageId]="sid"
+        ></app-playoffs-bracket>
+        <div *ngIf="!viewmmodel.playoffStageId" class="alert alert-info">
+          {{ moduleStrings.noStage }}
+        </div>
       </ng-container>
 
-      <ng-container *ngIf="vm.mode === 'KNOCKOUT'">
-        <!-- Podmieniamy na <app-playoffs-bracket -->
-        <div class="alert alert-info">
-          Tryb pucharowy – tabele ligowe są niedostępne. Wkrótce pojawi się
-          drabinka play-off.
-        </div>
+      <ng-container *ngIf="viewmmodel.mode === 'KNOCKOUT'">
+        <app-playoffs-bracket
+          *ngIf="viewmmodel.playoffStageId as sid"
+          [stageId]="sid"
+        ></app-playoffs-bracket>
       </ng-container>
 
       <app-top-scorers></app-top-scorers>

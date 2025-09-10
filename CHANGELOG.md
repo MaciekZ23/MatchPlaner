@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.9.0
+
+### (FEATURE) Drabinka play-off
+* Dodano drabinkę play-off (pucharową)
+
 ## 1.8.0
 
 ### (FEATURE) Bazowy model turnieju, model glosowania na MVP zawodnika meczu

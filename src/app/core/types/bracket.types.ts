@@ -1,0 +1,1 @@
+export type SlotType = 'TEAM' | 'WINNER' | 'LOSER' | 'BYE';
