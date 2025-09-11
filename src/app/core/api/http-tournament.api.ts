@@ -6,24 +6,25 @@ import { Match, Player, Team, Tournament } from '../models';
 
 @Injectable({ providedIn: 'root' })
 export class HttpTournamentApi implements ITournamentApi {
-  private readonly baseUrl = '/api';
   private readonly defaultTournamentId = 't1';
 
   constructor(private http: HttpClient) {}
 
   getTournament(id: string = this.defaultTournamentId): Observable<Tournament> {
-    return this.http.get<Tournament>(`${this.baseUrl}/v1/tournaments/${id}`);
+    return this.http.get<Tournament>(`/api/v1/tournaments/${id}`);
   }
 
-  getMatches(_stageId: string): Observable<Match[]> {
-    return of([]);
+  getTeams(tournamentId: string): Observable<Team[]> {
+    return this.http.get<Team[]>(`/api/v1/teams/tournament/${tournamentId}`);
   }
 
-  getPlayers(_tournamentId: string): Observable<Player[]> {
-    return of([]);
+  getPlayers(tournamentId: string) {
+    return this.http.get<Player[]>(
+      `/api/v1/teams/tournament/${tournamentId}/players`
+    );
   }
 
-  getTeams(_tournamentId: string): Observable<Team[]> {
-    return of([]);
+  getMatches(stageId: string): Observable<Match[]> {
+    return this.http.get<Match[]>(`/api/v1/matches/stage/${stageId}`);
   }
 }
