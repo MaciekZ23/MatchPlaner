@@ -1,0 +1,38 @@
+@use "../../styles.scss" as *;
+
+:host {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: block;
+  height: 100vh;
+  width: 100vw;
+  z-index: 10000;
+}
+
+.login-left {
+  background: $background-left-panel;
+
+  .login-title {
+    color: $table-highlight;
+  }
+
+  .login-logo {
+    width: 600px;
+    height: 600px;
+  }
+}
+
+.login-right {
+  background: $background-right-panel;
+  width: 30rem;
+
+  h1 {
+    color: $table-highlight;
+  }
+
+  .google-image {
+    width: 32px;
+    height: 32px;
+  }
+}

@@ -1,0 +1,25 @@
+<div class="login-container d-flex h-100">
+  <section
+    class="login-left d-flex justify-content-center align-items-center flex-grow-1"
+  >
+    <div class="text-center">
+      <h1 class="login-title fw-bold">{{ moduleStrings.appName }}</h1>
+      <img
+        [src]="moduleStrings.logoPath"
+        [alt]="moduleStrings.appName + ' logo'"
+        class="login-logo"
+      />
+    </div>
+  </section>
+
+  <div class="login-right d-flex flex-column p-4">
+    <h1 class="text-center fs-2 pt-5">
+      {{ moduleStrings.login.welcome }}
+    </h1>
+
+    <button class="btn-google mt-5">
+      <img src="assets/Google__G__logo.svg" class="google-image" alt="Google" />
+      {{ moduleStrings.login.googleButtonText }}
+    </button>
+  </div>
+</div>
