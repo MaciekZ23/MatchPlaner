@@ -9,9 +9,8 @@ import { TopbarComponent } from './topbar/topbar.component';
   imports: [RouterOutlet, NavbarComponent, TopbarComponent, CommonModule],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
-  standalone: true
+  standalone: true,
 })
-
 export class AppComponent {
   isSidebarOpen: boolean = true;
 
@@ -19,4 +18,3 @@ export class AppComponent {
     this.isSidebarOpen = !this.isSidebarOpen;
   }
 }
-

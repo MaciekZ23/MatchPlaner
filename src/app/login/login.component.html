@@ -1,6 +1,6 @@
-<div class="login-container d-flex h-100">
+<div class="login-container d-flex min-vh-100 w-100">
   <section
-    class="login-left d-flex justify-content-center align-items-center flex-grow-1"
+    class="login-left d-none d-md-flex justify-content-center align-items-center flex-grow-1"
   >
     <div class="text-center">
       <h1 class="login-title fw-bold">{{ moduleStrings.appName }}</h1>
@@ -12,14 +12,33 @@
     </div>
   </section>
 
-  <div class="login-right d-flex flex-column p-4">
+  <div class="login-right d-flex flex-column align-items-center p-4">
     <h1 class="text-center fs-2 pt-5">
       {{ moduleStrings.login.welcome }}
     </h1>
 
-    <button class="btn-google mt-5">
-      <img src="assets/Google__G__logo.svg" class="google-image" alt="Google" />
+    <button
+      type="button"
+      class="btn btn-sm btn-custom d-flex justify-content-center align-items-center text-white mt-5 gap-4 p-3"
+      aria-label="Zaloguj się przez Google"
+      (click)="signInWithGoogle()"
+    >
+      <img
+        src="assets/logo-Google-2.png"
+        class="google-image"
+        alt="Google"
+        aria-hidden="true"
+      />
       {{ moduleStrings.login.googleButtonText }}
+    </button>
+    <button
+      type="button"
+      class="btn btn-sm btn-custom d-flex justify-content-center align-items-center text-white mt-4 gap-4 p-3"
+      (click)="continueAsGuest()"
+    >
+      >
+      <i class="fa-solid fa-user quest" aria-hidden="true"></i>
+      {{ moduleStrings.login.questLogin }}
     </button>
   </div>
 </div>

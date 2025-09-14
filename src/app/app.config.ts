@@ -28,7 +28,7 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withInterceptorsFromDi()),
     { provide: LOCALE_ID, useValue: 'pl' },
     { provide: TOURNAMENT_API, useClass: HttpTournamentApi },
-    // { provide: HTTP_INTERCEPTORS, useClass: AuthTokenInterceptor, multi: true },
+    { provide: HTTP_INTERCEPTORS, useClass: AuthTokenInterceptor, multi: true },
     {
       provide: 'SocialAuthServiceConfig',
       useValue: {
@@ -37,7 +37,8 @@ export const appConfig: ApplicationConfig = {
           {
             id: GoogleLoginProvider.PROVIDER_ID,
             provider: new GoogleLoginProvider(
-              '23616475933-77k5pkc3l7ij260hqmpc76k9v07nsvtf.apps.googleusercontent.com'
+              '23616475933-77k5pkc3l7ij260hqmpc76k9v07nsvtf.apps.googleusercontent.com',
+              { oneTapEnabled: false }
             ),
           },
         ],

@@ -3,6 +3,7 @@ export const stringsLogin = {
   logoPath: 'assets/MatchPlaner2.png',
   login: {
     welcome: 'Witamy w MatchPLANER!',
-    googleButtonText: 'continue_with',
+    googleButtonText: 'Zaloguj się przez Google',
+    questLogin: ' Kontynuuj jako gość',
   },
 };

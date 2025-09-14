@@ -18,8 +18,10 @@
   }
 
   .login-logo {
-    width: 600px;
-    height: 600px;
+    width: clamp(280px, 38vw, 520px);
+    aspect-ratio: 1 / 1;
+    height: auto;
+    object-fit: contain;
   }
 }
 
@@ -29,6 +31,16 @@
 
   h1 {
     color: $table-highlight;
+  }
+
+  .btn-custom {
+    border: 1px solid $border-table;
+    border-radius: 10px;
+    cursor: pointer;
+  }
+
+  .quest {
+    font-size: 1.2rem;
   }
 
   .google-image {
