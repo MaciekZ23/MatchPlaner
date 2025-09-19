@@ -17,26 +17,13 @@
       {{ moduleStrings.login.welcome }}
     </h1>
 
-    <button
-      type="button"
-      class="btn btn-sm btn-custom d-flex justify-content-center align-items-center text-white mt-5 gap-4 p-3"
-      aria-label="Zaloguj się przez Google"
-      (click)="signInWithGoogle()"
-    >
-      <img
-        src="assets/logo-Google-2.png"
-        class="google-image"
-        alt="Google"
-        aria-hidden="true"
-      />
-      {{ moduleStrings.login.googleButtonText }}
-    </button>
+    <div id="googleBtn" class="mt-5"></div>
+
     <button
       type="button"
       class="btn btn-sm btn-custom d-flex justify-content-center align-items-center text-white mt-4 gap-4 p-3"
       (click)="continueAsGuest()"
     >
-      >
       <i class="fa-solid fa-user quest" aria-hidden="true"></i>
       {{ moduleStrings.login.questLogin }}
     </button>

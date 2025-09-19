@@ -117,34 +117,26 @@ export class MatchDetailsModalComponent
   }
 
   private setupVotingStreams(match: Match) {
-    if (!this.teamMap || !this.playerMap) {
-      return;
-    }
-    this.facade.initMatch(match, this.teamMap, this.playerMap);
     this.voting$ = this.facade.voting$(match.id);
     this.homeCandidates$ = this.facade.homeCandidates$(
       match.id,
       match.homeTeamId,
-      match,
-      this.playerMap
+      match
     );
     this.awayCandidates$ = this.facade.awayCandidates$(
       match.id,
       match.awayTeamId,
-      match,
-      this.playerMap
+      match
     );
-    this.summary$ = this.facade.summary$(
-      match.id,
-      this.teamMap,
-      this.playerMap
-    );
+    this.summary$ = this.facade.summary$(match.id, this.teamMap ?? new Map());
     this.countdown$ = this.voting$.pipe(
       map((v) => v?.closesAtISO ?? null),
       distinctUntilChanged(),
       switchMap((iso) => (iso ? countdownTo(iso) : of(''))),
       shareReplay(1)
     );
+
+    this.facade.load(match.id);
   }
 
   onRequestClose(): void {

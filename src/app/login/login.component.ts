@@ -1,70 +1,146 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { AfterViewInit, Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import {
-  SocialUser,
-  SocialAuthService,
-  GoogleLoginProvider,
-  GoogleSigninButtonModule,
-} from '@abacritt/angularx-social-login';
 import { stringsLogin } from './misc';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../core/auth/auth.service';
 
+declare global {
+  interface Window {
+    google?: any;
+  }
+}
+
 @Component({
   selector: 'app-login',
-  imports: [CommonModule, GoogleSigninButtonModule],
+  imports: [CommonModule],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',
   standalone: true,
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent implements OnInit, AfterViewInit {
   moduleStrings = stringsLogin;
 
-  private auth = inject(SocialAuthService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private http = inject(HttpClient);
   private appAuth = inject(AuthService);
 
-  user: SocialUser | null = null;
   loading = false;
   errorMsg = '';
 
-  private waitingForGoogleClick = false;
+  private readonly CLIENT_ID =
+    '23616475933-lb3r0o8kjt0mll98dlrvcmj5ekq1r4kc.apps.googleusercontent.com';
 
-  ngOnInit(): void {
-    this.auth.authState.subscribe((user) => {
-      this.user = user;
-      if (!this.waitingForGoogleClick || !user) {
-        return;
+  private gisInitialized = false;
+
+  ngOnInit(): void {}
+
+  ngAfterViewInit(): void {
+    this.initGoogle();
+  }
+
+  private initGoogle() {
+    const render = () => {
+      try {
+        window.google?.accounts.id.initialize({
+          client_id: this.CLIENT_ID,
+          callback: (resp: any) => this.onGoogleCredential(resp),
+          ux_mode: 'popup',
+          auto_select: false,
+          use_fedcm_for_prompt: false,
+          itp_support: true,
+        });
+
+        const host = document.getElementById('googleBtn');
+        if (host) {
+          window.google?.accounts.id.renderButton(host, {
+            theme: 'filled_blue',
+            size: 'large',
+            text: 'continue_with',
+            shape: 'square',
+            width: 280,
+          });
+        }
+      } catch (e) {
+        console.error('GIS init error', e);
+        this.errorMsg = 'Nie udało się zainicjalizować logowania Google.';
       }
-      this.loading = true;
-      this.errorMsg = '';
-      this.appAuth.loginWithGoogle(user.idToken).subscribe({
-        next: ({ token, avatar }) => {
-          this.appAuth.saveSession(token, avatar ?? user.photoUrl ?? undefined);
-          this.navigateAfterLogin();
-        },
-        error: (err) => {
-          console.error('Google login error:', err);
-          this.errorMsg = 'Nie udało się zalogować przez Google';
-          this.loading = false;
-          this.waitingForGoogleClick = false;
-        },
-      });
-    });
+    };
+
+    if (window.google?.accounts?.id) {
+      render();
+    } else {
+      const t = setInterval(() => {
+        if (window.google?.accounts?.id) {
+          clearInterval(t);
+          render();
+        }
+      }, 100);
+      setTimeout(() => clearInterval(t), 10000);
+    }
   }
 
   signInWithGoogle(): void {
-    this.waitingForGoogleClick = true;
-    this.loading = true;
     this.errorMsg = '';
-    this.auth.signIn(GoogleLoginProvider.PROVIDER_ID).catch((e) => {
-      console.error(e);
-      this.waitingForGoogleClick = false;
+    this.loading = true;
+
+    const tryPrompt = () => {
+      try {
+        window.google?.accounts.id.prompt((n: any) => {
+          if (n?.isNotDisplayed?.() || n?.isSkippedMoment?.()) {
+            this.loading = false;
+            this.errorMsg =
+              'Przeglądarka zablokowała okno logowania Google. Pozwól na third-party sign-in w ustawieniach strony lub spróbuj ponownie.';
+          }
+        });
+      } catch (e) {
+        console.error(e);
+        this.loading = false;
+        this.errorMsg = 'Nie udało się uruchomić logowania Google.';
+      }
+    };
+
+    if (this.gisInitialized) {
+      tryPrompt();
+    } else {
+      // jeśli jeszcze się nie zdążyło zainicjalizować – zainicjalizuj i dopiero prompt
+      this.initGoogle();
+      const wait = setInterval(() => {
+        if (this.gisInitialized) {
+          clearInterval(wait);
+          tryPrompt();
+        }
+      }, 100);
+      setTimeout(() => {
+        clearInterval(wait);
+        if (!this.gisInitialized) {
+          this.loading = false;
+          this.errorMsg =
+            'Nie udało się zainicjalizować logowania Google. Odśwież stronę.';
+        }
+      }, 5000);
+    }
+  }
+
+  private onGoogleCredential(resp: any) {
+    const idToken: string | undefined = resp?.credential;
+    if (!idToken) {
       this.loading = false;
-      this.errorMsg = 'Nie udało się uruchomić logowania Google';
+      this.errorMsg = 'Brak tokenu logowania Google';
+      return;
+    }
+
+    this.appAuth.loginWithGoogle(idToken).subscribe({
+      next: ({ token, avatar }) => {
+        this.appAuth.saveSession(token, avatar);
+        this.navigateAfterLogin();
+      },
+      error: (err) => {
+        console.error('Google login error:', err);
+        this.errorMsg = 'Nie udało się zalogować przez Google.';
+        this.loading = false;
+      },
     });
   }
 
@@ -93,14 +169,15 @@ export class LoginComponent implements OnInit {
 
   signOut(): void {
     this.appAuth.logout();
-    this.auth.signOut().catch(() => {});
+    try {
+      window.google?.accounts.id.disableAutoSelect?.();
+    } catch {}
     this.router.navigateByUrl('/login');
   }
 
   private navigateAfterLogin() {
     const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/';
     this.loading = false;
-    this.waitingForGoogleClick = false;
     this.router.navigateByUrl(returnUrl);
   }
 

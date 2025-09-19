@@ -62,3 +62,15 @@
   width: 300px;
   max-width: 100%;
 }
+
+@media (max-width: 767.98px) {
+  // Padding (p-3 to 1rem lub 16px)
+  h6.card-title {
+    padding: 0.8rem !important;
+  }
+
+  // Tytuł (fs-5 to 1.25rem lub 20px)
+  .card-title span {
+    font-size: 1rem;
+  }
+}
