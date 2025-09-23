@@ -36,6 +36,11 @@ export class TournamentStore {
     shareReplay({ bufferSize: 1, refCount: true })
   );
 
+  refreshTeams(): void {
+    const id = this.tournamentId$.getValue();
+    this.tournamentId$.next(id);
+  }
+
   players$ = this.tournamentId$.pipe(
     switchMap((id) => this.api.getPlayers(id)),
     shareReplay({ bufferSize: 1, refCount: true })

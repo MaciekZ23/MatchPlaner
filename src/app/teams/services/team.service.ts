@@ -1,15 +1,17 @@
 import { Injectable, inject } from '@angular/core';
-import { combineLatest, map } from 'rxjs';
+import { combineLatest, map, of, switchMap, take, tap } from 'rxjs';
 import { TournamentStore } from '../../core/services/tournament-store.service';
 import { Team as UiTeam, Player as UiPlayer } from '../models/team';
 import {
   Team as CoreTeam,
   Player as CorePlayer,
 } from '../../core/models/tournament.models';
+import { HttpTournamentApi } from '../../core/api/http-tournament.api';
 
 @Injectable({ providedIn: 'root' })
 export class TeamService {
   private readonly store = inject(TournamentStore);
+  private readonly api = inject(HttpTournamentApi);
 
   getTeams$() {
     return combineLatest([this.store.teams$, this.store.players$]).pipe(
@@ -20,6 +22,20 @@ export class TeamService {
   getTeamById$(id: number) {
     return this.getTeams$().pipe(
       map((list) => list.find((t) => t.id === id) ?? null)
+    );
+  }
+
+  createTeam$(team: CoreTeam, tournamentId?: string) {
+    const tid$ = tournamentId
+      ? of(tournamentId)
+      : this.store.tournament$.pipe(
+          take(1),
+          map((t) => t.id)
+        );
+
+    return tid$.pipe(
+      switchMap((tid) => this.api.createTeam(team, tid)),
+      tap(() => this.store.refreshTeams()) // patrz punkt 2 niżej
     );
   }
 

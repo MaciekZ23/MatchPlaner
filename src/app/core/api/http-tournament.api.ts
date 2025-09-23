@@ -27,4 +27,19 @@ export class HttpTournamentApi implements ITournamentApi {
   getMatches(stageId: string): Observable<Match[]> {
     return this.http.get<Match[]>(`/api/v1/matches/stage/${stageId}`);
   }
+
+  createTeam(team: Team, tournamentId?: string): Observable<Team> {
+    return this.http.post<Team>(
+      `/api/v1/teams/tournament/${tournamentId}`,
+      team
+    );
+  }
+
+  updateTeam(teamId: string, patch: Partial<Team>): Observable<Team> {
+    return this.http.patch<Team>(`/api/v1/teams/${teamId}`, patch);
+  }
+
+  deleteTeam(teamId: string): Observable<void> {
+    return this.http.delete<void>(`/api/v1/teams/${teamId}`);
+  }
 }

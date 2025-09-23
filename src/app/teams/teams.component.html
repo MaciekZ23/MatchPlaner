@@ -5,7 +5,17 @@
         ? moduleStrings.headerTitle
         : moduleStrings.headerTitleTeam
     "
-  ></app-page-header>
+    ><button
+      *ngIf="!(selectedTeam$ | async)"
+      header-action
+      type="button"
+      class="btn text-white btn-sm"
+      (click)="onAddTeam()"
+      aria-label="Dodaj drużynę"
+    >
+      {{ moduleStrings.addTeam }}
+    </button></app-page-header
+  >
 
   <div
     *ngIf="!(selectedTeam$ | async)"
@@ -41,3 +51,13 @@
 </div>
 
 <app-spinner *ngIf="isLoading"></app-spinner>
+
+<!-- Formularz do dodawania drużyny -->
+<app-dynamic-form
+  [formTitle]="formTitleAddTeam"
+  [fields]="addTeamFormFields"
+  [isOpen]="openAddTeamFormModal"
+  (formSubmitted)="onAddTeamFormSubmitted($event)"
+  (close)="openAddTeamFormModal = false"
+>
+</app-dynamic-form>

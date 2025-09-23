@@ -14,6 +14,10 @@ export interface ITournamentApi {
   getTeams(tournamentId: string): Observable<Team[]>;
   getPlayers(tournamentId: string): Observable<Player[]>;
   getMatches(stageId: string): Observable<Match[]>;
+
+  createTeam(team: Team, tournamentId?: string): Observable<Team>;
+  updateTeam(teamId: string, patch: Partial<Team>): Observable<Team>;
+  deleteTeam(teamId: string): Observable<void>;
 }
 
 /**
