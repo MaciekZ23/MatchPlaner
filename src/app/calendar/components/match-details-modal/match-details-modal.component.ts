@@ -116,23 +116,83 @@ export class MatchDetailsModalComponent
     } catch {}
   }
 
-  private setupVotingStreams(match: Match) {
+  private setupVotingStreams(match: Match): void {
     this.voting$ = this.facade.voting$(match.id);
-    this.homeCandidates$ = this.facade.homeCandidates$(
-      match.id,
-      match.homeTeamId,
-      match
-    );
-    this.awayCandidates$ = this.facade.awayCandidates$(
-      match.id,
-      match.awayTeamId,
-      match
-    );
+
+    // Zamieniamy null -> '' żeby NIE podawać nulli w dół
+    const homeId: string = match.homeTeamId ?? '';
+    const awayId: string = match.awayTeamId ?? '';
+
+    // Minimalny obiekt zgodny z tym, czego używa VoteFacade.candidates$
+    type MinimalMatchLocal = {
+      id: string;
+      homeTeamId: string;
+      awayTeamId: string;
+      status: 'SCHEDULED' | 'LIVE' | 'FINISHED';
+      lineups?: { homeGKIds?: string[]; awayGKIds?: string[] };
+      score?: { home: number; away: number };
+      scoreA?: number;
+      scoreB?: number;
+    };
+
+    const minimal: MinimalMatchLocal = {
+      id: match.id,
+      homeTeamId: homeId,
+      awayTeamId: awayId,
+      status: match.status,
+      lineups: match.lineups,
+    };
+
+    // Jeśli masz w UI pola scoreA/scoreB – też przekażemy (fallback dla helpersów)
+    if (
+      typeof (match as any).scoreA === 'number' ||
+      typeof (match as any).scoreB === 'number'
+    ) {
+      minimal.scoreA = (match as any).scoreA ?? 0;
+      minimal.scoreB = (match as any).scoreB ?? 0;
+    }
+
+    // Jeśli przyjdzie z backendu score: {home,away} – też przekażemy
+    if ((match as any).score && typeof (match as any).score.home === 'number') {
+      minimal.score = {
+        home: (match as any).score.home,
+        away: (match as any).score.away,
+      };
+    }
+
+    // Kandydaci – nie wolno wołać fasady z null teamId → w razie braku zwracamy pustą listę
+    if (homeId) {
+      this.homeCandidates$ = this.facade.homeCandidates$(
+        match.id,
+        homeId,
+        minimal
+      );
+    } else {
+      this.homeCandidates$ = of([]);
+    }
+
+    if (awayId) {
+      this.awayCandidates$ = this.facade.awayCandidates$(
+        match.id,
+        awayId,
+        minimal
+      );
+    } else {
+      this.awayCandidates$ = of([]);
+    }
+
     this.summary$ = this.facade.summary$(match.id, this.teamMap ?? new Map());
+
     this.countdown$ = this.voting$.pipe(
       map((v) => v?.closesAtISO ?? null),
       distinctUntilChanged(),
-      switchMap((iso) => (iso ? countdownTo(iso) : of(''))),
+      switchMap((iso) => {
+        if (iso) {
+          return countdownTo(iso);
+        } else {
+          return of('');
+        }
+      }),
       shareReplay(1)
     );
 

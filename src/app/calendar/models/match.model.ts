@@ -3,15 +3,15 @@ import { MatchId, TeamId, MatchStatus } from '../../core/types';
 
 export interface Match {
   id: MatchId;
-  homeTeamId: TeamId;
-  awayTeamId: TeamId;
+  homeTeamId: TeamId | null;
+  awayTeamId: TeamId | null;
   teamA: string;
   teamB: string;
   scoreA: number;
   scoreB: number;
   logoA?: string;
   logoB?: string;
-  group?: string;
+  group?: string | null;
   details: MatchDetail[];
   status: MatchStatus;
   date: string;

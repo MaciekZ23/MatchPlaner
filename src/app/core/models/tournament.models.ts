@@ -6,6 +6,7 @@ import {
   HealthStatus,
   MatchEventType,
   CardKind,
+  SlotSource,
 } from '../types';
 
 export interface Tournament {
@@ -65,12 +66,17 @@ export interface MatchEvent {
 export interface Match {
   id: string;
   stageId: string;
-  groupId?: string;
-  round?: number;
+  groupId?: string | null;
+  round?: number | null;
+  index?: number | null;
   date: string;
   status: MatchStatus;
-  homeTeamId: string;
-  awayTeamId: string;
+  homeTeamId: string | null;
+  awayTeamId: string | null;
+  homeSourceKind: SlotSource | null;
+  homeSourceRef: string | null;
+  awaySourceKind: SlotSource | null;
+  awaySourceRef: string | null;
   score?: { home: number; away: number };
   events?: MatchEvent[];
   lineups?: {

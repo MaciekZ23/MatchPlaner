@@ -16,14 +16,21 @@ import { CommonModule } from '@angular/common';
 import { MatchCardComponent } from '../../../calendar/components/match-card/match-card.component';
 import { MatchDetailsModalComponent } from '../../../calendar/components/match-details-modal/match-details-modal.component';
 import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
-import { BracketService } from '../../services/bracket.service';
+import { PlayoffsBracketService } from '../../services/playoffs-bracket.service';
 import { BracketMatch, BracketTeamSlot } from '../../models';
 import { BracketRoundPipe } from '../../pipes/bracket-round.pipe';
-import { Observable, Subscription } from 'rxjs';
+import {
+  combineLatest,
+  map,
+  Observable,
+  shareReplay,
+  Subscription,
+} from 'rxjs';
 import { Team as CoreTeam, Player as CorePlayer } from '../../../core/models';
 import { stringsPlayoffsBracket } from '../../misc';
 import { stringsConfirmModal } from '../../../calendar/misc';
 import { Match } from '../../../calendar/models/match.model';
+import { GeneratePlayoffsPayload } from '../../../core/models/playoffs.models';
 import { TournamentStore } from '../../../core/services/tournament-store.service';
 import { VoteFacade } from '../../../calendar/services/vote.facade';
 
@@ -52,6 +59,8 @@ export class PlayoffsBracketComponent
   moduleStrings = stringsPlayoffsBracket;
   confirmStrings = stringsConfirmModal;
 
+  hasBracket$!: Observable<boolean>;
+  canGenerate$!: Observable<boolean>;
   matches$!: Observable<BracketMatch[]>;
   rounds$!: Observable<number[]>;
   uiMatchById$!: Observable<Map<string, Match>>;
@@ -70,12 +79,14 @@ export class PlayoffsBracketComponent
   @ViewChildren('cardProbe', { read: ElementRef })
   private probes!: QueryList<ElementRef<HTMLElement>>;
 
-  readonly bracket = inject(BracketService);
+  readonly bracket = inject(PlayoffsBracketService);
   private readonly store = inject(TournamentStore);
   private readonly voteFacade = inject(VoteFacade);
   private readonly cd = inject(ChangeDetectorRef);
   private ro?: ResizeObserver;
   private subs = new Subscription();
+
+  isGenerating$ = this.bracket.generating$;
 
   constructor() {
     this.teamMap$ = this.store.teamMap$;
@@ -83,12 +94,21 @@ export class PlayoffsBracketComponent
   }
 
   ngOnInit(): void {
-    this.bracket.initAutoGeneration(this.stageId);
+    this.bracket.loadByTournament();
     this.matches$ = this.bracket.getMatches$(this.stageId);
     this.rounds$ = this.bracket.rounds$(this.stageId);
     this.uiMatchById$ = this.bracket.uiMatchById$(this.stageId);
     this.roundSides$ = this.bracket.roundsForSides$(this.stageId);
     this.roundOffsetMult$ = this.bracket.offsetMultipliers$(this.stageId);
+    this.hasBracket$ = this.bracket.hasBracketForStage$(this.stageId);
+
+    this.canGenerate$ = combineLatest([
+      this.isGenerating$,
+      this.hasBracket$,
+    ]).pipe(
+      map(([gen, has]) => !gen && !has),
+      shareReplay(1)
+    );
   }
 
   ngAfterViewInit(): void {
@@ -155,6 +175,19 @@ export class PlayoffsBracketComponent
       this.matchCardHeight = h;
       this.cd.markForCheck();
     }
+  }
+
+  generateBracket(): void {
+    const payload: Partial<GeneratePlayoffsPayload> = {
+      startDateISO: new Date().toISOString(),
+      matchDurationMin: 40,
+      gapBetweenMatchesMin: 10,
+      matchesPerDay: 8,
+      withThirdPlace: true,
+      stageName: 'Playoffs',
+    };
+
+    this.bracket.generateForCurrentTournament(payload);
   }
 
   trackMatch = (_: number, m: BracketMatch | Match) => (m as any).id;

@@ -4,23 +4,35 @@
     class="fs-5 text p-3 card-title card-header bg-transparent d-flex justify-content-between"
   >
     <span>{{ moduleStrings.title }}</span>
-    <button
-      class="btn btn-link text-white p-0 btn-sm"
-      type="button"
-      (click)="toggleCollapse()"
-      [attr.aria-label]="isCollapsed ? 'Rozwiń sekcję' : 'Zwiń sekcję'"
-      [attr.aria-expanded]="!isCollapsed"
-      aria-controls="playoffsCollapse"
-    >
-      <i
-        class="fas"
-        [ngClass]="{
-          'fa-chevron-down': isCollapsed,
-          'fa-chevron-up': !isCollapsed
-        }"
-        aria-hidden="true"
-      ></i>
-    </button>
+    <div class="d-flex align-items-center gap-5">
+      <button
+        type="button"
+        class="btn btn-primary btn-sm"
+        (click)="generateBracket()"
+        [disabled]="!(canGenerate$ | async)"
+        [attr.aria-label]="'Generuj drabinkę'"
+      >
+        {{ moduleStrings.generatePlayoffs }}
+      </button>
+
+      <button
+        class="btn btn-link text-white p-0 btn-sm"
+        type="button"
+        (click)="toggleCollapse()"
+        [attr.aria-label]="isCollapsed ? 'Rozwiń sekcję' : 'Zwiń sekcję'"
+        [attr.aria-expanded]="!isCollapsed"
+        aria-controls="playoffsCollapse"
+      >
+        <i
+          class="fas"
+          [ngClass]="{
+            'fa-chevron-down': isCollapsed,
+            'fa-chevron-up': !isCollapsed
+          }"
+          aria-hidden="true"
+        ></i>
+      </button>
+    </div>
   </h2>
   <div
     class="collapse"

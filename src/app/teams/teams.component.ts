@@ -1,7 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
-import { map, of, switchMap, tap, delay, Observable } from 'rxjs';
+import { map, tap, Observable, shareReplay } from 'rxjs';
 import { TeamCardComponent } from './components/team-card/team-card.component';
 import { TeamTableComponent } from './components/team-table/team-table.component';
 import { TeamService } from './services/team.service';
@@ -36,15 +36,13 @@ export class TeamsComponent implements OnInit {
   isLoading = false;
 
   ngOnInit(): void {
-    this.teams$ = this.teamService.getTeams$();
+    this.teams$ = this.teamService.getTeams$().pipe(shareReplay(1));
 
     this.selectedTeam$ = this.route.data.pipe(
-      map((d) => d['team'] as Team | null)
+      map((d) => (d && 'team' in d ? (d['team'] as Team | null) : null)),
+      tap(() => (this.isLoading = false)),
+      shareReplay(1)
     );
-
-    this.route.data.subscribe(() => {
-      this.isLoading = false;
-    });
   }
 
   onTeamClick(team: Team): void {
@@ -54,6 +52,14 @@ export class TeamsComponent implements OnInit {
 
   onBackClick(): void {
     this.isLoading = true;
-    this.router.navigate(['/teams']);
+    this.router.navigate(['/teams']).then(() => {
+      this.teams$ = this.teamService.getTeams$().pipe(
+        tap({
+          next: () => (this.isLoading = false),
+          error: () => (this.isLoading = false),
+        }),
+        shareReplay(1)
+      );
+    });
   }
 }

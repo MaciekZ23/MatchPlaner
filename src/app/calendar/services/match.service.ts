@@ -34,19 +34,19 @@ export class MatchService {
         for (const m of [...matches].sort(
           (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
         )) {
-          const home = teamMap.get(m.homeTeamId);
-          const away = teamMap.get(m.awayTeamId);
+          const home = m.homeTeamId ? teamMap.get(m.homeTeamId) : undefined;
+          const away = m.awayTeamId ? teamMap.get(m.awayTeamId) : undefined;
           const { scoreA, scoreB, details } = this.toUiDetails(m, playerMap);
 
           const ui: UiMatch = {
             id: m.id,
             homeTeamId: m.homeTeamId,
             awayTeamId: m.awayTeamId,
-            teamA: home?.name ?? m.homeTeamId,
-            teamB: away?.name ?? m.awayTeamId,
+            teamA: home?.name ?? m.homeTeamId ?? '-',
+            teamB: away?.name ?? m.awayTeamId ?? '-',
             scoreA,
             scoreB,
-            group: m.groupId,
+            group: m.groupId ?? null,
             logoA: home?.logo,
             logoB: away?.logo,
             details,
