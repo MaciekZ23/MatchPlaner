@@ -1,11 +1,5 @@
 @use "../../../../styles.scss" as *;
 
-.modal-content {
-  background-color: #1c1c1d;
-  color: #e0f5e9;
-  border-radius: 10px;
-}
-
 .form-label {
   font-weight: 500;
 }
@@ -16,18 +10,18 @@
 
 input,
 textarea {
-  background-color: #2d3d31;
+  background-color: #2d373d;
   color: $white;
-  border: 1px solid #2e7d32;
+  border: 2px solid $primary-blue;
 
   &::placeholder {
-    color: #a5d6a7;
+    color: $sky-blue;
   }
 
   &:focus {
     outline: none;
-    border-color: #66bb6a;
-    box-shadow: 0 0 0 0.2rem rgba(102, 187, 106, 0.25);
+    border-color: $primary-dark;
+    box-shadow: 0 0 0 0.2rem rgba(6, 79, 216, 0.25);
   }
 }
 

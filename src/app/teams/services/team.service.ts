@@ -7,6 +7,7 @@ import {
   Player as CorePlayer,
 } from '../../core/models/tournament.models';
 import { HttpTournamentApi } from '../../core/api/http-tournament.api';
+import { CreatePlayerPayload, CreateTeamPayload } from '../../core/types';
 
 @Injectable({ providedIn: 'root' })
 export class TeamService {
@@ -25,7 +26,7 @@ export class TeamService {
     );
   }
 
-  createTeam$(team: CoreTeam, tournamentId?: string) {
+  createTeam$(team: CreateTeamPayload, tournamentId?: string) {
     const tid$ = tournamentId
       ? of(tournamentId)
       : this.store.tournament$.pipe(
@@ -35,7 +36,29 @@ export class TeamService {
 
     return tid$.pipe(
       switchMap((tid) => this.api.createTeam(team, tid)),
-      tap(() => this.store.refreshTeams()) // patrz punkt 2 niżej
+      tap(() => this.store.refreshTeams())
+    );
+  }
+
+  createPlayer$(teamName: string, player: CreatePlayerPayload) {
+    return this.store.teams$.pipe(
+      take(1),
+      map((coreTeams) => {
+        const found = coreTeams.find(
+          (t) => t.name.trim().toLowerCase() === teamName.trim().toLowerCase()
+        );
+        return found?.id ?? null;
+      }),
+      switchMap((teamId) => {
+        if (!teamId) {
+          throw new Error('Nie znaleziono drużyny o podanej nazwie.');
+        }
+        return this.api.createPlayer(teamId, player);
+      }),
+      tap(() => {
+        this.store.refreshPlayers?.();
+        this.store.refreshTeams?.();
+      })
     );
   }
 
@@ -43,7 +66,6 @@ export class TeamService {
     coreTeams: CoreTeam[],
     corePlayers: CorePlayer[]
   ): UiTeam[] {
-    // Grupujemy zawodników wg teamId, żeby szybciej dopinać do drużyn
     const playersByTeam = corePlayers.reduce<Record<string, CorePlayer[]>>(
       (acc, p) => {
         (acc[p.teamId] ??= []).push(p);

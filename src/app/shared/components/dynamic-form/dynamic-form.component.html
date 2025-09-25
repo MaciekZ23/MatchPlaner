@@ -1,105 +1,208 @@
 <div
-  class="modal fade"
+  class="modal fade modal-lg"
   id="{{ idModal }}"
   tabindex="-1"
-  [attr.aria-labelledby]="idModal"
-  aria-hidden="true"
+  [attr.aria-labelledby]="this.idModal"
+  data-bs-keyboard="false"
   data-bs-backdrop="static"
 >
-  <div class="modal-dialog modal-dialog-centered modal-lg">
+  <div
+    class="modal-dialog modal-dialog-scrollable modal-dialog-centered modal-lg"
+    [ngClass]="{ 'modal-dialog-centered': windowWidth >= 768 }"
+  >
     <div class="modal-content bg-dark text-light">
       <div class="modal-header border-0">
-        <h5 class="modal-title">{{ formTitle }}</h5>
+        <h5 class="modal-title" id="formModalLabel">{{ formTitle }}</h5>
         <button
           type="button"
           class="btn-close btn-close-white"
           data-bs-dismiss="modal"
           aria-label="Close"
-          (click)="onClose()"
+          (click)="this.close.emit()"
         ></button>
       </div>
+      <div class="modal-body justify-content-center d-flex">
+        <form
+          [formGroup]="form"
+          (ngSubmit)="onSubmit()"
+          class="container d-flex row justify-content-center column-gap-4 h-100"
+        >
+          @for (field of fields; track $index) {
+          <div class="mb-3 px-0 row" [class]="calcTotalSpan(field)">
+            <div [class]="calcActualSpan(field)">
+              @if(field.displayLabel !== false) {
+              <label [for]="field.name" class="form-label">{{
+                field.label
+              }}</label>
+              } @switch (field.type) { @case('text'){
+              <input
+                [id]="field.name"
+                [formControlName]="field.name"
+                type="text"
+                class="form-control"
+                [placeholder]="field.placeholder || ''"
+                [ngClass]="{
+                  'is-invalid':
+                    form.get(field.name)?.invalid &&
+                    form.get(field.name)?.touched
+                }"
+              />
+              } @case('email'){
+              <input
+                [id]="field.name"
+                [formControlName]="field.name"
+                type="email"
+                class="form-control"
+                [placeholder]="field.placeholder || ''"
+                [ngClass]="{
+                  'is-invalid':
+                    form.get(field.name)?.invalid &&
+                    form.get(field.name)?.touched
+                }"
+              />
+              } @case('number'){
+              <input
+                [id]="field.name"
+                [formControlName]="field.name"
+                type="number"
+                class="form-control"
+                [min]="field.min !== undefined ? field.min : NumMin"
+                [max]="field.max ? field.max : NumMax"
+                [step]="field.step !== undefined ? field.step : 1"
+                [ngClass]="{
+                  'is-invalid':
+                    form.get(field.name)?.invalid &&
+                    form.get(field.name)?.touched
+                }"
+              />
+              } @case('date'){
+              <input
+                [id]="field.name"
+                [formControlName]="field.name"
+                type="date"
+                class="form-control"
+                [min]="field.min"
+                [max]="field.max"
+                [ngClass]="{
+                  'is-invalid':
+                    form.get(field.name)?.invalid &&
+                    form.get(field.name)?.touched
+                }"
+              />
+              } @case('time'){
+              <input
+                [id]="field.name"
+                [formControlName]="field.name"
+                type="time"
+                class="form-control"
+                [ngClass]="{
+                  'is-invalid':
+                    form.get(field.name)?.invalid &&
+                    form.get(field.name)?.touched
+                }"
+              />
+              } @case('datetime'){
+              <input
+                [id]="field.name"
+                [formControlName]="field.name"
+                type="datetime-local"
+                class="form-control"
+                [step]="600"
+                [ngClass]="{
+                  'is-invalid':
+                    form.get(field.name)?.invalid &&
+                    form.get(field.name)?.touched
+                }"
+              />
+              } @case('checkbox'){
+              <div class="form-check">
+                <input
+                  [id]="field.name"
+                  [formControlName]="field.name"
+                  type="checkbox"
+                  class="form-check-input"
+                />
+                <label [for]="field.name" class="form-check-label">{{
+                  field.label
+                }}</label>
+              </div>
+              } @case('textarea'){
+              <textarea
+                [id]="field.name"
+                [formControlName]="field.name"
+                class="form-control"
+                [rows]="field.rows || 4"
+                [placeholder]="field.placeholder || ''"
+                [ngClass]="{
+                  'is-invalid':
+                    form.get(field.name)?.invalid &&
+                    form.get(field.name)?.touched
+                }"
+              ></textarea>
+              } @case('select'){
+              <select
+                class="selectpicker"
+                data-live-search="true"
+                [id]="field.name"
+                [formControlName]="field.name"
+                class="form-select"
+                [multiple]="field?.multiple || false"
+                [ngClass]="{
+                  'is-invalid':
+                    form.get(field.name)?.invalid &&
+                    form.get(field.name)?.touched
+                }"
+              >
+                <option
+                  *ngFor="let option of field.options"
+                  [value]="option.value"
+                >
+                  {{ option.label }}
+                </option>
+              </select>
 
-      <form [formGroup]="form" (ngSubmit)="onSubmit()">
-        <div class="modal-body">
-          <div class="row g-3">
-            <div *ngFor="let field of fields" class="col-12">
-              <ng-container [ngSwitch]="field.type">
-                <div *ngSwitchCase="'checkbox'" class="form-check">
-                  <input
-                    type="checkbox"
-                    class="form-check-input"
-                    [id]="field.name"
-                    [formControlName]="field.name"
-                  />
-                  <label class="form-check-label" [for]="field.name">{{
-                    field.label
-                  }}</label>
-                </div>
-
-                <ng-container *ngSwitchDefault>
-                  <label [for]="field.name" class="form-label">{{
-                    field.label
-                  }}</label>
-
-                  <input
-                    *ngIf="field.type === 'text' || field.type === 'email'"
-                    [type]="field.type"
-                    class="form-control"
-                    [id]="field.name"
-                    [placeholder]="field.placeholder"
-                    [formControlName]="field.name"
-                  />
-
-                  <textarea
-                    *ngIf="field.type === 'textarea'"
-                    class="form-control"
-                    [id]="field.name"
-                    [placeholder]="field.placeholder"
-                    [formControlName]="field.name"
-                    [rows]="field.rows || 4"
-                  ></textarea>
-                </ng-container>
-              </ng-container>
+              } }
 
               <!-- Walidacja -->
-              <div
-                *ngIf="
-                  form.get(field.name)?.invalid && form.get(field.name)?.touched
-                "
-                class="text-danger mt-1"
-              >
-                <span *ngIf="form.get(field.name)?.errors?.['required']"
-                  >To pole jest wymagane</span
-                >
-                <span *ngIf="form.get(field.name)?.errors?.['requiredTrue']"
-                  >Musisz zaakceptować zaznaczenie</span
-                >
-                <span *ngIf="form.get(field.name)?.errors?.['email']"
-                  >Wprowadź poprawny adres email</span
-                >
+              @if (form.get(field.name)?.invalid &&
+              form.get(field.name)?.touched) {
+              <div class="invalid-feedback">
+                @if (form.get(field.name)?.errors?.['required']) {
+                {{ field.label }} jest wymagane. } @if
+                (form.get(field.name)?.errors?.['email']) { Podaj poprawny
+                email. } @if (form.get(field.name)?.errors?.['min']) { Wartość
+                za mała. } @if (form.get(field.name)?.errors?.['max']) { Wartość
+                za duża. } @if (form.get(field.name)?.errors?.['pattern']) {
+                {{ field.label }} nie spełnia wymaganego wzorca. } @if
+                (form.get(field.name)?.errors?.['minlength']) {
+                {{ field.label }} jest za krótki. } @if
+                (form.get(field.name)?.errors?.['maxlength']) {
+                {{ field.label }} jest za długi. }
               </div>
+              }
             </div>
           </div>
-        </div>
-
-        <div class="modal-footer border-0">
-          <button
-            type="button"
-            class="btn btn-secondary"
-            data-bs-dismiss="modal"
-            (click)="onClose()"
-          >
-            Zamknij
-          </button>
-          <button
-            type="submit"
-            class="btn btn-primary"
-            [disabled]="form.invalid"
-          >
-            Wyślij
-          </button>
-        </div>
-      </form>
+          }
+        </form>
+      </div>
+      <div class="modal-footer border-0">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          data-bs-dismiss="modal"
+          (click)="onClose()"
+        >
+          Zamknij
+        </button>
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="form.invalid"
+          (click)="onSubmit()"
+        >
+          Zapisz
+        </button>
+      </div>
     </div>
   </div>
 </div>

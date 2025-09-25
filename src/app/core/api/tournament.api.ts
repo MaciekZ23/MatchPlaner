@@ -1,6 +1,7 @@
 import { InjectionToken } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Tournament, Team, Player, Match } from '../models';
+import { CreatePlayerPayload, CreateTeamPayload } from '../types';
 
 /**
  * Interfejs warstwy danych turnieju
@@ -15,9 +16,14 @@ export interface ITournamentApi {
   getPlayers(tournamentId: string): Observable<Player[]>;
   getMatches(stageId: string): Observable<Match[]>;
 
-  createTeam(team: Team, tournamentId?: string): Observable<Team>;
+  createTeam(team: CreateTeamPayload, tournamentId?: string): Observable<Team>;
   updateTeam(teamId: string, patch: Partial<Team>): Observable<Team>;
   deleteTeam(teamId: string): Observable<void>;
+
+  createPlayer(
+    teamId: string,
+    payload: CreatePlayerPayload
+  ): Observable<Player>;
 }
 
 /**

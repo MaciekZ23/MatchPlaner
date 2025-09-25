@@ -1,12 +1,12 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
-import { map, tap, Observable, shareReplay } from 'rxjs';
+import { map, tap, Observable, shareReplay, finalize } from 'rxjs';
 import { TeamCardComponent } from './components/team-card/team-card.component';
 import { TeamTableComponent } from './components/team-table/team-table.component';
 import { TeamService } from './services/team.service';
 import { Team } from './models/team';
-import { Team as CoreTeam } from '../core/models';
+import { CreateTeamPayload, CreatePlayerPayload } from '../core/types';
 import { SpinnerComponent } from '../shared/components/spinner/spinner.component';
 import { PageHeaderComponent } from '../shared/components/page-header/page-header.component';
 import { stringsTeams } from './misc';
@@ -35,6 +35,7 @@ export class TeamsComponent implements OnInit {
   moduleStrings = stringsTeams;
 
   teams$!: Observable<Team[]>;
+
   selectedTeam$!: Observable<Team | null>;
 
   isLoading = false;
@@ -42,6 +43,11 @@ export class TeamsComponent implements OnInit {
   formTitleAddTeam = this.moduleStrings.formTitleAddTeam;
   openAddTeamFormModal = false;
   addTeamFormFields: FormField[] = this.getEmptyTeamFields();
+
+  formTitleAddPlayer = this.moduleStrings.formTitleAddPlayer;
+  openAddPlayerFormModal = false;
+  addPlayerFormFields: FormField[] = this.getEmptyPlayerFields();
+  private addPlayerForTeamId?: number;
 
   ngOnInit(): void {
     this.teams$ = this.teamService.getTeams$().pipe(shareReplay(1));
@@ -77,35 +83,47 @@ export class TeamsComponent implements OnInit {
   }
 
   onAddTeamFormSubmitted(fields: FormField[]): void {
-    this.openAddTeamFormModal = false;
+    const f = this.reduceFields<{ name: unknown; logo?: unknown }>(fields);
+    const name = String(f.name ?? '')
+      .trim()
+      .replace(/\s+/g, ' ');
+    const logoStr = f.logo != null ? String(f.logo).trim() : '';
+    if (!name) {
+      return;
+    }
 
-    const f = this.reduceFields<{ name: string; logo?: string }>(fields);
-    const id = this.generateId();
-
-    const payload: CoreTeam = {
-      id,
-      name: String(f.name ?? '').trim(),
-      logo: f.logo ? String(f.logo).trim() : undefined,
-      playerIds: [],
-    };
+    const payload: CreateTeamPayload = logoStr
+      ? { name, logo: logoStr }
+      : { name };
 
     this.isLoading = true;
-    this.teamService.createTeam$(payload).subscribe({
-      next: () => {
-        this.teams$ = this.teamService.getTeams$().pipe(
-          tap({
-            next: () => (this.isLoading = false),
-            error: () => (this.isLoading = false),
-          }),
-          shareReplay(1)
-        );
-      },
-      error: (err: unknown) => {
-        console.error('Błąd dodawania drużyny:', err);
-        this.isLoading = false;
-      },
-    });
+
+    this.teamService
+      .createTeam$(payload)
+      .pipe(
+        tap(() => {
+          this.openAddTeamFormModal = false;
+          this.resetAddTeamFormFields();
+        }),
+        finalize(() => {
+          this.isLoading = false;
+        })
+      )
+      .subscribe({
+        next: () => {},
+        error: (err: unknown) => {
+          console.error('Błąd dodawania drużyny:', err);
+        },
+      });
   }
+
+  onAddPlayer(team: Team): void {
+    this.addPlayerForTeamId = team.id; // zapamiętaj UI id drużyny
+    this.addPlayerFormFields = this.getEmptyPlayerFields(); // reset pól
+    this.openAddPlayerFormModal = true;
+  }
+
+  onAddPlayerFormSubmitted(fields: FormField[]): void {}
 
   private getEmptyTeamFields(): FormField[] {
     return [
@@ -115,6 +133,7 @@ export class TeamsComponent implements OnInit {
         type: 'text',
         required: true,
         value: '',
+        placeholder: 'Nazwa drużyny',
       },
       {
         name: 'logo',
@@ -122,6 +141,58 @@ export class TeamsComponent implements OnInit {
         type: 'text',
         required: false,
         value: '',
+        placeholder: 'Logo druzyny',
+      },
+    ];
+  }
+
+  private getEmptyPlayerFields(): FormField[] {
+    return [
+      {
+        name: 'name',
+        label: 'Imię i nazwisko',
+        type: 'text',
+        required: true,
+        value: '',
+        placeholder: 'Jan Kowalski',
+      },
+      {
+        name: 'position',
+        label: 'Pozycja',
+        type: 'select',
+        required: true,
+        value: 'MID',
+        options: [
+          { label: 'Bramkarz', value: 'GK' },
+          { label: 'Obrońca', value: 'DEF' },
+          { label: 'Pomocnik', value: 'MID' },
+          { label: 'Napastnik', value: 'FWD' },
+        ],
+      },
+      {
+        name: 'number',
+        label: 'Numer na koszulce',
+        type: 'number',
+        required: false,
+        value: '',
+        min: 1,
+        max: 99,
+        placeholder: '1–99',
+        totalSpan: 6,
+        actualSpan: 12,
+      },
+      {
+        name: 'health',
+        label: 'Status zdrowia',
+        type: 'select',
+        required: true,
+        value: 'HEALTHY',
+        options: [
+          { label: 'Zdrowy', value: 'HEALTHY' },
+          { label: 'Kontuzjowany', value: 'INJURED' },
+        ],
+        totalSpan: 6,
+        actualSpan: 12,
       },
     ];
   }
@@ -137,12 +208,5 @@ export class TeamsComponent implements OnInit {
       (acc as Record<string, unknown>)[f.name] = f.value as unknown;
       return acc;
     }, {} as T);
-  }
-
-  private generateId(): string {
-    if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
-      return crypto.randomUUID();
-    }
-    return `team_${Date.now()}_${Math.floor(Math.random() * 1e6)}`;
   }
 }

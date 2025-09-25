@@ -7,3 +7,10 @@ export type Position = 'GK' | 'DEF' | 'MID' | 'FWD';
 export type HealthStatus = 'HEALTHY' | 'INJURED';
 export type MatchEventType = 'GOAL' | 'ASSIST' | 'OWN_GOAL' | 'CARD';
 export type CardKind = 'YELLOW' | 'RED' | 'SECOND_YELLOW';
+export type CreateTeamPayload = { name: string; logo?: string };
+export interface CreatePlayerPayload {
+  name: string;
+  position: Position;
+  shirtNumber?: number;
+  healthStatus: HealthStatus;
+}
