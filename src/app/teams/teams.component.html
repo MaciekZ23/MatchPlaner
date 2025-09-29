@@ -8,6 +8,7 @@
   >
     @if (selectedTeam$ | async; as selectedTeam) {
     <button
+      *ngIf="isAdmin$ | async"
       header-action
       type="button"
       class="btn text-white btn-sm"
@@ -18,6 +19,7 @@
     </button>
     } @else {
     <button
+      *ngIf="isAdmin$ | async"
       header-action
       type="button"
       class="btn text-white btn-sm"
@@ -41,6 +43,9 @@
         <app-team-card
           [team]="team"
           (teamClick)="onTeamClick(team)"
+          [canManage]="(isAdmin$ | async) ?? false"
+          (editTeam)="onEditTeam(team)"
+          (deleteTeam)="onDeleteTeam(team)"
         ></app-team-card>
       </div>
     </div>
@@ -58,6 +63,9 @@
       [players]="selectedTeam.players"
       [teamLogo]="selectedTeam.logo"
       (backClick)="onBackClick()"
+      [canManage]="(isAdmin$ | async) ?? false"
+      (editPlayer)="onEditPlayer($event)"
+      (deletePlayer)="onDeletePlayer($event)"
     ></app-team-table>
   </div>
 </div>
@@ -82,3 +90,27 @@
   (formSubmitted)="onAddPlayerFormSubmitted($event)"
   (close)="openAddPlayerFormModal = false"
 ></app-dynamic-form>
+
+<!-- Formularz do edycji drużyny -->
+<app-dynamic-form
+  [formTitle]="formTitleEditTeam"
+  [fields]="editTeamFormFields"
+  [isOpen]="openEditTeamFormModal"
+  (formSubmitted)="onEditTeamFormSubmitted($event)"
+  (close)="openEditTeamFormModal = false"
+></app-dynamic-form>
+
+<!-- Formularz do edycji zawodnika -->
+<app-dynamic-form
+  [formTitle]="formTitleEditPlayer"
+  [fields]="editPlayerFormFields"
+  [isOpen]="openEditPlayerFormModal"
+  (formSubmitted)="onEditPlayerFormSubmitted($event)"
+  (close)="openEditPlayerFormModal = false"
+></app-dynamic-form>
+
+<!-- Modal potwierdzający kasowanie drużyny -->
+<app-confirm-modal #teamConfirm></app-confirm-modal>
+
+<!-- Modal potwierdzający kasowanie zawodnika -->
+<app-confirm-modal #playerConfirm></app-confirm-modal>

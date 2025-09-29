@@ -15,7 +15,10 @@ export class TeamTableComponent {
   @Input() players: any[] = [];
   @Input() teamName: string = '';
   @Input() teamLogo?: string;
+  @Input() canManage = false;
   @Output() backClick = new EventEmitter<void>();
+  @Output() editPlayer = new EventEmitter<any>();
+  @Output() deletePlayer = new EventEmitter<any>();
 
   isCollapsed: boolean = true;
 
@@ -58,5 +61,15 @@ export class TeamTableComponent {
 
   onBackClick(): void {
     this.backClick.emit();
+  }
+
+  onEditPlayer(p: any, ev: MouseEvent) {
+    ev.stopPropagation();
+    this.editPlayer.emit(p);
+  }
+
+  onDeletePlayer(p: any, ev: MouseEvent) {
+    ev.stopPropagation();
+    this.deletePlayer.emit(p);
   }
 }

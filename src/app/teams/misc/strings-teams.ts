@@ -5,4 +5,6 @@ export const stringsTeams = {
   addPlayer: 'Dodaj zawodnika',
   formTitleAddTeam: 'Dodaj drużynę',
   formTitleAddPlayer: 'Dodaj zawodnika',
+  formTitleEditTeam: 'Edytuj drużynę',
+  formTitleEditPlayer: 'Edytuj zawodnika',
 };

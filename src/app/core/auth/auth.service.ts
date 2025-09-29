@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, map, Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -12,8 +12,13 @@ export class AuthService {
   private avatarSubject = new BehaviorSubject<string | null>(
     localStorage.getItem('avatar')
   );
-
   avatar$ = this.avatarSubject.asObservable();
+
+  private roleSubject = new BehaviorSubject<
+    'ADMIN' | 'USER' | 'GUEST' | 'NONE'
+  >(this.readRoleFromToken() ?? 'NONE');
+  role$ = this.roleSubject.asObservable();
+  isAdmin$ = this.role$.pipe(map((r) => r === 'ADMIN'));
 
   loginWithGoogle(
     idToken: string
@@ -30,12 +35,14 @@ export class AuthService {
       localStorage.setItem('avatar', avatar);
       this.avatarSubject.next(avatar);
     }
+    this.roleSubject.next(this.readRoleFromToken(token) ?? 'USER');
   }
 
   logout(): void {
     localStorage.removeItem('token');
     localStorage.removeItem('avatar');
     this.avatarSubject.next(null);
+    this.roleSubject.next('NONE');
   }
 
   setAvatar(avatar: string | null) {
@@ -45,6 +52,20 @@ export class AuthService {
       localStorage.removeItem('avatar');
     }
     this.avatarSubject.next(avatar);
+  }
+
+  private readRoleFromToken(token?: string): 'ADMIN' | 'USER' | 'GUEST' | null {
+    try {
+      const t = token ?? localStorage.getItem('token');
+      if (!t) return null;
+      const [, b64] = t.split('.');
+      const payload = JSON.parse(
+        atob(b64.replace(/-/g, '+').replace(/_/g, '/'))
+      );
+      return payload?.role ?? null;
+    } catch {
+      return null;
+    }
   }
 
   isLoggedIn(): boolean {

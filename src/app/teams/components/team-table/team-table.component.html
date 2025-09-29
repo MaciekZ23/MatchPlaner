@@ -52,6 +52,7 @@
           <th class="d-none d-md-table-cell">
             {{ moduleStrings.columns.health }}
           </th>
+          <th *ngIf="canManage" class="text-end"></th>
         </tr>
       </thead>
       <tbody>
@@ -64,6 +65,24 @@
             <span class="badge" [ngClass]="getHealthBadgeClass(player)">
               {{ player.healthStatus }}
             </span>
+          </td>
+          <td *ngIf="canManage" class="text-end text-nowrap">
+            <button
+              class="icon-btn me-2 bg-transparent"
+              title="Edytuj zawodnika"
+              aria-label="Edytuj zawodnika"
+              (click)="onEditPlayer(player, $event)"
+            >
+              <i class="fa fa-edit"></i>
+            </button>
+            <button
+              class="icon-btn bg-transparent"
+              title="Usuń zawodnika"
+              aria-label="Usuń zawodnika"
+              (click)="onDeletePlayer(player, $event)"
+            >
+              <i class="fa fa-trash"></i>
+            </button>
           </td>
         </tr>
       </tbody>

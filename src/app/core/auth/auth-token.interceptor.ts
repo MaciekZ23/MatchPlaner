@@ -24,10 +24,12 @@ export class AuthTokenInterceptor implements HttpInterceptor {
 
     return next.handle(authReq).pipe(
       catchError((error: HttpErrorResponse) => {
-        if (error.status === 401 || error.status === 403) {
+        if (error.status === 401) {
           localStorage.removeItem('token');
           localStorage.removeItem('avatar');
           this.router.navigate(['/login']);
+        } else if (error.status === 403) {
+          console.warn('Brak uprawnień do wykonania tej operacji');
         }
         return throwError(() => error);
       })

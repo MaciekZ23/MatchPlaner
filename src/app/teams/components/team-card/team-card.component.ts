@@ -12,9 +12,23 @@ import { Team } from '../../models/team';
 })
 export class TeamCardComponent {
   @Input() team!: Team;
+  @Input() canManage = false;
+
   @Output() teamClick = new EventEmitter<Team>();
+  @Output() editTeam = new EventEmitter<Team>();
+  @Output() deleteTeam = new EventEmitter<Team>();
 
   onClick(): void {
     this.teamClick.emit(this.team);
+  }
+
+  onEdit(ev: MouseEvent) {
+    ev.stopPropagation();
+    this.editTeam.emit(this.team);
+  }
+
+  onDelete(ev: MouseEvent) {
+    ev.stopPropagation();
+    this.deleteTeam.emit(this.team);
   }
 }

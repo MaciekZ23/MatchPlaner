@@ -35,6 +35,18 @@
     justify-content: flex-start;
     align-items: center;
   }
+
+  .actions .icon-btn {
+    border: 0;
+    color: $white;
+    line-height: 1;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+
+    i {
+      font-size: 1rem;
+    }
+  }
 }
 
 @media (max-width: 767.98px) {
@@ -72,6 +84,18 @@
       display: flex;
       justify-content: flex-start;
       align-items: center;
+    }
+
+    .actions .icon-btn {
+      border: 0;
+      color: $white;
+      line-height: 1;
+      cursor: pointer;
+      transition: opacity 0.2s ease;
+
+      i {
+        font-size: 0.9rem;
+      }
     }
   }
 }

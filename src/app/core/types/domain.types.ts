@@ -14,3 +14,5 @@ export interface CreatePlayerPayload {
   shirtNumber?: number;
   healthStatus: HealthStatus;
 }
+export type UpdateTeamPayload = Partial<CreateTeamPayload>;
+export type UpdatePlayerPayload = Partial<CreatePlayerPayload>;

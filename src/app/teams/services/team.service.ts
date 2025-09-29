@@ -7,7 +7,12 @@ import {
   Player as CorePlayer,
 } from '../../core/models/tournament.models';
 import { HttpTournamentApi } from '../../core/api/http-tournament.api';
-import { CreatePlayerPayload, CreateTeamPayload } from '../../core/types';
+import {
+  CreatePlayerPayload,
+  CreateTeamPayload,
+  UpdatePlayerPayload,
+  UpdateTeamPayload,
+} from '../../core/types';
 
 @Injectable({ providedIn: 'root' })
 export class TeamService {
@@ -40,6 +45,21 @@ export class TeamService {
     );
   }
 
+  updateTeam$(teamId: string, patch: UpdateTeamPayload) {
+    return this.api
+      .updateTeam(teamId, patch)
+      .pipe(tap(() => this.store.refreshTeams()));
+  }
+
+  deleteTeam$(teamId: string) {
+    return this.api.deleteTeam(teamId).pipe(
+      tap(() => {
+        this.store.refreshTeams();
+        this.store.refreshPlayers?.();
+      })
+    );
+  }
+
   createPlayer$(teamName: string, player: CreatePlayerPayload) {
     return this.store.teams$.pipe(
       take(1),
@@ -58,6 +78,41 @@ export class TeamService {
       tap(() => {
         this.store.refreshPlayers?.();
         this.store.refreshTeams?.();
+      })
+    );
+  }
+
+  updatePlayer$(playerId: string, patch: UpdatePlayerPayload) {
+    return this.api
+      .updatePlayer(playerId, patch)
+      .pipe(tap(() => this.store.refreshPlayers?.()));
+  }
+
+  deletePlayer$(playerId: string) {
+    return this.api.deletePlayer(playerId).pipe(
+      tap(() => {
+        this.store.refreshPlayers?.();
+        this.store.refreshTeams?.();
+      })
+    );
+  }
+
+  getCoreTeamIdByUiId$(uiId: number) {
+    return combineLatest([this.getTeamById$(uiId), this.store.teams$]).pipe(
+      take(1),
+      map(([uiTeam, coreTeams]) => {
+        if (!uiTeam) {
+          throw new Error('Nie znaleziono drużyny (UI).');
+        }
+        const core = coreTeams.find((t) => {
+          return (
+            t.name.trim().toLowerCase() === uiTeam.name.trim().toLowerCase()
+          );
+        });
+        if (!core) {
+          throw new Error('Nie znaleziono drużyny (Core).');
+        }
+        return core.id;
       })
     );
   }
