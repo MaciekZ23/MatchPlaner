@@ -1,6 +1,7 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, inject, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { stringsTopbar } from './misc/strings-topbar';
+import { AuthService } from '../core/auth/auth.service';
 @Component({
   selector: 'app-topbar',
   imports: [CommonModule],
@@ -13,15 +14,15 @@ export class TopbarComponent {
 
   moduleStrings = stringsTopbar;
 
-  avatar: string | null = localStorage.getItem('avatar') || null;
+  private auth = inject(AuthService);
+  avatar$ = this.auth.avatar$;
 
   onToggleSidebar() {
     this.toggleSidebar.emit();
   }
 
   onLogout() {
-    localStorage.removeItem('token');
-    localStorage.removeItem('avatar');
+    this.auth.logout();
     window.location.reload();
   }
 }

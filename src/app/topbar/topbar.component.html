@@ -40,7 +40,7 @@
         aria-label="Menu użytkownika"
       >
         <div class="avatar">
-          <ng-container *ngIf="avatar; else defaultAvatar">
+          <ng-container *ngIf="avatar$ | async as avatar; else defaultAvatar">
             <img [src]="avatar" alt="User Avatar" />
           </ng-container>
           <ng-template #defaultAvatar>

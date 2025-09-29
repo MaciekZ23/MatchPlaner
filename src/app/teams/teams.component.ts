@@ -1,7 +1,16 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
-import { map, tap, Observable, shareReplay, finalize } from 'rxjs';
+import {
+  map,
+  tap,
+  Observable,
+  shareReplay,
+  finalize,
+  switchMap,
+  take,
+  combineLatest,
+} from 'rxjs';
 import { TeamCardComponent } from './components/team-card/team-card.component';
 import { TeamTableComponent } from './components/team-table/team-table.component';
 import { TeamService } from './services/team.service';
@@ -52,8 +61,12 @@ export class TeamsComponent implements OnInit {
   ngOnInit(): void {
     this.teams$ = this.teamService.getTeams$().pipe(shareReplay(1));
 
-    this.selectedTeam$ = this.route.data.pipe(
-      map((d) => (d && 'team' in d ? (d['team'] as Team | null) : null)),
+    this.selectedTeam$ = combineLatest([this.route.paramMap, this.teams$]).pipe(
+      map(([pm, teams]) => {
+        const idStr = pm.get('id');
+        const id = idStr ? Number(idStr) : NaN;
+        return teams.find((t) => t.id === id) ?? null;
+      }),
       tap(() => (this.isLoading = false)),
       shareReplay(1)
     );
@@ -123,7 +136,76 @@ export class TeamsComponent implements OnInit {
     this.openAddPlayerFormModal = true;
   }
 
-  onAddPlayerFormSubmitted(fields: FormField[]): void {}
+  onAddPlayerFormSubmitted(fields: FormField[]): void {
+    if (!this.addPlayerForTeamId) {
+      return;
+    }
+
+    const f = this.reduceFields<{
+      name?: unknown;
+      position?: unknown;
+      number?: unknown;
+      health?: unknown;
+    }>(fields);
+
+    const name = String(f.name ?? '')
+      .trim()
+      .replace(/\s+/g, ' ');
+    const position =
+      (String(f.position ?? '')
+        .trim()
+        .toUpperCase() as 'GK' | 'DEF' | 'MID' | 'FWD') || 'MID';
+    const healthStatus =
+      (String(f.health ?? '')
+        .trim()
+        .toUpperCase() as 'HEALTHY' | 'INJURED') || 'HEALTHY';
+
+    if (!name) {
+      return;
+    }
+
+    const numStr = String(f.number ?? '').trim();
+    const shirtNumber = numStr ? Number(numStr) : undefined;
+    if (
+      shirtNumber != null &&
+      (!Number.isInteger(shirtNumber) || shirtNumber < 1 || shirtNumber > 99)
+    ) {
+      console.warn('Nieprawidłowy numer na koszulce (1–99)');
+      return;
+    }
+
+    const payload: CreatePlayerPayload = {
+      name,
+      position,
+      healthStatus,
+      ...(shirtNumber != null ? { shirtNumber } : {}),
+    };
+
+    this.isLoading = true;
+
+    this.teamService
+      .getTeamById$(this.addPlayerForTeamId)
+      .pipe(
+        take(1),
+        switchMap((uiTeam) => {
+          if (!uiTeam) {
+            throw new Error('Nie znaleziono wybranej drużyny');
+          }
+          return this.teamService.createPlayer$(uiTeam.name, payload);
+        }),
+        tap(() => {
+          this.openAddPlayerFormModal = false;
+          this.addPlayerFormFields = this.getEmptyPlayerFields();
+        }),
+        finalize(() => (this.isLoading = false))
+      )
+      .subscribe({
+        next: () => {},
+        error: (err) => {
+          console.error('Błąd dodawania zawodnika:', err);
+        },
+      });
+  }
 
   private getEmptyTeamFields(): FormField[] {
     return [

@@ -51,6 +51,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
           use_fedcm_for_prompt: false,
           itp_support: true,
         });
+        this.gisInitialized = true;
 
         const host = document.getElementById('googleBtn');
         if (host) {
@@ -132,8 +133,15 @@ export class LoginComponent implements OnInit, AfterViewInit {
     }
 
     this.appAuth.loginWithGoogle(idToken).subscribe({
-      next: ({ token, avatar }) => {
-        this.appAuth.saveSession(token, avatar);
+      next: ({ token, user }) => {
+        const fallback = this.extractGooglePicture(idToken);
+        const avatarUrl = user?.avatarUrl ?? fallback ?? undefined;
+
+        this.appAuth.saveSession(token, avatarUrl);
+        if (!user?.avatarUrl && fallback) {
+          this.appAuth.setAvatar(fallback);
+        }
+
         this.navigateAfterLogin();
       },
       error: (err) => {
@@ -142,6 +150,19 @@ export class LoginComponent implements OnInit, AfterViewInit {
         this.loading = false;
       },
     });
+  }
+
+  private extractGooglePicture(idToken: string): string | null {
+    try {
+      const [, payloadB64] = idToken.split('.');
+      const payloadJson = atob(
+        payloadB64.replace(/-/g, '+').replace(/_/g, '/')
+      );
+      const payload = JSON.parse(payloadJson);
+      return payload?.picture ?? null;
+    } catch {
+      return null;
+    }
   }
 
   continueAsGuest(): void {
