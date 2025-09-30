@@ -15,7 +15,12 @@ import { TeamCardComponent } from './components/team-card/team-card.component';
 import { TeamTableComponent } from './components/team-table/team-table.component';
 import { TeamService } from './services/team.service';
 import { Team } from './models/team';
-import { CreateTeamPayload, CreatePlayerPayload } from '../core/types';
+import {
+  CreateTeamPayload,
+  CreatePlayerPayload,
+  UpdateTeamPayload,
+  UpdatePlayerPayload,
+} from '../core/types';
 import { SpinnerComponent } from '../shared/components/spinner/spinner.component';
 import { PageHeaderComponent } from '../shared/components/page-header/page-header.component';
 import { stringsTeams } from './misc';
@@ -232,21 +237,21 @@ export class TeamsComponent implements OnInit {
         next: (coreId) => {
           this.editingTeamCoreId = coreId;
 
-          this.editTeamFormFields = this.getEmptyTeamFields().map((f) => {
-            if (f.name === 'name') {
-              return { ...f, value: team.name };
-            }
-            if (f.name === 'logo') {
-              return { ...f, value: team.logo ?? '' };
-            }
-            return f;
-          });
+          const fields = this.getEmptyTeamFields();
+          const fName = fields.find((f) => f.name === 'name');
+          if (fName) {
+            fName.value = team.name ?? '';
+          }
+          const fLogo = fields.find((f) => f.name === 'logo');
+          if (fLogo) {
+            fLogo.value = team.logo ?? '';
+          }
 
+          this.editTeamFormFields = [...fields];
           this.openEditTeamFormModal = true;
         },
-        error: (err) => {
-          console.error('Nie udało się przygotować edycji drużyny:', err);
-        },
+        error: (err) =>
+          console.error('Nie udało się pobrać coreId drużyny:', err),
       });
   }
 
@@ -255,49 +260,33 @@ export class TeamsComponent implements OnInit {
       return;
     }
 
-    // bierzemy wartości bezpośrednio z this.editTeamFormFields (bez parametru)
-    const f = this.editTeamFormFields.reduce<Record<string, unknown>>(
-      (acc, field) => {
-        acc[field.name] = field.value as unknown;
-        return acc;
-      },
-      {}
-    );
-
-    const name = String(f['name'] ?? '')
+    const f = this.reduceFields<{ name?: unknown; logo?: unknown }>(fields);
+    const name = String(f.name ?? '')
       .trim()
       .replace(/\s+/g, ' ');
-    const logoStr = f['logo'] != null ? String(f['logo']).trim() : undefined;
-
+    const logoStr = f.logo != null ? String(f.logo).trim() : '';
     if (!name) {
       return;
     }
 
-    const patch =
-      logoStr === undefined
-        ? { name }
-        : logoStr
-        ? { name, logo: logoStr }
-        : { name, logo: '' };
+    const payload: UpdateTeamPayload = logoStr
+      ? { name, logo: logoStr }
+      : { name };
 
     this.isLoading = true;
-
     this.teamService
-      .updateTeam$(this.editingTeamCoreId, patch)
+      .updateTeam$(this.editingTeamCoreId, payload)
       .pipe(
         tap(() => {
           this.openEditTeamFormModal = false;
+          this.editTeamFormFields = this.getEmptyTeamFields();
           this.editingTeamCoreId = undefined;
         }),
-        finalize(() => {
-          this.isLoading = false;
-        })
+        finalize(() => (this.isLoading = false))
       )
       .subscribe({
         next: () => {},
-        error: (err) => {
-          console.error('Błąd aktualizacji drużyny:', err);
-        },
+        error: (err) => console.error('Błąd edycji drużyny:', err),
       });
   }
 
@@ -314,13 +303,19 @@ export class TeamsComponent implements OnInit {
     }
 
     this.isLoading = true;
-
     this.teamService
       .getCoreTeamIdByUiId$(team.id)
       .pipe(
         take(1),
-        switchMap((coreId) => {
-          return this.teamService.deleteTeam$(coreId);
+        switchMap((coreTeamId: string) => {
+          return this.teamService.deleteTeam$(coreTeamId);
+        }),
+        tap(() => {
+          const idStr = this.route.snapshot.paramMap.get('id');
+          const currentId = idStr ? Number(idStr) : NaN;
+          if (currentId === team.id) {
+            this.router.navigate(['/teams']);
+          }
         }),
         finalize(() => {
           this.isLoading = false;
@@ -335,99 +330,87 @@ export class TeamsComponent implements OnInit {
   }
 
   onEditPlayer(player: any) {
-    // potrzebujemy aktualnie wybranej drużyny (UI id) i z cache ustalamy core playerId
-    this.selectedTeam$.pipe(take(1)).subscribe({
-      next: (uiTeam) => {
-        if (!uiTeam) {
-          console.warn('Brak wybranej drużyny.');
-          return;
-        }
+    const idStr = this.route.snapshot.paramMap.get('id');
+    const uiTeamId = idStr ? Number(idStr) : NaN;
+    if (!Number.isFinite(uiTeamId)) {
+      console.warn('Brak UI id drużyny w URL.');
+      return;
+    }
 
-        this.teamService
-          .getCoreTeamIdByUiId$(uiTeam.id)
-          .pipe(take(1))
-          .subscribe({
-            next: (coreTeamId) => {
-              // UŻYWAMY cache graczy ze store przez service (bez dodawania nowych helperów)
-              const svcAny = this.teamService as any;
-              const players$ = svcAny?.store?.players$;
-
-              if (!players$) {
-                console.error('Brak dostępu do listy zawodników.');
-                return;
-              }
-
-              players$.pipe(take(1)).subscribe({
-                next: (corePlayers: any[]) => {
-                  // 1) po numerze w obrębie teamu, 2) w razie braku numeru po nazwie (znormalizowanej)
-                  let found: any | null = null;
-
-                  if (player.shirtNumber != null) {
-                    for (const p of corePlayers) {
-                      if (
+    this.teamService
+      .getCoreTeamIdByUiId$(uiTeamId)
+      .pipe(
+        take(1),
+        switchMap((coreTeamId: string) => {
+          return this.teamService.getCorePlayers$().pipe(
+            take(1),
+            map((corePlayers: any[]) => {
+              // 1) po numerze koszulki
+              const byNum =
+                player.shirtNumber != null && player.shirtNumber !== ''
+                  ? corePlayers.find(
+                      (p) =>
                         p.teamId === coreTeamId &&
                         p.shirtNumber === player.shirtNumber
-                      ) {
-                        found = p;
-                        break;
-                      }
-                    }
-                  }
+                    )
+                  : null;
 
-                  if (!found) {
-                    const norm = (s: string) =>
-                      s.trim().toLowerCase().replace(/\s+/g, ' ');
-                    const wanted = norm(String(player.name ?? ''));
-                    for (const p of corePlayers) {
-                      if (p.teamId === coreTeamId && norm(p.name) === wanted) {
-                        found = p;
-                        break;
-                      }
-                    }
-                  }
+              if (byNum) return String(byNum.id);
 
-                  if (!found) {
-                    console.error('Nie znaleziono zawodnika (Core).');
-                    return;
-                  }
+              // 2) po nazwie (znormalizowanej)
+              const norm = (s: string) =>
+                s.trim().toLowerCase().replace(/\s+/g, ' ');
+              const wanted = norm(String(player.name ?? ''));
+              const byName = corePlayers.find(
+                (p) => p.teamId === coreTeamId && norm(p.name) === wanted
+              );
+              if (byName) return String(byName.id);
 
-                  this.editingPlayerId = found.id;
+              throw new Error('Nie znaleziono zawodnika (Core).');
+            })
+          );
+        })
+      )
+      .subscribe({
+        next: (corePlayerId: string) => {
+          this.editingPlayerId = corePlayerId;
 
-                  // Prefill wartościami KODÓW z backendu
-                  this.editPlayerFormFields = this.getEmptyPlayerFields().map(
-                    (f) => {
-                      if (f.name === 'name') {
-                        return { ...f, value: found.name ?? '' };
-                      }
-                      if (f.name === 'position') {
-                        return { ...f, value: found.position }; // 'GK'|'DEF'|'MID'|'FWD'
-                      }
-                      if (f.name === 'number') {
-                        return { ...f, value: found.shirtNumber ?? '' };
-                      }
-                      if (f.name === 'health') {
-                        return { ...f, value: found.healthStatus }; // 'HEALTHY'|'INJURED'
-                      }
-                      return f;
-                    }
-                  );
+          const fields = this.getEmptyPlayerFields();
 
-                  this.openEditPlayerFormModal = true;
-                },
-                error: (err: unknown) => {
-                  console.error('Błąd pobierania zawodników ze store:', err);
-                },
-              });
-            },
-            error: (err) => {
-              console.error('Błąd ustalenia CoreTeamId:', err);
-            },
-          });
-      },
-      error: (err) => {
-        console.error(err);
-      },
-    });
+          const fName = fields.find((f) => f.name === 'name');
+          if (fName) {
+            fName.value = player.name ?? '';
+          }
+
+          const fPos = fields.find((f) => f.name === 'position');
+          if (fPos) {
+            // DLA SELECTA MUSI BYĆ WARTOŚĆ "CORE": 'GK'|'DEF'|'MID'|'FWD'
+            fPos.value = this.positionCoreFromUi(player.position);
+          }
+
+          const fNum = fields.find((f) => f.name === 'number');
+          if (fNum) {
+            // KLUCZOWA ZMIANA: number lub null (NIE string!)
+            fNum.value =
+              player.shirtNumber == null || player.shirtNumber === ''
+                ? null
+                : Number(player.shirtNumber);
+          }
+
+          const fHealth = fields.find((f) => f.name === 'health');
+          if (fHealth) {
+            // DLA SELECTA MUSI BYĆ 'HEALTHY'|'INJURED'
+            fHealth.value = this.healthCoreFromUi(player.healthStatus);
+          }
+
+          // Najpierw wstrzykujemy nowe pola...
+          this.editPlayerFormFields = [...fields];
+          // ...potem otwieramy formularz (DynamicForm w ngOnChanges zrobi patchValue)
+          this.openEditPlayerFormModal = true;
+        },
+        error: (err) =>
+          console.error('Nie udało się przygotować edycji zawodnika:', err),
+      });
   }
 
   onEditPlayerFormSubmitted(fields: FormField[]) {
@@ -445,57 +428,115 @@ export class TeamsComponent implements OnInit {
     const name = String(f.name ?? '')
       .trim()
       .replace(/\s+/g, ' ');
+    if (!name) return;
+
     const position =
-      (String(f.position ?? '')
+      (String(f.position ?? 'MID')
         .trim()
-        .toUpperCase() as 'GK' | 'DEF' | 'MID' | 'FWD') || undefined;
+        .toUpperCase() as 'GK' | 'DEF' | 'MID' | 'FWD') || 'MID';
     const healthStatus =
-      (String(f.health ?? '')
+      (String(f.health ?? 'HEALTHY')
         .trim()
-        .toUpperCase() as 'HEALTHY' | 'INJURED') || undefined;
+        .toUpperCase() as 'HEALTHY' | 'INJURED') || 'HEALTHY';
 
     const numStr = String(f.number ?? '').trim();
     const shirtNumber = numStr ? Number(numStr) : undefined;
-
-    if (shirtNumber != null) {
-      if (
-        !Number.isInteger(shirtNumber) ||
-        shirtNumber < 1 ||
-        shirtNumber > 99
-      ) {
-        console.warn('Nieprawidłowy numer na koszulce (1–99)');
-        return;
-      }
+    if (
+      shirtNumber != null &&
+      (!Number.isInteger(shirtNumber) || shirtNumber < 1 || shirtNumber > 99)
+    ) {
+      console.warn('Nieprawidłowy numer na koszulce (1–99)');
+      return;
     }
 
-    const patch: Partial<CreatePlayerPayload> = {};
-    if (name) {
-      patch.name = name;
-    }
-    if (position) {
-      patch.position = position as any;
-    }
-    if (healthStatus) {
-      patch.healthStatus = healthStatus as any;
-    }
-    if (numStr !== '') {
-      patch.shirtNumber = shirtNumber;
+    const payload: UpdatePlayerPayload = {
+      name,
+      position,
+      healthStatus,
+      ...(shirtNumber != null ? { shirtNumber } : {}),
+    };
+
+    this.isLoading = true;
+    this.teamService
+      .updatePlayer$(this.editingPlayerId, payload)
+      .pipe(
+        tap(() => {
+          this.openEditPlayerFormModal = false;
+          this.editPlayerFormFields = this.getEmptyPlayerFields();
+          this.editingPlayerId = undefined;
+        }),
+        finalize(() => (this.isLoading = false))
+      )
+      .subscribe({
+        next: () => {},
+        error: (err) => console.error('Błąd edycji zawodnika:', err),
+      });
+  }
+
+  async onDeletePlayer(player: any) {
+    const ok = await this.playerConfirmModal.open({
+      title: 'Usuń zawodnika',
+      message: `Czy na pewno chcesz usunąć zawodnika „${player.name}”?`,
+      confirmVariant: 'danger',
+      labels: { confirm: 'Usuń', cancel: 'Anuluj' },
+    });
+
+    if (!ok) {
+      return;
     }
 
-    if (Object.keys(patch).length === 0) {
-      this.openEditPlayerFormModal = false;
-      this.editingPlayerId = undefined;
+    const idStr = this.route.snapshot.paramMap.get('id');
+    const uiTeamId = idStr ? Number(idStr) : NaN;
+    if (!Number.isFinite(uiTeamId)) {
+      console.warn('Brak UI id drużyny w URL.');
       return;
     }
 
     this.isLoading = true;
 
     this.teamService
-      .updatePlayer$(this.editingPlayerId, patch)
+      .getCoreTeamIdByUiId$(uiTeamId)
       .pipe(
-        tap(() => {
-          this.openEditPlayerFormModal = false;
-          this.editingPlayerId = undefined;
+        take(1),
+        switchMap((coreTeamId: string) => {
+          return this.teamService.getCorePlayers$().pipe(
+            take(1),
+            map((corePlayers: any[]): string => {
+              let found: any = null;
+
+              if (player.shirtNumber != null && player.shirtNumber !== '') {
+                for (const p of corePlayers) {
+                  if (
+                    p.teamId === coreTeamId &&
+                    p.shirtNumber === player.shirtNumber
+                  ) {
+                    found = p;
+                    break;
+                  }
+                }
+              }
+
+              if (!found) {
+                const norm = (s: string) =>
+                  s.trim().toLowerCase().replace(/\s+/g, ' ');
+                const wanted = norm(String(player.name ?? ''));
+                for (const p of corePlayers) {
+                  if (p.teamId === coreTeamId && norm(p.name) === wanted) {
+                    found = p;
+                    break;
+                  }
+                }
+              }
+
+              if (!found) {
+                throw new Error('Nie znaleziono zawodnika (Core).');
+              }
+              return String(found.id); // KONIECZNIE string, żeby nie było TS "unknown"
+            })
+          );
+        }),
+        switchMap((corePlayerId: string) => {
+          return this.teamService.deletePlayer$(corePlayerId);
         }),
         finalize(() => {
           this.isLoading = false;
@@ -504,12 +545,29 @@ export class TeamsComponent implements OnInit {
       .subscribe({
         next: () => {},
         error: (err) => {
-          console.error('Błąd aktualizacji zawodnika:', err);
+          console.error('Błąd usuwania zawodnika:', err);
         },
       });
   }
 
-  async onDeletePlayer(player: any) {}
+  private positionCoreFromUi(ui: string): 'GK' | 'DEF' | 'MID' | 'FWD' {
+    switch ((ui ?? '').toLowerCase()) {
+      case 'bramkarz':
+        return 'GK';
+      case 'obrońca':
+        return 'DEF';
+      case 'pomocnik':
+        return 'MID';
+      case 'napastnik':
+        return 'FWD';
+      default:
+        return 'MID';
+    }
+  }
+
+  private healthCoreFromUi(ui: string): 'HEALTHY' | 'INJURED' {
+    return (ui ?? '').toLowerCase() === 'zdrowy' ? 'HEALTHY' : 'INJURED';
+  }
 
   private getEmptyTeamFields(): FormField[] {
     return [

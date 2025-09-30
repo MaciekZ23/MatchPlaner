@@ -31,6 +31,10 @@ export class TeamService {
     );
   }
 
+  getCorePlayers$() {
+    return this.store.players$;
+  }
+
   createTeam$(team: CreateTeamPayload, tournamentId?: string) {
     const tid$ = tournamentId
       ? of(tournamentId)
