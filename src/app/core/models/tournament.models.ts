@@ -84,3 +84,48 @@ export interface Match {
     awayGKIds?: string[];
   };
 }
+
+export interface CreateGroupPayload {
+  id: string;
+  name: string;
+  teamIds: string[];
+}
+
+export interface CreateStagePayload {
+  id: string;
+  name: string;
+  kind: StageKind;
+  order: number;
+}
+
+export interface CreateTournamentPayload {
+  name: string;
+  mode: TournamentMode;
+  description?: string | null;
+  additionalInfo?: string | null;
+  season?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  timezone?: string | null;
+  venue?: string | null;
+  venueAddress?: string | null;
+  venueImageUrl?: string | null;
+  groups?: CreateGroupPayload[];
+  stages?: CreateStagePayload[];
+}
+
+export interface UpdateTournamentPayload {
+  name?: string;
+  mode?: TournamentMode;
+  description?: string | null;
+  additionalInfo?: string | null;
+  season?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  timezone?: string | null;
+  venue?: string | null;
+  venueAddress?: string | null;
+  venueImageUrl?: string | null;
+  groups?: CreateGroupPayload[];
+  stages?: CreateStagePayload[];
+}

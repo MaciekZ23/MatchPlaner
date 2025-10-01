@@ -6,5 +6,34 @@
     <p class="card-text fs-7 fs-md-5">
       {{ dateRange$ | async }}
     </p>
+
+    <div class="d-flex justify-content-center gap-3" *ngIf="isAdmin$ | async">
+      <button
+        type="button"
+        class="btn text-white btn-sm"
+        (click)="onAddTournament()"
+        aria-label="Dodaj turniej"
+      >
+        {{ moduleStrings.addTournament }}
+      </button>
+
+      <button
+        type="button"
+        class="btn text-white btn-sm"
+        (click)="onEditTournament()"
+        aria-label="Edytuj turniej"
+      >
+        {{ moduleStrings.editTournament }}
+      </button>
+
+      <button
+        type="button"
+        class="btn text-white btn-sm"
+        (click)="onDeleteTournament()"
+        aria-label="Usuń turniej"
+      >
+        {{ moduleStrings.deleteTournament }}
+      </button>
+    </div>
   </div>
 </div>

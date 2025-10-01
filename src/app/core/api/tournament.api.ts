@@ -1,6 +1,13 @@
 import { InjectionToken } from '@angular/core';
 import { Observable } from 'rxjs';
-import { Tournament, Team, Player, Match } from '../models';
+import {
+  Tournament,
+  Team,
+  Player,
+  Match,
+  UpdateTournamentPayload,
+  CreateTournamentPayload,
+} from '../models';
 import {
   CreatePlayerPayload,
   CreateTeamPayload,
@@ -8,15 +15,15 @@ import {
   UpdateTeamPayload,
 } from '../types';
 
-/**
- * Interfejs warstwy danych turnieju
- * Implementacje:
- *  - MockTournamentApi (teraz)
- *  - HttpTournamentApi (później, gdy będzie backend)
- */
-
 export interface ITournamentApi {
   getTournament(tournamentId: string): Observable<Tournament>;
+  createTournament(payload: CreateTournamentPayload): Observable<Tournament>;
+  updateTournament(
+    id: string,
+    patch: UpdateTournamentPayload
+  ): Observable<Tournament>;
+  deleteTournament(id: string): Observable<void>;
+
   getTeams(tournamentId: string): Observable<Team[]>;
   getPlayers(tournamentId: string): Observable<Player[]>;
   getMatches(stageId: string): Observable<Match[]>;
@@ -36,9 +43,6 @@ export interface ITournamentApi {
   deletePlayer(playerId: string): Observable<void>;
 }
 
-/**
- * Token DI do wstrzykiwania aktualnej implementacji API
- */
 export const TOURNAMENT_API = new InjectionToken<ITournamentApi>(
   'TOURNAMENT_API'
 );

@@ -293,7 +293,7 @@ export class TeamsComponent implements OnInit {
   async onDeleteTeam(team: Team) {
     const ok = await this.teamConfirmModal.open({
       title: 'Usuń drużynę',
-      message: `Czy na pewno chcesz usunąć drużynę „${team.name}”?`,
+      message: `Czy na pewno chcesz usunąć drużynę ${team.name}?`,
       confirmVariant: 'danger',
       labels: { confirm: 'Usuń', cancel: 'Anuluj' },
     });
@@ -345,7 +345,6 @@ export class TeamsComponent implements OnInit {
           return this.teamService.getCorePlayers$().pipe(
             take(1),
             map((corePlayers: any[]) => {
-              // 1) po numerze koszulki
               const byNum =
                 player.shirtNumber != null && player.shirtNumber !== ''
                   ? corePlayers.find(
@@ -355,16 +354,19 @@ export class TeamsComponent implements OnInit {
                     )
                   : null;
 
-              if (byNum) return String(byNum.id);
+              if (byNum) {
+                return String(byNum.id);
+              }
 
-              // 2) po nazwie (znormalizowanej)
               const norm = (s: string) =>
                 s.trim().toLowerCase().replace(/\s+/g, ' ');
               const wanted = norm(String(player.name ?? ''));
               const byName = corePlayers.find(
                 (p) => p.teamId === coreTeamId && norm(p.name) === wanted
               );
-              if (byName) return String(byName.id);
+              if (byName) {
+                return String(byName.id);
+              }
 
               throw new Error('Nie znaleziono zawodnika (Core).');
             })
@@ -384,13 +386,11 @@ export class TeamsComponent implements OnInit {
 
           const fPos = fields.find((f) => f.name === 'position');
           if (fPos) {
-            // DLA SELECTA MUSI BYĆ WARTOŚĆ "CORE": 'GK'|'DEF'|'MID'|'FWD'
             fPos.value = this.positionCoreFromUi(player.position);
           }
 
           const fNum = fields.find((f) => f.name === 'number');
           if (fNum) {
-            // KLUCZOWA ZMIANA: number lub null (NIE string!)
             fNum.value =
               player.shirtNumber == null || player.shirtNumber === ''
                 ? null
@@ -399,13 +399,10 @@ export class TeamsComponent implements OnInit {
 
           const fHealth = fields.find((f) => f.name === 'health');
           if (fHealth) {
-            // DLA SELECTA MUSI BYĆ 'HEALTHY'|'INJURED'
             fHealth.value = this.healthCoreFromUi(player.healthStatus);
           }
 
-          // Najpierw wstrzykujemy nowe pola...
           this.editPlayerFormFields = [...fields];
-          // ...potem otwieramy formularz (DynamicForm w ngOnChanges zrobi patchValue)
           this.openEditPlayerFormModal = true;
         },
         error: (err) =>
@@ -476,7 +473,7 @@ export class TeamsComponent implements OnInit {
   async onDeletePlayer(player: any) {
     const ok = await this.playerConfirmModal.open({
       title: 'Usuń zawodnika',
-      message: `Czy na pewno chcesz usunąć zawodnika „${player.name}”?`,
+      message: `Czy na pewno chcesz usunąć zawodnika ${player.name}?`,
       confirmVariant: 'danger',
       labels: { confirm: 'Usuń', cancel: 'Anuluj' },
     });
@@ -531,7 +528,7 @@ export class TeamsComponent implements OnInit {
               if (!found) {
                 throw new Error('Nie znaleziono zawodnika (Core).');
               }
-              return String(found.id); // KONIECZNIE string, żeby nie było TS "unknown"
+              return String(found.id);
             })
           );
         }),
@@ -605,7 +602,7 @@ export class TeamsComponent implements OnInit {
         label: 'Pozycja',
         type: 'select',
         required: true,
-        value: 'MID',
+        value: 'GK',
         options: [
           { label: 'Bramkarz', value: 'GK' },
           { label: 'Obrońca', value: 'DEF' },

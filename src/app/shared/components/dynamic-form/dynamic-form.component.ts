@@ -103,10 +103,16 @@ export class DynamicFormComponent implements OnInit, OnChanges {
 
   private getValidators(field: FormField) {
     const v = field.required ? [Validators.required] : [];
-    if (field.type === 'email') v.push(Validators.email);
+    if (field.type === 'email') {
+      v.push(Validators.email);
+    }
     if (field.type === 'number') {
-      if (field.min != null) v.push(Validators.min(field.min));
-      if (field.max != null) v.push(Validators.max(field.max));
+      if (field.min != null) {
+        v.push(Validators.min(field.min));
+      }
+      if (field.max != null) {
+        v.push(Validators.max(field.max));
+      }
     }
     return v;
   }
@@ -120,16 +126,16 @@ export class DynamicFormComponent implements OnInit, OnChanges {
       return new Date(field.value).toISOString().slice(0, 16);
     }
     if (field.type === 'number') {
-      // number albo null (puste pole) – NIE string
-      if (field.value === '' || field.value == null) return null;
+      if (field.value === '' || field.value == null) {
+        return null;
+      }
       const n = Number(field.value);
       return Number.isFinite(n) ? n : null;
     }
     if (field.type === 'select') {
-      // wartości opcji masz jako stringi ('GK','DEF',...), więc zwracaj string
       return field.value ?? '';
     }
-    // text itp.
+
     return field.value ?? '';
   }
 

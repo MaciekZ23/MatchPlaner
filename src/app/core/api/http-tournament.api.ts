@@ -2,7 +2,14 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ITournamentApi } from './tournament.api';
-import { Match, Player, Team, Tournament } from '../models';
+import {
+  CreateTournamentPayload,
+  Match,
+  Player,
+  Team,
+  Tournament,
+  UpdateTournamentPayload,
+} from '../models';
 import {
   CreatePlayerPayload,
   CreateTeamPayload,
@@ -18,6 +25,29 @@ export class HttpTournamentApi implements ITournamentApi {
 
   getTournament(id: string = this.defaultTournamentId): Observable<Tournament> {
     return this.http.get<Tournament>(`/api/v1/tournaments/${id}`);
+  }
+
+  createTournament(payload: CreateTournamentPayload): Observable<Tournament> {
+    return this.http.post<Tournament>(
+      `/api/v1/tournaments/create-tournament`,
+      payload
+    );
+  }
+
+  updateTournament(
+    id: string,
+    patch: UpdateTournamentPayload
+  ): Observable<Tournament> {
+    return this.http.patch<Tournament>(
+      `/api/v1/tournaments/${id}/modify-tournament`,
+      patch
+    );
+  }
+
+  deleteTournament(id: string): Observable<void> {
+    return this.http.delete<void>(
+      `/api/v1/tournaments/${id}/delete-tournament`
+    );
   }
 
   getTeams(tournamentId: string): Observable<Team[]> {
