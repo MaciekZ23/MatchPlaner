@@ -6,9 +6,19 @@ import {
   OnInit,
   OnChanges,
 } from '@angular/core';
-import { FormGroup, FormControl, Validators } from '@angular/forms';
+import {
+  FormGroup,
+  FormControl,
+  Validators,
+  FormArray,
+  AbstractControl,
+} from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
-import { FormField } from './models/form-field';
+import {
+  FormField,
+  RepeaterFormField,
+  SelectFormField,
+} from './models/form-field';
 import { CommonModule } from '@angular/common';
 import { SimpleChanges } from '@angular/core';
 
@@ -57,49 +67,151 @@ export class DynamicFormComponent implements OnInit, OnChanges {
 
   // Budowanie formularza na podstawie tablicy pól
   private buildForm() {
-    const controls: Record<string, FormControl> = {};
+    const controls: Record<string, AbstractControl> = {};
     for (const f of this.fields) {
-      controls[f.name] = new FormControl(
-        { value: this.coerceValue(f), disabled: !!f.disabled },
-        this.getValidators(f)
-      );
+      if (f.type === 'repeater') {
+        controls[f.name] = this.buildRepeaterControl(f as RepeaterFormField);
+      } else {
+        controls[f.name] = new FormControl(
+          { value: this.coerceValue(f), disabled: !!f.disabled },
+          this.getValidators(f)
+        );
+      }
     }
     this.form = new FormGroup(controls);
   }
 
   private syncFormWithFields() {
-    if (!this.form) {
-      return;
-    }
+    if (!this.form) return;
 
     for (const f of this.fields) {
-      const ctrl = this.form.get(f.name) as FormControl | null;
+      const existing = this.form.get(f.name);
+
+      if (f.type === 'repeater') {
+        const rep = f as RepeaterFormField;
+        if (!existing) {
+          this.form.addControl(f.name, this.buildRepeaterControl(rep));
+        } else if (existing instanceof FormArray) {
+          this.syncRepeaterArray(existing, rep);
+        } else {
+          this.form.removeControl(f.name);
+          this.form.addControl(f.name, this.buildRepeaterControl(rep));
+        }
+        continue;
+      }
+
       const val = this.coerceValue(f);
       const validators = this.getValidators(f);
 
-      if (!ctrl) {
+      if (!existing) {
         this.form.addControl(
           f.name,
           new FormControl({ value: val, disabled: !!f.disabled }, validators)
         );
       } else {
-        ctrl.setValidators(validators);
-        ctrl.updateValueAndValidity({ emitEvent: false });
+        (existing as FormControl).setValidators(validators);
+        (existing as FormControl).updateValueAndValidity({
+          emitEvent: false,
+        });
       }
     }
 
+    // usuń kontrolki, których już nie ma w fields
     Object.keys(this.form.controls).forEach((name) => {
       if (!this.fields.some((f) => f.name === name)) {
         this.form.removeControl(name);
       }
     });
 
-    const values = this.fields.reduce<Record<string, any>>((acc, f) => {
-      acc[f.name] = this.coerceValue(f);
-      return acc;
-    }, {});
-    this.form.patchValue(values, { emitEvent: false });
+    // podmień wartości prostych kontrolek
+    const patch: Record<string, any> = {};
+    for (const f of this.fields) {
+      if (f.type !== 'repeater') {
+        patch[f.name] = this.coerceValue(f);
+      }
+    }
+    this.form.patchValue(patch, { emitEvent: false });
   }
+
+  /** ================== REPEATER HELPERS ================== */
+
+  private buildRepeaterControl(f: RepeaterFormField): FormArray {
+    const arr = new FormArray<FormGroup>([]);
+    const items = Array.isArray(f.value) ? f.value : [];
+    for (const item of items) {
+      arr.push(this.buildInnerGroup(f, item));
+    }
+    return arr;
+  }
+
+  private syncRepeaterArray(ctrl: FormArray, f: RepeaterFormField) {
+    while (ctrl.length) ctrl.removeAt(0);
+    const items = Array.isArray(f.value) ? f.value : [];
+    for (const item of items) {
+      ctrl.push(this.buildInnerGroup(f, item));
+    }
+  }
+
+  private buildInnerGroup(
+    rep: RepeaterFormField,
+    values: Record<string, any>
+  ): FormGroup {
+    const inner: Record<string, FormControl> = {};
+    for (const innerField of rep.fields) {
+      if (innerField.type === 'repeater') {
+        // (rzadkie) zagnieżdżony repeater – można dodać jeśli potrzebujesz
+        throw new Error('Nested repeater is not supported in this component.');
+      }
+      const withValue = {
+        ...innerField,
+        value: values?.[innerField.name],
+      } as FormField;
+      inner[innerField.name] = new FormControl(
+        { value: this.coerceValue(withValue), disabled: !!innerField.disabled },
+        this.getValidators(innerField)
+      );
+    }
+    return new FormGroup(inner);
+  }
+
+  addRepeaterItem(fieldName: string) {
+    const f = this.fields.find((x) => x.name === fieldName) as
+      | RepeaterFormField
+      | undefined;
+    if (!f) return;
+
+    const fa = this.form.get(fieldName) as FormArray | null;
+    if (!fa) return;
+
+    if (typeof f.max === 'number' && fa.length >= f.max) return;
+
+    // domyślne puste wartości wg definicji pól
+    const blank: Record<string, any> = {};
+    for (const inner of f.fields) {
+      if (inner.type === 'checkbox') blank[inner.name] = false;
+      else if (inner.type === 'number') blank[inner.name] = null;
+      else if (inner.type === 'select' && (inner as SelectFormField).multiple)
+        blank[inner.name] = [];
+      else blank[inner.name] = '';
+    }
+
+    fa.push(this.buildInnerGroup(f, blank));
+  }
+
+  removeRepeaterItem(fieldName: string, index: number) {
+    const fa = this.form.get(fieldName) as FormArray | null;
+    if (!fa) return;
+    if (index < 0 || index >= fa.length) return;
+
+    const f = this.fields.find((x) => x.name === fieldName) as
+      | RepeaterFormField
+      | undefined;
+    if (f && typeof f.min === 'number' && fa.length <= f.min) return;
+
+    fa.removeAt(index);
+  }
+
+  /** ================== UTILS ================== */
 
   private getValidators(field: FormField) {
     const v = field.required ? [Validators.required] : [];
@@ -107,13 +219,10 @@ export class DynamicFormComponent implements OnInit, OnChanges {
       v.push(Validators.email);
     }
     if (field.type === 'number') {
-      if (field.min != null) {
-        v.push(Validators.min(field.min));
-      }
-      if (field.max != null) {
-        v.push(Validators.max(field.max));
-      }
+      if (field.min != null) v.push(Validators.min(field.min));
+      if (field.max != null) v.push(Validators.max(field.max));
     }
+    // dla 'repeater' można dodać minLength/maxLength na poziomie FormArray – pominę dla prostoty
     return v;
   }
 
@@ -126,16 +235,26 @@ export class DynamicFormComponent implements OnInit, OnChanges {
       return new Date(field.value).toISOString().slice(0, 16);
     }
     if (field.type === 'number') {
-      if (field.value === '' || field.value == null) {
-        return null;
-      }
+      if (field.value === '' || field.value == null) return null;
       const n = Number(field.value);
       return Number.isFinite(n) ? n : null;
     }
     if (field.type === 'select') {
+      const mult = (field as SelectFormField).multiple;
+      if (mult) {
+        const v = field.value;
+        if (Array.isArray(v)) return v;
+        return v != null && v !== '' ? [v] : [];
+      }
       return field.value ?? '';
     }
-
+    if (field.type === 'checkbox') {
+      return !!field.value;
+    }
+    if (field.type === 'repeater') {
+      return Array.isArray(field.value) ? field.value : [];
+    }
+    // text/textarea/date/time/email/hidden
     return field.value ?? '';
   }
 
@@ -145,11 +264,12 @@ export class DynamicFormComponent implements OnInit, OnChanges {
         ...field,
         value: this.form.get(field.name)?.value,
       }));
-
       this.formSubmitted.emit(updatedFields);
-
       this.resetForm();
       this.closeForm();
+    } else {
+      // zaznacz niepoprawne pola
+      this.form.markAllAsTouched();
     }
   }
 
@@ -161,9 +281,21 @@ export class DynamicFormComponent implements OnInit, OnChanges {
   private resetForm(): void {
     const resetValues: any = {};
     this.fields.forEach((field) => {
-      resetValues[field.name] = field.type === 'checkbox' ? false : '';
+      if (field.type === 'checkbox') resetValues[field.name] = false;
+      else if (field.type === 'number') resetValues[field.name] = null;
+      else if (field.type === 'select' && (field as SelectFormField).multiple)
+        resetValues[field.name] = [];
+      else if (field.type === 'repeater') resetValues[field.name] = [];
+      else resetValues[field.name] = '';
     });
     this.form.reset(resetValues);
+    // wyczyść FormArray dla repeaterów
+    for (const f of this.fields) {
+      if (f.type === 'repeater') {
+        const fa = this.form.get(f.name) as FormArray | null;
+        if (fa) while (fa.length) fa.removeAt(0);
+      }
+    }
   }
 
   private openForm(): void {
@@ -187,18 +319,25 @@ export class DynamicFormComponent implements OnInit, OnChanges {
   }
 
   calcTotalSpan(field: FormField): string {
-    let totalSpan = field.totalSpan || 12; // Domyślnie 12 kolumn
-    if (totalSpan < 1 || totalSpan > 12) {
-      totalSpan = 12;
-    } // Ograniczenie do 1-12 kolumn
+    let totalSpan = field.totalSpan ?? 12;
+    if (totalSpan < 1 || totalSpan > 12) totalSpan = 12;
     return `col-${totalSpan}`;
   }
 
   calcActualSpan(field: FormField): string {
-    const actualSpan = field.actualSpan || 12; // Domyślnie 12 kolumn
-    if (actualSpan < 1 || actualSpan > 12) {
-      return 'col-12';
-    } // Ograniczenie do 1-12 kolumn
+    const actualSpan = field.actualSpan ?? 12;
+    if (actualSpan < 1 || actualSpan > 12) return 'col-12';
     return `col-${actualSpan}`;
+  }
+
+  // Shorthands do template
+  asRepeater(f: FormField) {
+    return f as RepeaterFormField;
+  }
+  isRepeater(f: FormField): f is RepeaterFormField {
+    return f.type === 'repeater';
+  }
+  getFormArray(name: string) {
+    return this.form.get(name) as FormArray;
   }
 }

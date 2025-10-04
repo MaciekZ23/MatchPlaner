@@ -60,6 +60,21 @@ export interface DateTimeFormField extends BaseFormField {
   max?: string;
 }
 
+export interface RepeaterFormField extends BaseFormField {
+  type: 'repeater';
+  itemLabel?: string;
+  min?: number;
+  max?: number;
+  addLabel?: string;
+  removeLabel?: string;
+  fields: FormField[];
+  value?: Record<string, any>[];
+}
+
+export interface HiddenFormField extends BaseFormField {
+  type: 'hidden';
+}
+
 export type FormField =
   | TextFormField
   | EmailFormField
@@ -69,4 +84,6 @@ export type FormField =
   | TextareaFormField
   | SelectFormField
   | TimeFormField
-  | DateTimeFormField;
+  | DateTimeFormField
+  | RepeaterFormField
+  | HiddenFormField;

@@ -10,12 +10,12 @@ import { stringsHome } from './misc';
 import { TournamentStore } from '../core/services/tournament-store.service';
 import { HttpTournamentApi } from '../core/api/http-tournament.api';
 import { FormField } from '../shared/components/dynamic-form/models/form-field';
-import { finalize, take, tap } from 'rxjs';
+import { finalize, forkJoin, map, shareReplay, take, tap } from 'rxjs';
 import {
   CreateTournamentPayload,
   UpdateTournamentPayload,
 } from '../core/models';
-import { TournamentMode } from '../core/types';
+import { TournamentMode, StageKind } from '../core/types';
 
 @Component({
   selector: 'app-home',
@@ -40,31 +40,76 @@ export class HomeComponent {
   private readonly store = inject(TournamentStore);
   private readonly api = inject(HttpTournamentApi);
 
+  teamsOptions$ = this.store.teams$.pipe(
+    map((teams) => teams.map((t) => ({ label: t.name, value: t.id }))),
+    shareReplay({ bufferSize: 1, refCount: true })
+  );
+
   formTitleAddTournament = this.moduleStrings.formTitleAddTournament;
   formTitleEditTournament = this.moduleStrings.formTitleEditTournament;
 
   openAddTournamentFormModal = false;
   openEditTournamentFormModal = false;
-
-  addTournamentFormFields: FormField[] = this.getEmptyTournamentFields();
-  editTournamentFormFields: FormField[] = this.getEmptyTournamentFields();
-
   isLoading = false;
 
+  addTournamentFormFields: FormField[] = this.getTournamentFields();
+  editTournamentFormFields: FormField[] = this.getTournamentFields();
+
+  private editGroupsInitialIds: Set<string> = new Set<string>();
+  private editStagesInitialIds: Set<string> = new Set<string>();
+
   onAddTournamentClick(): void {
-    this.addTournamentFormFields = this.getEmptyTournamentFields();
-    this.openAddTournamentFormModal = true;
+    this.isLoading = true;
+    this.teamsOptions$
+      .pipe(
+        take(1),
+        finalize(() => {
+          this.isLoading = false;
+        })
+      )
+      .subscribe((teamOptions) => {
+        const base: FormField[] = this.getTournamentFields();
+        const groups: FormField = this.groupsRepeaterFields(
+          'groups',
+          [{ id: '', name: '', teamIds: [] }],
+          teamOptions
+        );
+
+        const stages: FormField = this.stagesRepeaterFields('stages', [
+          { id: '', name: '', kind: 'GROUP', order: 1 },
+        ]);
+
+        this.addTournamentFormFields = [...base, groups, stages];
+        this.openAddTournamentFormModal = true;
+      });
   }
 
   onEditTournamentClick(): void {
-    this.store.tournament$.pipe(take(1)).subscribe({
-      next: (t) => {
+    this.isLoading = true;
+
+    forkJoin({
+      t: this.store.tournament$.pipe(take(1)),
+      teamOptions: this.teamsOptions$.pipe(take(1)),
+    })
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+        })
+      )
+      .subscribe(({ t, teamOptions }) => {
         if (!t) {
           console.warn('Brak turnieju do edycji');
           return;
         }
 
-        const fields = this.getEmptyTournamentFields();
+        this.editGroupsInitialIds = new Set<string>(
+          (t.groups ?? []).map((g) => g.id)
+        );
+        this.editStagesInitialIds = new Set<string>(
+          (t.stages ?? []).map((s) => s.id)
+        );
+
+        const fields: FormField[] = this.getTournamentFields();
         const set = (name: string, val: any) => {
           const f = fields.find((x) => x.name === name);
           if (f) {
@@ -75,24 +120,33 @@ export class HomeComponent {
         set('name', t.name ?? '');
         set('mode', t.mode ?? 'LEAGUE');
         set('season', t.season ?? '');
-
         set('startDate', this.toDateInput(t.startDate));
         set('endDate', this.toDateInput(t.endDate));
         set('timezone', t.timezone ?? 'Europe/Warsaw');
-
         set('description', t.description ?? '');
         set('additionalInfo', t.additionalInfo ?? '');
-
         set('venue', t.venue ?? '');
         set('venueAddress', t.venueAddress ?? '');
         set('venueImageUrl', t.venueImageUrl ?? '');
 
-        this.editTournamentFormFields = [...fields];
+        const groups: FormField = this.groupsRepeaterFields(
+          'groups',
+          (t.groups || []).map((g) => {
+            return { id: g.id, name: g.name, teamIds: g.teamIds };
+          }),
+          teamOptions
+        );
+
+        const stages: FormField = this.stagesRepeaterFields(
+          'stages',
+          (t.stages || []).map((s) => {
+            return { id: s.id, name: s.name, kind: s.kind, order: s.order };
+          })
+        );
+
+        this.editTournamentFormFields = [...fields, groups, stages];
         this.openEditTournamentFormModal = true;
-      },
-      error: (err) =>
-        console.error('Nie można przygotować edycji turnieju:', err),
-    });
+      });
   }
 
   async onDeleteTournamentClick(): Promise<void> {
@@ -202,20 +256,45 @@ export class HomeComponent {
       payload.venueImageUrl = img;
     }
 
+    const groups = (f['groups'] as any[]) || [];
+    if (groups.length > 0) {
+      (payload as any).groups = groups.map((g) => {
+        return {
+          name: String(g?.name || '').trim(),
+          teamIds: Array.isArray(g?.teamIds) ? g.teamIds : [],
+        };
+      });
+    }
+
+    const stages = (f['stages'] as any[]) || [];
+    if (stages.length > 0) {
+      (payload as any).stages = stages.map((s) => {
+        return {
+          name: String(s?.name || '').trim(),
+          kind: (s?.kind === 'PLAYOFF' ? 'PLAYOFF' : 'GROUP') as StageKind,
+          order: Number(s?.order ?? 1) || 1,
+        };
+      });
+    }
+
     this.isLoading = true;
     this.api
       .createTournament(payload)
       .pipe(
         tap(() => {
           this.openAddTournamentFormModal = false;
-          this.addTournamentFormFields = this.getEmptyTournamentFields();
+          this.addTournamentFormFields = this.getTournamentFields();
           this.store.refreshTournament();
         }),
-        finalize(() => (this.isLoading = false))
+        finalize(() => {
+          this.isLoading = false;
+        })
       )
       .subscribe({
         next: () => {},
-        error: (err) => console.error('Błąd tworzenia turnieju:', err),
+        error: (err) => {
+          console.error('Błąd tworzenia turnieju:', err);
+        },
       });
   }
 
@@ -228,55 +307,119 @@ export class HomeComponent {
         }
 
         const f = this.reduceFields(fields);
+        const patch: UpdateTournamentPayload = {};
 
         const name = String(f['name'] ?? '')
           .trim()
           .replace(/\s+/g, ' ');
-        if (!name) {
-          console.warn('Nazwa turnieju jest wymagana');
-          return;
+        if (name) {
+          patch.name = name;
         }
-
-        const patch: UpdateTournamentPayload = { name };
 
         const rawMode = String(f['mode'] ?? '').toUpperCase();
-        if (rawMode) {
-          const allowed: TournamentMode[] = [
-            'LEAGUE',
-            'KNOCKOUT',
-            'LEAGUE_PLAYOFFS',
-          ];
-          if (allowed.includes(rawMode as TournamentMode)) {
-            patch.mode = rawMode as TournamentMode;
-          }
+        const allowed: TournamentMode[] = [
+          'LEAGUE',
+          'KNOCKOUT',
+          'LEAGUE_PLAYOFFS',
+        ];
+        if (allowed.includes(rawMode as TournamentMode)) {
+          patch.mode = rawMode as TournamentMode;
         }
 
-        const desc = String(f['description'] ?? '').trim();
-        patch.description = desc === '' ? null : desc;
+        const nullOr = (key: keyof UpdateTournamentPayload, val: unknown) => {
+          const v = String(val ?? '').trim();
+          (patch as any)[key] = v === '' ? null : v;
+        };
+        nullOr('description', f['description']);
+        nullOr('additionalInfo', f['additionalInfo']);
+        nullOr('season', f['season']);
+        nullOr('startDate', f['startDate']);
+        nullOr('endDate', f['endDate']);
+        nullOr('timezone', f['timezone']);
+        nullOr('venue', f['venue']);
+        nullOr('venueAddress', f['venueAddress']);
+        nullOr('venueImageUrl', f['venueImageUrl']);
 
-        const addInfo = String(f['additionalInfo'] ?? '').trim();
-        patch.additionalInfo = addInfo === '' ? null : addInfo;
+        const groups: any[] = (f['groups'] as any[]) || [];
+        const currentGroupIds: Set<string> = new Set<string>(
+          groups
+            .map((g) => String(g?.id || '').trim())
+            .filter((id) => id.length > 0)
+        );
 
-        const season = String(f['season'] ?? '').trim();
-        patch.season = season === '' ? null : season;
+        const groupsDelete: string[] = Array.from(
+          this.editGroupsInitialIds
+        ).filter((id) => !currentGroupIds.has(id));
 
-        const start = String(f['startDate'] ?? '').trim();
-        patch.startDate = start === '' ? null : start;
+        const groupsUpdate = groups
+          .filter((g) => !!String(g?.id || '').trim())
+          .map((g) => {
+            return {
+              id: String(g.id),
+              name: String(g.name || '').trim(),
+              teamIds: Array.isArray(g.teamIds) ? g.teamIds : [],
+            };
+          });
 
-        const end = String(f['endDate'] ?? '').trim();
-        patch.endDate = end === '' ? null : end;
+        const groupsAppend = groups
+          .filter((g) => !String(g?.id || '').trim())
+          .map((g) => {
+            return {
+              name: String(g?.name || '').trim(),
+              teamIds: Array.isArray(g?.teamIds) ? g.teamIds : [],
+            };
+          });
 
-        const tz = String(f['timezone'] ?? '').trim();
-        patch.timezone = tz === '' ? null : tz;
+        if (groupsUpdate.length > 0) {
+          (patch as any).groupsUpdate = groupsUpdate;
+        }
+        if (groupsAppend.length > 0) {
+          (patch as any).groupsAppend = groupsAppend;
+        }
+        if (groupsDelete.length > 0) {
+          (patch as any).groupsDelete = groupsDelete;
+        }
 
-        const venue = String(f['venue'] ?? '').trim();
-        patch.venue = venue === '' ? null : venue;
+        const stages: any[] = (f['stages'] as any[]) || [];
+        const currentStageIds: Set<string> = new Set<string>(
+          stages
+            .map((s) => String(s?.id || '').trim())
+            .filter((id) => id.length > 0)
+        );
 
-        const addr = String(f['venueAddress'] ?? '').trim();
-        patch.venueAddress = addr === '' ? null : addr;
+        const stagesDelete: string[] = Array.from(
+          this.editStagesInitialIds
+        ).filter((id) => !currentStageIds.has(id));
 
-        const img = String(f['venueImageUrl'] ?? '').trim();
-        patch.venueImageUrl = img === '' ? null : img;
+        const stagesUpdate = stages
+          .filter((s) => !!String(s?.id || '').trim())
+          .map((s) => {
+            return {
+              id: String(s.id),
+              name: String(s.name || '').trim(),
+              order: Number(s.order ?? 1) || 1,
+            };
+          });
+
+        const stagesAppend = stages
+          .filter((s) => !String(s?.id || '').trim())
+          .map((s) => {
+            return {
+              name: String(s?.name || '').trim(),
+              kind: (s?.kind === 'PLAYOFF' ? 'PLAYOFF' : 'GROUP') as StageKind,
+              order: Number(s?.order ?? 1) || 1,
+            };
+          });
+
+        if (stagesUpdate.length > 0) {
+          (patch as any).stagesUpdate = stagesUpdate;
+        }
+        if (stagesAppend.length > 0) {
+          (patch as any).stagesAppend = stagesAppend;
+        }
+        if (stagesDelete.length > 0) {
+          (patch as any).stagesDelete = stagesDelete;
+        }
 
         this.isLoading = true;
         this.api
@@ -284,18 +427,33 @@ export class HomeComponent {
           .pipe(
             tap(() => {
               this.openEditTournamentFormModal = false;
-              this.editTournamentFormFields = this.getEmptyTournamentFields();
+              this.editTournamentFormFields = this.getTournamentFields();
               this.store.refreshTournament();
             }),
-            finalize(() => (this.isLoading = false))
+            finalize(() => {
+              this.isLoading = false;
+            })
           )
           .subscribe({
             next: () => {},
-            error: (err) => console.error('Błąd edycji turnieju:', err),
+            error: (err) => {
+              console.error('Błąd edycji turnieju:', err);
+            },
           });
       },
-      error: (err) => console.error('Błąd pobierania turnieju do edycji:', err),
+      error: (err) => {
+        console.error('Błąd pobierania turnieju do edycji:', err);
+      },
     });
+  }
+
+  private reduceFields<
+    T extends Record<string, unknown> = Record<string, unknown>
+  >(fields: FormField[]): T {
+    return fields.reduce((acc, f) => {
+      (acc as Record<string, unknown>)[f.name] = f.value as unknown;
+      return acc;
+    }, {} as T);
   }
 
   private toDateInput(iso?: string | null): string {
@@ -309,7 +467,7 @@ export class HomeComponent {
     return d.toISOString().slice(0, 10);
   }
 
-  private getEmptyTournamentFields(): FormField[] {
+  private getTournamentFields(): FormField[] {
     return [
       {
         name: 'name',
@@ -395,12 +553,91 @@ export class HomeComponent {
     ];
   }
 
-  private reduceFields<
-    T extends Record<string, unknown> = Record<string, unknown>
-  >(fields: FormField[]): T {
-    return fields.reduce((acc, f) => {
-      (acc as Record<string, unknown>)[f.name] = f.value as unknown;
-      return acc;
-    }, {} as T);
+  private groupsRepeaterFields(
+    name: string,
+    value: any[],
+    teamOptions: { label: string; value: string }[]
+  ): FormField {
+    const fields: FormField[] = [
+      { name: 'id', label: 'Id', type: 'hidden', value: '' },
+      {
+        name: 'name',
+        label: 'Nazwa grupy',
+        type: 'text',
+        required: true,
+        value: '',
+        placeholder: 'Grupa A',
+      },
+      {
+        name: 'teamIds',
+        label: 'Drużyny w grupie',
+        type: 'select',
+        multiple: true,
+        options: teamOptions,
+        value: [],
+      },
+    ];
+
+    return {
+      name,
+      label: 'Grupy turnieju',
+      type: 'repeater',
+      itemLabel: 'Grupa',
+      addLabel: 'Dodaj grupę',
+      removeLabel: 'Usuń grupę',
+      fields,
+      value: value ?? [],
+      totalSpan: 12,
+      actualSpan: 12,
+    } as FormField;
+  }
+
+  private stagesRepeaterFields(
+    name: string,
+    value: any[],
+    existing = false
+  ): FormField {
+    const fields: FormField[] = [
+      { name: 'id', label: 'Id', type: 'hidden', value: '' },
+      {
+        name: 'name',
+        label: 'Nazwa etapu',
+        type: 'text',
+        required: true,
+        value: '',
+        placeholder: 'Faza grupowa',
+      },
+      {
+        name: 'kind',
+        label: 'Rodzaj etapu',
+        type: 'select',
+        options: [
+          { label: 'Faza grupowa', value: 'GROUP' },
+          { label: 'Play-off', value: 'PLAYOFF' },
+        ],
+        value: 'GROUP',
+        disabled: existing,
+      },
+      {
+        name: 'order',
+        label: 'Kolejność',
+        type: 'number',
+        value: 1,
+        min: 1,
+        step: 1,
+      },
+    ];
+    return {
+      name,
+      label: 'Etapy turnieju',
+      type: 'repeater',
+      itemLabel: 'Etap',
+      addLabel: 'Dodaj etap',
+      removeLabel: 'Usuń etap',
+      fields,
+      value: value ?? [],
+      totalSpan: 12,
+      actualSpan: 12,
+    } as FormField;
   }
 }

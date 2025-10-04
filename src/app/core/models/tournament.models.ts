@@ -86,13 +86,11 @@ export interface Match {
 }
 
 export interface CreateGroupPayload {
-  id: string;
   name: string;
   teamIds: string[];
 }
 
 export interface CreateStagePayload {
-  id: string;
   name: string;
   kind: StageKind;
   order: number;
@@ -126,6 +124,10 @@ export interface UpdateTournamentPayload {
   venue?: string | null;
   venueAddress?: string | null;
   venueImageUrl?: string | null;
-  groups?: CreateGroupPayload[];
-  stages?: CreateStagePayload[];
+  groupsAppend?: CreateGroupPayload[];
+  groupsDelete?: string[];
+  groupsUpdate?: Array<{ id: string; name?: string; teamIds?: string[] }>;
+  stagesAppend?: CreateStagePayload[];
+  stagesDelete?: string[];
+  stagesUpdate?: Array<{ id: string; name?: string; order?: number }>;
 }
