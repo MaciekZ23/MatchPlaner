@@ -5,6 +5,7 @@ import {
   Output,
   OnInit,
   OnChanges,
+  OnDestroy,
 } from '@angular/core';
 import {
   FormGroup,
@@ -21,6 +22,7 @@ import {
 } from './models/form-field';
 import { CommonModule } from '@angular/common';
 import { SimpleChanges } from '@angular/core';
+import { distinctUntilChanged } from 'rxjs';
 
 declare const bootstrap: any;
 
@@ -30,12 +32,15 @@ declare const bootstrap: any;
   templateUrl: './dynamic-form.component.html',
   styleUrl: './dynamic-form.component.scss',
 })
-export class DynamicFormComponent implements OnInit, OnChanges {
+export class DynamicFormComponent implements OnInit, OnChanges, OnDestroy {
   @Input() fields: FormField[] = [];
   @Input() formTitle: string = '';
   @Input() isOpen: boolean = false;
   @Output() formSubmitted = new EventEmitter<FormField[]>();
   @Output() close = new EventEmitter<void>();
+  @Output() valueChanges = new EventEmitter<Record<string, any>>();
+
+  private valueSub?: any;
 
   NumMin: number = Number.MIN_SAFE_INTEGER; // Minimalna wartość dla pól liczbowych
   NumMax: number = Number.MAX_SAFE_INTEGER; // Maksymalna wartość dla pól liczbowych
@@ -48,6 +53,7 @@ export class DynamicFormComponent implements OnInit, OnChanges {
 
   ngOnInit() {
     this.buildForm();
+    this.wireValueChanges();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -65,6 +71,24 @@ export class DynamicFormComponent implements OnInit, OnChanges {
     }
   }
 
+  ngOnDestroy(): void {
+    if (this.valueSub) {
+      this.valueSub.unsubscribe();
+    }
+  }
+
+  private wireValueChanges(): void {
+    if (!this.form) {
+      return;
+    }
+    if (this.valueSub) {
+      this.valueSub.unsubscribe();
+    }
+    this.valueSub = this.form.valueChanges
+      .pipe(distinctUntilChanged())
+      .subscribe((v) => this.valueChanges.emit(v));
+  }
+
   // Budowanie formularza na podstawie tablicy pól
   private buildForm() {
     const controls: Record<string, AbstractControl> = {};
@@ -79,6 +103,7 @@ export class DynamicFormComponent implements OnInit, OnChanges {
       }
     }
     this.form = new FormGroup(controls);
+    this.wireValueChanges();
   }
 
   private syncFormWithFields() {
@@ -109,28 +134,34 @@ export class DynamicFormComponent implements OnInit, OnChanges {
           new FormControl({ value: val, disabled: !!f.disabled }, validators)
         );
       } else {
-        (existing as FormControl).setValidators(validators);
-        (existing as FormControl).updateValueAndValidity({
-          emitEvent: false,
-        });
+        const ctrl = existing as FormControl;
+        ctrl.setValidators(validators);
+
+        // tylko enable/disable
+        const shouldBeDisabled = !!f.disabled;
+        if (shouldBeDisabled && !ctrl.disabled)
+          ctrl.disable({ emitEvent: false });
+        else if (!shouldBeDisabled && ctrl.disabled)
+          ctrl.enable({ emitEvent: false });
+
+        ctrl.updateValueAndValidity({ emitEvent: false });
+
+        // UWAGA: NIE nadpisujemy wartości jeśli user już coś wyklikał
+        const next = val;
+        const same = JSON.stringify(ctrl.value) === JSON.stringify(next);
+        const pristine = !ctrl.dirty && !ctrl.touched;
+        if (!same && pristine) {
+          ctrl.setValue(next, { emitEvent: false });
+        }
       }
     }
 
-    // usuń kontrolki, których już nie ma w fields
+    // usuń kontrolki których nie ma
     Object.keys(this.form.controls).forEach((name) => {
       if (!this.fields.some((f) => f.name === name)) {
         this.form.removeControl(name);
       }
     });
-
-    // podmień wartości prostych kontrolek
-    const patch: Record<string, any> = {};
-    for (const f of this.fields) {
-      if (f.type !== 'repeater') {
-        patch[f.name] = this.coerceValue(f);
-      }
-    }
-    this.form.patchValue(patch, { emitEvent: false });
   }
 
   /** ================== REPEATER HELPERS ================== */
@@ -340,4 +371,6 @@ export class DynamicFormComponent implements OnInit, OnChanges {
   getFormArray(name: string) {
     return this.form.get(name) as FormArray;
   }
+
+  trackField = (_: number, f: FormField) => f.name;
 }

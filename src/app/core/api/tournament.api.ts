@@ -7,6 +7,9 @@ import {
   Match,
   UpdateTournamentPayload,
   CreateTournamentPayload,
+  GenerateRoundRobinPayload,
+  CreateMatchPayload,
+  UpdateMatchPayload,
 } from '../models';
 import {
   CreatePlayerPayload,
@@ -27,6 +30,17 @@ export interface ITournamentApi {
   getTeams(tournamentId: string): Observable<Team[]>;
   getPlayers(tournamentId: string): Observable<Player[]>;
   getMatches(stageId: string): Observable<Match[]>;
+  createMatch(payload: CreateMatchPayload): Observable<Match>;
+  updateMatch(id: string, patch: UpdateMatchPayload): Observable<Match>;
+  deleteMatch(id: string): Observable<void>;
+  deleteAllMatchesByTournament(
+    tournamentId: string
+  ): Observable<{ count: number }>;
+  deleteAllMatchesByStage(stageId: string): Observable<{ count: number }>;
+  generateRoundRobin(
+    tournamentId: string,
+    payload: GenerateRoundRobinPayload
+  ): Observable<{ created: number }>;
 
   createTeam(team: CreateTeamPayload, tournamentId?: string): Observable<Team>;
   updateTeam(teamId: string, patch: UpdateTeamPayload): Observable<Team>;

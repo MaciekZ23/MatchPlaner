@@ -4,16 +4,43 @@
     class="fs-5 text p-3 card-title card-header bg-transparent d-flex justify-content-between"
   >
     <span>{{ moduleStrings.title }}</span>
-    <div class="d-flex align-items-center gap-5">
+    <div class="d-flex align-items-center gap-3 flex-nowrap ms-auto">
       <button
+        header-action
         type="button"
-        class="btn btn-primary btn-sm"
+        class="btn text-white btn-sm d-inline-flex align-items-center"
         (click)="generateBracket()"
         [disabled]="!(canGenerate$ | async)"
         [attr.aria-label]="'Generuj drabinkę'"
       >
+        <i class="fa-solid fa-wand-magic-sparkles me-2"></i>
         {{ moduleStrings.generatePlayoffs }}
       </button>
+
+      <div class="dropdown d-inline-block d-md-none">
+        <button
+          type="button"
+          class="btn text-white btn-sm action-btn px-2"
+          data-bs-toggle="dropdown"
+          aria-expanded="false"
+          aria-label="Akcje drabinki"
+        >
+          <i class="fa-solid fa-ellipsis-vertical"></i>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end shadow">
+          <li>
+            <button
+              class="dropdown-item d-flex align-items-center"
+              (click)="generateBracket()"
+              [class.disabled]="!(canGenerate$ | async)"
+              [attr.aria-disabled]="!(canGenerate$ | async)"
+            >
+              <i class="fa-solid fa-wand-magic-sparkles me-2"></i>
+              {{ moduleStrings.generatePlayoffs }}
+            </button>
+          </li>
+        </ul>
+      </div>
 
       <button
         class="btn btn-link text-white p-0 btn-sm"

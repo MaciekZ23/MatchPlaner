@@ -14,7 +14,7 @@
   color: $cards-text-information;
 }
 
-button {
+.home-actions-desktop [header-action].btn {
   background-color: $table-highlight-2;
   border: none;
   cursor: pointer;
@@ -40,7 +40,7 @@ button {
     color: $cards-text-information;
   }
 
-  button {
+  .home-actions-desktop [header-action].btn {
     background-color: $table-highlight-2;
     border: none;
     cursor: pointer;

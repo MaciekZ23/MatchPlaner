@@ -1,3 +1,5 @@
+@use "../../../../styles.scss" as *;
+
 .bracket-grid {
   --card-h: 150px;
   --v-gap: 30px;
@@ -61,6 +63,17 @@
   display: block;
   width: 300px;
   max-width: 100%;
+}
+
+.card [header-action].btn {
+  background-color: $table-highlight-2;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: $button-hover;
+  }
 }
 
 @media (max-width: 767.98px) {

@@ -3,11 +3,14 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ITournamentApi } from './tournament.api';
 import {
+  CreateMatchPayload,
   CreateTournamentPayload,
+  GenerateRoundRobinPayload,
   Match,
   Player,
   Team,
   Tournament,
+  UpdateMatchPayload,
   UpdateTournamentPayload,
 } from '../models';
 import {
@@ -54,16 +57,6 @@ export class HttpTournamentApi implements ITournamentApi {
     return this.http.get<Team[]>(`/api/v1/teams/tournament/${tournamentId}`);
   }
 
-  getPlayers(tournamentId: string) {
-    return this.http.get<Player[]>(
-      `/api/v1/teams/tournament/${tournamentId}/players`
-    );
-  }
-
-  getMatches(stageId: string): Observable<Match[]> {
-    return this.http.get<Match[]>(`/api/v1/matches/stage/${stageId}`);
-  }
-
   createTeam(
     team: CreateTeamPayload,
     tournamentId: string = this.defaultTournamentId
@@ -84,6 +77,12 @@ export class HttpTournamentApi implements ITournamentApi {
   deleteTeam(teamId: string): Observable<void> {
     return this.http.delete<void>(
       `/api/v1/teams/tournament/${teamId}/delete-team`
+    );
+  }
+
+  getPlayers(tournamentId: string) {
+    return this.http.get<Player[]>(
+      `/api/v1/teams/tournament/${tournamentId}/players`
     );
   }
 
@@ -110,6 +109,46 @@ export class HttpTournamentApi implements ITournamentApi {
   deletePlayer(playerId: string): Observable<void> {
     return this.http.delete<void>(
       `/api/v1/teams/tournament/${playerId}/delete-player`
+    );
+  }
+
+  getMatches(stageId: string): Observable<Match[]> {
+    return this.http.get<Match[]>(`/api/v1/matches/stage/${stageId}`);
+  }
+
+  createMatch(payload: CreateMatchPayload): Observable<Match> {
+    return this.http.post<Match>(`/api/v1/matches/create-match`, payload);
+  }
+
+  updateMatch(id: string, patch: UpdateMatchPayload): Observable<Match> {
+    return this.http.patch<Match>(`/api/v1/matches/edit-match/${id}`, patch);
+  }
+
+  deleteMatch(id: string): Observable<void> {
+    return this.http.delete<void>(`/api/v1/matches/delete-match/${id}`);
+  }
+
+  deleteAllMatchesByTournament(
+    tournamentId: string
+  ): Observable<{ count: number }> {
+    return this.http.delete<{ count: number }>(
+      `/api/v1/matches/delete-all-matches/${tournamentId}`
+    );
+  }
+
+  deleteAllMatchesByStage(stageId: string): Observable<{ count: number }> {
+    return this.http.delete<{ count: number }>(
+      `/api/v1/matches/delete-all-matches-by-stage/${stageId}`
+    );
+  }
+
+  generateRoundRobin(
+    tournamentId: string,
+    payload: GenerateRoundRobinPayload
+  ): Observable<{ created: number }> {
+    return this.http.post<{ created: number }>(
+      `/api/v1/matches/generate-round-robin/${tournamentId}`,
+      payload
     );
   }
 }

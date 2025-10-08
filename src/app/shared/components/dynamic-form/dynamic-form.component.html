@@ -27,7 +27,7 @@
           (ngSubmit)="onSubmit()"
           class="container d-flex row justify-content-center column-gap-4 h-100"
         >
-          @for (field of fields; track $index) {
+          @for (field of fields; track trackField) {
           <div class="mb-3 px-0 row" [class]="calcTotalSpan(field)">
             <div [class]="calcActualSpan(field)">
               @if(field.type !== 'repeater' && field.displayLabel !== false) {
@@ -147,8 +147,6 @@
               ></textarea>
               } @case('select'){
               <select
-                class="selectpicker"
-                data-live-search="true"
                 [id]="field.name"
                 [formControlName]="field.name"
                 class="form-select"

@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { combineLatest, map } from 'rxjs';
+import { combineLatest, map, Observable } from 'rxjs';
 import { CalendarDay } from '../models/calendar-day.model';
 import { Match as UiMatch } from '../models/match.model';
 import { MatchDetail } from '../models/match-detail.model';
@@ -7,12 +7,17 @@ import { TournamentStore } from '../../core/services/tournament-store.service';
 import {
   Match as CoreMatch,
   Player as CorePlayer,
+  CreateMatchPayload,
+  GenerateRoundRobinPayload,
+  UpdateMatchPayload,
 } from '../../core/models/tournament.models';
 import { formatFullDate, capitalizeFirst } from '../../core/utils';
+import { TOURNAMENT_API } from '../../core/api/tournament.api';
 
 @Injectable({ providedIn: 'root' })
 export class MatchService {
   private readonly store = inject(TournamentStore);
+  private readonly api = inject(TOURNAMENT_API);
 
   getCalendarDays$() {
     return combineLatest([
@@ -40,19 +45,29 @@ export class MatchService {
 
           const ui: UiMatch = {
             id: m.id,
+            stageId: m.stageId,
+            groupId: m.groupId ?? null,
+            round: m.round ?? null,
+            index: m.index ?? null,
+            date: m.date,
+            status: this.computeUiStatus(m),
             homeTeamId: m.homeTeamId,
             awayTeamId: m.awayTeamId,
+            homeSourceKind: m.homeSourceKind ?? null,
+            homeSourceRef: m.homeSourceRef ?? null,
+            awaySourceKind: m.awaySourceKind ?? null,
+            awaySourceRef: m.awaySourceRef ?? null,
+            score: m.score,
+            events: m.events,
+            lineups: m.lineups,
+
             teamA: home?.name ?? m.homeTeamId ?? '-',
             teamB: away?.name ?? m.awayTeamId ?? '-',
             scoreA,
             scoreB,
-            group: m.groupId ?? null,
             logoA: home?.logo,
             logoB: away?.logo,
             details,
-            status: this.computeUiStatus(m),
-            date: m.date,
-            lineups: m.lineups,
           };
 
           const dayKey = capitalizeFirst(
@@ -70,6 +85,33 @@ export class MatchService {
         return days;
       })
     );
+  }
+
+  createMatch$(payload: CreateMatchPayload): Observable<CoreMatch> {
+    return this.api.createMatch(payload);
+  }
+
+  updateMatch$(id: string, patch: UpdateMatchPayload): Observable<CoreMatch> {
+    return this.api.updateMatch(id, patch);
+  }
+
+  deleteMatch$(id: string): Observable<void> {
+    return this.api.deleteMatch(id);
+  }
+
+  deleteAllByTournament$(tournamentId: string): Observable<{ count: number }> {
+    return this.api.deleteAllMatchesByTournament(tournamentId);
+  }
+
+  deleteAllByStage$(stageId: string): Observable<{ count: number }> {
+    return this.api.deleteAllMatchesByStage(stageId);
+  }
+
+  generateRoundRobin$(
+    tournamentId: string,
+    payload: GenerateRoundRobinPayload
+  ): Observable<{ created: number }> {
+    return this.api.generateRoundRobin(tournamentId, payload);
   }
 
   private toUiDetails(

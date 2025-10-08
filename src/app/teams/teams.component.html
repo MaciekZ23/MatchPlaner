@@ -6,30 +6,78 @@
         : moduleStrings.headerTitleTeam
     "
   >
-    @if (selectedTeam$ | async; as selectedTeam) {
-    <button
+    <div
       *ngIf="isAdmin$ | async"
       header-action
-      type="button"
-      class="btn text-white btn-sm"
-      (click)="onAddPlayer(selectedTeam)"
-      aria-label="Dodaj zawodnika"
+      class="d-none d-sm-flex ms-auto"
     >
-      {{ moduleStrings.addPlayer }}
-    </button>
-    } @else {
-    <button
+      @if (selectedTeam$ | async; as selectedTeam) {
+      <button
+        *ngIf="isAdmin$ | async"
+        header-action
+        type="button"
+        class="btn text-white btn-sm"
+        (click)="onAddPlayer(selectedTeam)"
+        aria-label="Dodaj zawodnika"
+      >
+        <i class="fa-solid fa-plus" aria-hidden="true"></i>
+        <span class="ms-1"> {{ moduleStrings.addPlayer }}</span>
+      </button>
+      } @else {
+      <button
+        *ngIf="isAdmin$ | async"
+        header-action
+        type="button"
+        class="btn text-white btn-sm"
+        (click)="onAddTeam()"
+        aria-label="Dodaj drużynę"
+      >
+        <i class="fa-solid fa-plus" aria-hidden="true"></i>
+        <span class="ms-1"> {{ moduleStrings.addTeam }}</span>
+      </button>
+      }
+    </div>
+    <div
       *ngIf="isAdmin$ | async"
       header-action
-      type="button"
-      class="btn text-white btn-sm"
-      (click)="onAddTeam()"
-      aria-label="Dodaj drużynę"
+      class="d-flex d-sm-none ms-auto"
     >
-      {{ moduleStrings.addTeam }}
-    </button>
-    }</app-page-header
-  >
+      <div class="dropdown">
+        <button
+          class="btn btn-sm text-white"
+          type="button"
+          data-bs-toggle="dropdown"
+          aria-expanded="false"
+          aria-label="Więcej akcji"
+        >
+          <i class="fa-solid fa-ellipsis-vertical"></i>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+          @if (selectedTeam$ | async; as selectedTeam) {
+          <li>
+            <button
+              class="dropdown-item d-flex align-items-center"
+              (click)="onAddPlayer(selectedTeam)"
+            >
+              <i class="fa-solid fa-plus me-2"></i>
+              {{ moduleStrings.addPlayer }}
+            </button>
+          </li>
+          } @else {
+          <li>
+            <button
+              class="dropdown-item d-flex align-items-center"
+              (click)="onAddTeam()"
+            >
+              <i class="fa-solid fa-plus me-2"></i>
+              {{ moduleStrings.addTeam }}
+            </button>
+          </li>
+          }
+        </ul>
+      </div>
+    </div>
+  </app-page-header>
 
   <div
     *ngIf="!(selectedTeam$ | async)"

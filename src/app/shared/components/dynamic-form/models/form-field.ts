@@ -60,6 +60,8 @@ export interface DateTimeFormField extends BaseFormField {
   max?: string;
 }
 
+export type SelectOption = { label: string; value: string };
+
 export interface RepeaterFormField extends BaseFormField {
   type: 'repeater';
   itemLabel?: string;
@@ -69,6 +71,7 @@ export interface RepeaterFormField extends BaseFormField {
   removeLabel?: string;
   fields: FormField[];
   value?: Record<string, any>[];
+  optionsByIndex?: Record<number, Record<string, SelectOption[]>>;
 }
 
 export interface HiddenFormField extends BaseFormField {

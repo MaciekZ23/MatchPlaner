@@ -1,5 +1,94 @@
 <div class="container calendar-page p-0 px-sm-1 py-sm-1">
-  <app-page-header [title]="moduleStrings.headerTitle"></app-page-header>
+  <app-page-header [title]="moduleStrings.headerTitle">
+    <div
+      *ngIf="isAdmin$ | async"
+      header-action
+      class="d-none d-sm-flex align-items-center gap-2 ms-auto"
+    >
+      <button
+        *ngIf="isAdmin$ | async"
+        header-action
+        type="button"
+        class="btn text-white btn-sm d-inline-flex align-items-center"
+        (click)="onGenerateMatches()"
+        aria-label="Wygeneruj terminarz"
+      >
+        <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
+        <span class="ms-2">{{ moduleStrings.generateMatches }}</span>
+      </button>
+
+      <button
+        *ngIf="isAdmin$ | async"
+        header-action
+        type="button"
+        class="btn text-white btn-sm d-inline-flex align-items-center"
+        (click)="onAddMatch()"
+        aria-label="Dodaj mecz"
+      >
+        <i class="fa-solid fa-plus" aria-hidden="true"></i>
+        <span class="ms-2">{{ moduleStrings.addMatch }}</span>
+      </button>
+
+      <button
+        *ngIf="isAdmin$ | async"
+        header-action
+        type="button"
+        class="btn btn-sm text-white d-inline-flex align-items-center"
+        (click)="onDeleteAllMatches()"
+        aria-label="Usuń wszystkie mecze"
+      >
+        <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
+        <span class="ms-2">{{ moduleStrings.deleteAllMatches }}</span>
+      </button>
+    </div>
+    <div
+      *ngIf="isAdmin$ | async"
+      header-action
+      class="d-flex d-sm-none ms-auto"
+    >
+      <div class="dropdown">
+        <button
+          class="btn btn-sm text-white"
+          type="button"
+          data-bs-toggle="dropdown"
+          aria-expanded="false"
+          aria-label="Więcej akcji"
+        >
+          <i class="fa-solid fa-ellipsis-vertical"></i>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li>
+            <button
+              class="dropdown-item d-flex align-items-center"
+              (click)="onGenerateMatches()"
+            >
+              <i class="fa-solid fa-wand-magic-sparkles me-2"></i>
+              {{ moduleStrings.generateMatches }}
+            </button>
+          </li>
+          <li>
+            <button
+              class="dropdown-item d-flex align-items-center"
+              (click)="onAddMatch()"
+            >
+              <i class="fa-solid fa-plus me-2"></i>
+              {{ moduleStrings.addMatch }}
+            </button>
+          </li>
+          <li><hr class="dropdown-divider" /></li>
+          <li>
+            <button
+              class="dropdown-item text-danger d-flex align-items-center"
+              (click)="onDeleteAllMatches()"
+            >
+              <i class="fa-solid fa-trash-can me-2"></i>
+              {{ moduleStrings.deleteAllMatches }}
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </app-page-header>
 
   <div class="calendar-list">
     <div
@@ -12,6 +101,8 @@
           [date]="day.date"
           [matches]="day.matches"
           (matchClicked)="openDetails($event)"
+          (editMatch)="onEditMatch($event)"
+          (deleteMatch)="onDeleteMatch($event)"
         >
         </app-calendar-day>
       </ng-container>
@@ -35,3 +126,26 @@
   [size]="'md'"
   [confirmVariant]="'primary'"
 ></app-confirm-modal>
+
+<app-dynamic-form
+  [formTitle]="formTitleAddMatch"
+  [fields]="addMatchFormFields"
+  [isOpen]="openAddMatchFormModal"
+  (formSubmitted)="onAddMatchFormSubmitted($event)"
+  (valueChanges)="onAddMatchFormChanged($event)"
+  (close)="openAddMatchFormModal = false"
+></app-dynamic-form>
+
+<app-dynamic-form
+  [formTitle]="formTitleEditMatch"
+  [fields]="editMatchFormFields"
+  [isOpen]="openEditMatchFormModal"
+  (formSubmitted)="onEditMatchFormSubmitted($event)"
+  (valueChanges)="onEditMatchFormChanged($event)"
+  (close)="openEditMatchFormModal = false"
+>
+</app-dynamic-form>
+
+<app-confirm-modal #deleteMatchConfirm></app-confirm-modal>
+
+<app-confirm-modal #deleteAllMatchesConfirm></app-confirm-modal>

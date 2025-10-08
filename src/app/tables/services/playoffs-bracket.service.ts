@@ -184,19 +184,67 @@ export class PlayoffsBracketService {
 
     return {
       id: bm.id,
+      stageId: bm.stageId,
+      groupId: matchTitleHelper(bm.round, bm.index), // zostawiasz tu swój tytuł rundy
+      round: bm.round,
+      index: bm.index,
+      date: bm.date,
+      status: bm.status as Match['status'],
       homeTeamId: this.teamIdForUi(bm.home),
       awayTeamId: this.teamIdForUi(bm.away),
+
+      // źródła slotów (NOWE POLA):
+      ...(() => {
+        const h = this.slotSourceFromSlot(bm.home);
+        const a = this.slotSourceFromSlot(bm.away);
+        return {
+          homeSourceKind: h.kind,
+          homeSourceRef: h.ref,
+          awaySourceKind: a.kind,
+          awaySourceRef: a.ref,
+        };
+      })(),
+
+      // score/eventy/ustawienia (opcjonalne, ale przydatne):
+      score: bm.score
+        ? { home: bm.score.home, away: bm.score.away }
+        : undefined,
+      events: [], // brak eventów w drabince – pusta tablica/undefined też ok
+      lineups: undefined,
+
+      // --- pola widokowe:
       teamA: nameA,
       teamB: nameB,
       logoA,
       logoB,
       scoreA: bm.score?.home ?? 0,
       scoreB: bm.score?.away ?? 0,
-      status: bm.status as Match['status'],
-      date: bm.date,
-      group: matchTitleHelper(bm.round, bm.index),
       details: [],
     };
+  }
+
+  private slotSourceFromSlot(slot?: BracketTeamSlot): {
+    kind: 'TEAM' | 'WINNER' | 'LOSER' | null;
+    ref: string | null;
+  } {
+    if (!slot) return { kind: null, ref: null };
+
+    // jeżeli backend dośle w slocie "teamId", traktujemy to jako TEAM z ref=teamId
+    const knownId = (slot as any).teamId as string | undefined;
+    if (knownId) {
+      return { kind: 'TEAM', ref: knownId };
+    }
+
+    switch (slot.type) {
+      case 'TEAM':
+        return { kind: 'TEAM', ref: slot.ref ?? null };
+      case 'WINNER':
+        return { kind: 'WINNER', ref: slot.ref ?? null };
+      case 'LOSER':
+        return { kind: 'LOSER', ref: slot.ref ?? null };
+      default:
+        return { kind: null, ref: null };
+    }
   }
 
   private nameLogoFromSlot(

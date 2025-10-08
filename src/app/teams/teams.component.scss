@@ -14,7 +14,7 @@
   overflow-x: hidden; // ukrycie przewijania w poziomie
 }
 
-button {
+.teams-page [header-action].btn {
   background-color: $table-highlight-2;
   border: none;
   cursor: pointer;

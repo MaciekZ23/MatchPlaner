@@ -131,3 +131,54 @@ export interface UpdateTournamentPayload {
   stagesDelete?: string[];
   stagesUpdate?: Array<{ id: string; name?: string; order?: number }>;
 }
+
+export interface MatchEventInput {
+  minute: number;
+  type: MatchEventType;
+  playerId: string;
+  teamId: string;
+  card?: CardKind;
+}
+
+export interface MatchEventUpdateInput {
+  id: string;
+  minute?: number;
+  type?: MatchEventType;
+  playerId?: string;
+  teamId?: string;
+  card?: CardKind | null;
+}
+
+export interface CreateMatchPayload {
+  stageId: string;
+  groupId?: string;
+  round?: number;
+  index?: number;
+  date: string;
+  status?: MatchStatus;
+  homeTeamId?: string | null;
+  awayTeamId?: string | null;
+  score?: { home: number; away: number };
+  homeGKIds?: string[];
+  awayGKIds?: string[];
+  events?: MatchEventInput[];
+}
+
+export interface UpdateMatchPayload {
+  stageId?: string;
+  groupId?: string | null;
+  round?: number | null;
+  index?: number | null;
+  date?: string;
+  status?: MatchStatus;
+  homeTeamId?: string | null;
+  awayTeamId?: string | null;
+  score?: { home: number | null; away: number | null } | null;
+  homeGKIds?: string[] | null;
+  awayGKIds?: string[] | null;
+  eventsUpdate?: MatchEventUpdateInput[];
+  eventsAppend?: MatchEventInput[];
+  eventsDelete?: string[];
+}
+
+export type GenerateRoundRobinPayload = Record<string, unknown>;
