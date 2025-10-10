@@ -8,7 +8,7 @@
       <button
         header-action
         type="button"
-        class="btn text-white btn-sm d-inline-flex align-items-center"
+        class="btn text-white btn-sm d-none d-md-inline-flex align-items-center"
         (click)="generateBracket()"
         [disabled]="!(canGenerate$ | async)"
         [attr.aria-label]="'Generuj drabinkę'"

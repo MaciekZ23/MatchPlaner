@@ -181,4 +181,15 @@ export interface UpdateMatchPayload {
   eventsDelete?: string[];
 }
 
-export type GenerateRoundRobinPayload = Record<string, unknown>;
+export interface GenerateRoundRobinPayload {
+  startDate: string; // 'YYYY-MM-DD'
+  matchTimes?: string[]; // np. ['14:00','16:00','18:00']
+  dayInterval?: number; // co ile dni nowa kolejka
+  doubleRound?: boolean; // dwie rundy (mecz i rewanż)
+  groupIds?: string[]; // które grupy generować
+  clearExisting?: boolean; // wyczyść poprzednie mecze z/ dla tych grup (stage GROUP)
+  shuffleTeams?: boolean; // potasuj kolejność przed Bergerem
+  matchIntervalMinutes?: number; // alternatywa dla matchTimes (interwał w minutach)
+  firstMatchTime?: string; // start pierwszego meczu (gdy używasz interwału)
+  roundInSingleDay?: boolean; // czy cała kolejka ma się zmieścić jednego dnia
+}

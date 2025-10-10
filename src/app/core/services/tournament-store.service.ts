@@ -2,9 +2,12 @@ import { Injectable, Inject } from '@angular/core';
 import {
   BehaviorSubject,
   combineLatest,
+  forkJoin,
   map,
   of,
   shareReplay,
+  startWith,
+  Subject,
   switchMap,
 } from 'rxjs';
 import { ITournamentApi, TOURNAMENT_API } from '../api/tournament.api';
@@ -72,11 +75,15 @@ export class TournamentStore {
     shareReplay({ bufferSize: 1, refCount: true })
   );
 
-  // Mecze per stage (mapa: stageId -> Match[])
-  matchesByStage$ = this.stages$.pipe(
-    switchMap((stages) =>
+  private matchesReload$ = new Subject<void>();
+
+  matchesByStage$ = combineLatest([
+    this.stages$,
+    this.matchesReload$.pipe(startWith(void 0)), // pierwszy load + ręczne refresh
+  ]).pipe(
+    switchMap(([stages]) =>
       stages.length
-        ? combineLatest(
+        ? forkJoin(
             stages.map((s) =>
               this.api
                 .getMatches(s.id)
@@ -88,6 +95,10 @@ export class TournamentStore {
     map((entries) => new Map<string, Match[]>(entries)),
     shareReplay({ bufferSize: 1, refCount: true })
   );
+
+  refreshMatches(): void {
+    this.matchesReload$.next();
+  }
 
   // Selektory wygodne dla komponentów ---
   getMatchesForStage(stageId: string) {

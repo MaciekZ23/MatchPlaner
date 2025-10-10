@@ -97,7 +97,7 @@
     >
       <ng-container *ngIf="days$ | async as days">
         <app-calendar-day
-          *ngFor="let day of days"
+          *ngFor="let day of days; trackBy: trackByDate"
           [date]="day.date"
           [matches]="day.matches"
           (matchClicked)="openDetails($event)"
@@ -145,6 +145,15 @@
   (close)="openEditMatchFormModal = false"
 >
 </app-dynamic-form>
+
+<app-dynamic-form
+  [formTitle]="formTitleGenerate"
+  [fields]="generateFormFields"
+  [isOpen]="openGenerateFormModal"
+  (formSubmitted)="onGenerateFormSubmitted($event)"
+  (valueChanges)="onGenerateFormChanged($event)"
+  (close)="openGenerateFormModal = false"
+></app-dynamic-form>
 
 <app-confirm-modal #deleteMatchConfirm></app-confirm-modal>
 

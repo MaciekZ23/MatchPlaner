@@ -34,4 +34,6 @@ export class CalendarDayComponent {
   onDeleteMatch(match: any): void {
     this.deleteMatch.emit(match);
   }
+
+  trackByMatchId = (_: number, m: Match) => m.id;
 }

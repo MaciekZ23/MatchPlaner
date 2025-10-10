@@ -6,6 +6,7 @@ import {
   map,
   Observable,
   shareReplay,
+  switchMap,
   take,
   tap,
 } from 'rxjs';
@@ -129,6 +130,10 @@ export class CalendarComponent {
   editMatchFormFields: FormField[] = [];
   private editingMatch: Match | null = null;
 
+  formTitleGenerate = this.moduleStrings.generateMatches;
+  openGenerateFormModal = false;
+  generateFormFields: FormField[] = [];
+
   private gkOptionsForTeam(teamId?: string | null) {
     if (!teamId) return [];
     return Array.from(this.latestPlayerMap.values())
@@ -201,7 +206,7 @@ export class CalendarComponent {
     }
 
     const index = this.numOrUndefined(f['index']);
-    if (index !== undefined) {
+    if (!groupId && index !== undefined && index >= 1) {
       payload.index = index;
     }
 
@@ -275,7 +280,7 @@ export class CalendarComponent {
         tap(() => {
           this.openAddMatchFormModal = false;
           this.addMatchFormFields = [];
-          this.store.refreshTournament();
+          this.store.refreshMatches();
         }),
         finalize(() => {
           this.isLoading = false;
@@ -382,7 +387,15 @@ export class CalendarComponent {
           ]
         : []),
     ]);
-    
+
+    const eventsVal = Array.isArray(val['events']) ? val['events'] : [];
+    this.setRepeaterPlayersOptionsByIndex(
+      fields,
+      'events',
+      eventsVal,
+      homeTeamId,
+      awayTeamId
+    );
   }
 
   onEditMatch(match: Match): void {
@@ -405,6 +418,18 @@ export class CalendarComponent {
           teamOpts,
           playerOpts
         );
+
+        const homeTeamId = match.homeTeamId ? String(match.homeTeamId) : null;
+        const awayTeamId = match.awayTeamId ? String(match.awayTeamId) : null;
+        const existingEvents = Array.isArray(match.events) ? match.events : [];
+        this.setRepeaterPlayersOptionsByIndex(
+          this.editMatchFormFields,
+          'events',
+          existingEvents,
+          homeTeamId,
+          awayTeamId
+        );
+
         this.openEditMatchFormModal = true;
       });
   }
@@ -426,7 +451,13 @@ export class CalendarComponent {
 
     const groupIdRaw = String(f['groupId'] ?? '').trim();
     const newGroupId = groupIdRaw === '' ? null : groupIdRaw;
-    if (newGroupId !== (base.groupId ?? null)) patch.groupId = newGroupId;
+
+    const index = this.numOrUndefined(f['index']);
+    if (!newGroupId && index !== undefined && index >= 1) {
+      patch.index = index;
+    } else if (newGroupId) {
+      patch.index = null;
+    }
 
     const editedEvents = Array.isArray(f['events'])
       ? (f['events'] as any[])
@@ -440,11 +471,6 @@ export class CalendarComponent {
     const round = this.numOrUndefined(f['round']);
     if (round !== undefined) {
       patch.round = round;
-    }
-
-    const index = this.numOrUndefined(f['index']);
-    if (index !== undefined) {
-      patch.index = index;
     }
 
     const dateLocal = String(f['date'] ?? '').trim();
@@ -500,7 +526,7 @@ export class CalendarComponent {
           this.openEditMatchFormModal = false;
           this.editMatchFormFields = [];
           this.editingMatch = null;
-          this.store.refreshTournament();
+          this.store.refreshMatches();
         }),
         finalize(() => {
           this.isLoading = false;
@@ -531,7 +557,6 @@ export class CalendarComponent {
     return this.playersOptionsForTeams(tids);
   }
 
-  /** Ustawia w repeaterze per-wiersz opcje dla pola 'playerId' */
   private setRepeaterPlayersOptionsByIndex(
     arr: FormField[],
     repeaterName: string,
@@ -659,7 +684,7 @@ export class CalendarComponent {
     this.matchService
       .deleteMatch$(match.id)
       .pipe(
-        tap(() => this.store.refreshTournament()),
+        tap(() => this.store.refreshMatches()),
         finalize(() => (this.isLoading = false))
       )
       .subscribe({
@@ -668,9 +693,120 @@ export class CalendarComponent {
       });
   }
 
-  async onDeleteAllMatches(): Promise<void> {}
+  async onDeleteAllMatches(): Promise<void> {
+    const ok = await this.deleteAllMatchesConfirm.open({
+      title: 'Usuń wszystkie mecze z fazy grupowej',
+      message:
+        'Czy na pewno chcesz usunąć wszystkie mecze z etapu fazy grupowej?',
+      confirmVariant: 'danger',
+      labels: { confirm: 'Usuń', cancel: 'Anuluj' },
+    });
+    if (!ok) {
+      return;
+    }
 
-  onGenerateMatches(): void {}
+    this.isLoading = true;
+
+    this.store.tournament$
+      .pipe(
+        take(1),
+        map((t) => t.stages.find((s) => s.kind === 'GROUP')?.id ?? null),
+        tap((stageId) => {
+          if (!stageId) throw new Error('Brak etapu GROUP w turnieju.');
+        }),
+        switchMap((stageId) => this.matchService.deleteAllByStage$(stageId!)),
+        tap(() => this.store.refreshMatches()),
+        finalize(() => (this.isLoading = false))
+      )
+      .subscribe({
+        next: ({ count }) =>
+          console.log(`Usunięto ${count} mecz(e/y) z etapu GROUP.`),
+        error: (err) =>
+          console.error('Błąd usuwania wszystkich meczów (GROUP):', err),
+      });
+  }
+
+  onGenerateMatches(): void {
+    this.isLoading = true;
+    forkJoin({
+      t: this.store.tournament$.pipe(take(1)),
+      groupOpts: this.groupsOptions$.pipe(take(1)),
+    })
+      .pipe(finalize(() => (this.isLoading = false)))
+      .subscribe(({ t, groupOpts }) => {
+        this.generateFormFields = this.getGenerateRoundRobinFields(
+          t,
+          groupOpts
+        );
+        this.openGenerateFormModal = true;
+      });
+  }
+
+  onGenerateFormSubmitted(fields: FormField[]): void {
+    const f = this.reduceFields<Record<string, any>>(fields);
+
+    let startDate = String(f['startDate'] ?? '').trim();
+    if (startDate.includes('T')) {
+      startDate = startDate.split('T')[0];
+    }
+
+    const groupIds: string[] = Array.isArray(f['groupIds'])
+      ? (f['groupIds'] as string[])
+      : [];
+
+    const matchTimesArr = Array.isArray(f['matchTimes']) ? f['matchTimes'] : [];
+    const matchTimes = matchTimesArr
+      .map((row: any) => String(row?.time ?? '').trim())
+      .filter((v: string) => v.length > 0);
+
+    const matchIntervalMinutes = this.numOrUndefined(f['matchIntervalMinutes']);
+    const firstMatchTime =
+      String(f['firstMatchTime'] ?? '').trim() || undefined;
+
+    const dayInterval = this.numOrUndefined(f['dayInterval']) ?? 7;
+    const doubleRound = String(f['doubleRound'] ?? 'false') === 'true';
+    const shuffleTeams = String(f['shuffleTeams'] ?? 'true') === 'true';
+    const clearExisting = String(f['clearExisting'] ?? 'true') === 'true';
+    const roundInSingleDay =
+      String(f['roundInSingleDay'] ?? 'false') === 'true';
+
+    const payload = {
+      startDate,
+      groupIds: groupIds.length ? groupIds : undefined,
+      dayInterval,
+      doubleRound,
+      shuffleTeams,
+      clearExisting,
+      roundInSingleDay,
+      matchTimes: matchTimes.length ? matchTimes : undefined,
+      matchIntervalMinutes: matchTimes.length
+        ? undefined
+        : matchIntervalMinutes,
+      firstMatchTime: matchTimes.length ? undefined : firstMatchTime,
+    };
+
+    this.openGenerateFormModal = false;
+    this.isLoading = true;
+
+    this.store.tournament$.pipe(take(1)).subscribe((t) => {
+      if (!t) {
+        this.isLoading = false;
+        return;
+      }
+      this.matchService
+        .generateRoundRobin$(t.id, payload)
+        .pipe(
+          tap((res) => {
+            console.log('Utworzono meczów:', res.created);
+            this.store.refreshMatches();
+          }),
+          finalize(() => (this.isLoading = false))
+        )
+        .subscribe({
+          error: (err) => console.error('Błąd generowania Round Robin:', err),
+        });
+    });
+  }
 
   openDetails(match: Match): void {
     this.selectedMatch = match;
@@ -1157,4 +1293,181 @@ export class CalendarComponent {
       actualSpan: 12,
     } as FormField;
   }
+
+  private toYyyyMmDd(d: Date): string {
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  }
+
+  private yesNoOptions = [
+    { label: 'Tak', value: 'true' },
+    { label: 'Nie', value: 'false' },
+  ];
+
+  onGenerateFormChanged(val: Record<string, any>) {
+    const HHMM = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+    // --- helpers ---
+    const fields = this.generateFormFields;
+    const get = (name: string) => fields.find((f) => f.name === name);
+    const set = (name: string, patch: Partial<FormField>) =>
+      this.setField(fields, name, patch);
+
+    // 1) Zczytaj i wyczyść matchTimes (repeater: [{ time: 'HH:mm' }, ...])
+    const timesRaw: Array<{ time?: string }> = Array.isArray(val['matchTimes'])
+      ? val['matchTimes']
+      : [];
+    const cleanedTimes = Array.from(
+      new Set(
+        timesRaw
+          .map((r) => String(r?.time ?? '').trim())
+          .filter((t) => t.length > 0 && HHMM.test(t))
+      )
+    ).sort((a, b) => a.localeCompare(b));
+
+    // jeśli zmieniła się lista godzin → zaktualizuj repeater value
+    const mt = get('matchTimes');
+    if (
+      mt &&
+      JSON.stringify(mt.value?.map((x: any) => x.time)) !==
+        JSON.stringify(cleanedTimes)
+    ) {
+      set('matchTimes', { value: cleanedTimes.map((t) => ({ time: t })) });
+    }
+
+    // 2) Przełączanie trybów
+    const hasTimes = cleanedTimes.length > 0;
+
+    if (hasTimes) {
+      // Tryb "matchTimes" – czyść interwał
+      set('matchIntervalMinutes', { value: '' });
+      set('firstMatchTime', { value: '' });
+    } else {
+      // Tryb "interwał" – dopilnuj firstMatchTime + matchIntervalMinutes
+      const first = String(val['firstMatchTime'] ?? '').trim();
+      if (!first || !HHMM.test(first)) {
+        set('firstMatchTime', { value: '10:00' });
+      }
+
+      const mim = Number(val['matchIntervalMinutes']);
+      if (!Number.isFinite(mim) || mim < 1) {
+        set('matchIntervalMinutes', { value: 120 }); // sensowna domyślna przerwa (2h)
+      } else {
+        // zaokrąglij do całych minut
+        set('matchIntervalMinutes', { value: Math.floor(mim) });
+      }
+    }
+
+    // 3) dayInterval sanity (min 1)
+    const dayIntRaw = Number(val['dayInterval']);
+    if (!Number.isFinite(dayIntRaw) || dayIntRaw < 1) {
+      set('dayInterval', { value: 1 });
+    } else if (!Number.isInteger(dayIntRaw)) {
+      set('dayInterval', { value: Math.floor(dayIntRaw) });
+    }
+
+    // 4) Opcjonalnie: jeśli używasz booleanów jako select 'true'/'false',
+    // nic nie trzeba — backend dostaje stringi, które mapujesz przy submit.
+    // Jeśli kiedyś dodasz obsługę 'disabled' w DynamicForm, możesz tu dodać:
+    // set('matchIntervalMinutes', { disabled: hasTimes });
+    // set('firstMatchTime', { disabled: hasTimes });
+    // oraz odwrotnie dla pól repeatera.
+  }
+
+  private getGenerateRoundRobinFields(
+    t: Tournament | null | undefined,
+    groupOptions: { label: string; value: string }[]
+  ): FormField[] {
+    const start =
+      (t?.startDate && t.startDate.slice(0, 10)) || this.toYyyyMmDd(new Date());
+
+    return [
+      {
+        name: 'groupIds',
+        label: 'Grupy do wygenerowania',
+        type: 'select',
+        multiple: true,
+        options: groupOptions,
+        value: groupOptions.map((o) => o.value), // domyślnie wszystkie
+      },
+      {
+        name: 'startDate',
+        label: 'Data startu (YYYY-MM-DD)',
+        type: 'date', // jeśli Twój DynamicForm nie ma 'date', użyj 'text' i wpisuj 'YYYY-MM-DD'
+        required: true,
+        value: start,
+      },
+
+      // Wariant A: stałe godziny dnia (jeśli wypełnisz "matchTimes", interwał jest ignorowany)
+      {
+        name: 'matchTimes',
+        label: 'Godziny w dniu kolejki (opcjonalnie, HH:mm)',
+        type: 'repeater',
+        itemLabel: 'Godzina',
+        addLabel: 'Dodaj godzinę',
+        removeLabel: 'Usuń',
+        totalSpan: 12,
+        actualSpan: 12,
+        fields: [
+          { name: 'time', label: 'HH:mm', type: 'text', value: '18:00' },
+        ],
+        value: [{ time: '14:00' }, { time: '16:00' }, { time: '18:00' }],
+      },
+
+      // Wariant B: interwał zamiast stałych godzin (używany tylko gdy brak matchTimes)
+      {
+        name: 'matchIntervalMinutes',
+        label: 'Interwał minut między meczami (opcjonalnie)',
+        type: 'number',
+        min: 0,
+        step: 1,
+        value: '',
+      },
+      {
+        name: 'firstMatchTime',
+        label: 'Godzina pierwszego meczu (gdy używamy interwału)',
+        type: 'text',
+        value: '10:00',
+      },
+
+      {
+        name: 'dayInterval',
+        label: 'Co ile dni nowa kolejka',
+        type: 'number',
+        min: 0,
+        step: 1,
+        value: 7,
+      },
+      {
+        name: 'roundInSingleDay',
+        label: 'Cała kolejka jednego dnia',
+        type: 'select',
+        options: this.yesNoOptions,
+        value: 'false',
+      },
+      {
+        name: 'doubleRound',
+        label: 'Mecz i rewanż',
+        type: 'select',
+        options: this.yesNoOptions,
+        value: 'false',
+      },
+      {
+        name: 'shuffleTeams',
+        label: 'Potasuj drużyny przed losowaniem',
+        type: 'select',
+        options: this.yesNoOptions,
+        value: 'true',
+      },
+      {
+        name: 'clearExisting',
+        label: 'Wyczyść istniejące mecze w tych grupach',
+        type: 'select',
+        options: this.yesNoOptions,
+        value: 'true',
+      },
+    ];
+  }
+
+  trackByDate = (_: number, d: CalendarDay) => d.date;
 }

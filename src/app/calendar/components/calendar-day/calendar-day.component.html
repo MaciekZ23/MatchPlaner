@@ -31,7 +31,10 @@
   >
     <div class="card-body">
       <div class="row g-3">
-        <div class="col-md-4" *ngFor="let match of matches">
+        <div
+          class="col-md-4"
+          *ngFor="let match of matches; trackBy: trackByMatchId"
+        >
           <app-match-card
             [match]="match"
             (openDetails)="onMatchClick(match)"

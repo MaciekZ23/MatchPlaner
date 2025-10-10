@@ -66,6 +66,8 @@ export class DynamicFormComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     if (changes['isOpen'] && changes['isOpen'].currentValue === true) {
+      this.form.markAsPristine();
+      this.form.markAsUntouched();
       this.syncFormWithFields();
       this.openForm();
     }
@@ -146,11 +148,14 @@ export class DynamicFormComponent implements OnInit, OnChanges, OnDestroy {
 
         ctrl.updateValueAndValidity({ emitEvent: false });
 
-        // UWAGA: NIE nadpisujemy wartości jeśli user już coś wyklikał
         const next = val;
         const same = JSON.stringify(ctrl.value) === JSON.stringify(next);
-        const pristine = !ctrl.dirty && !ctrl.touched;
-        if (!same && pristine) {
+        const isEmpty =
+          ctrl.value === '' ||
+          ctrl.value === null ||
+          (Array.isArray(ctrl.value) && ctrl.value.length === 0);
+
+        if (!same || isEmpty) {
           ctrl.setValue(next, { emitEvent: false });
         }
       }
@@ -372,5 +377,5 @@ export class DynamicFormComponent implements OnInit, OnChanges, OnDestroy {
     return this.form.get(name) as FormArray;
   }
 
-  trackField = (_: number, f: FormField) => f.name;
+  trackField = (index: number, f: FormField) => f?.name ?? index;
 }

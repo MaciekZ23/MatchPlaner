@@ -27,7 +27,8 @@
           (ngSubmit)="onSubmit()"
           class="container d-flex row justify-content-center column-gap-4 h-100"
         >
-          @for (field of fields; track trackField) {
+          @for (field of fields; track trackField($index, field)) {
+
           <div class="mb-3 px-0 row" [class]="calcTotalSpan(field)">
             <div [class]="calcActualSpan(field)">
               @if(field.type !== 'repeater' && field.displayLabel !== false) {
@@ -271,13 +272,26 @@
                           [formControlName]="inner.name"
                           [multiple]="inner?.multiple || false"
                         >
-                          <option
-                            *ngFor="let option of inner.options"
-                            [value]="option.value"
+                          <ng-container
+                            *ngIf="asRepeater(field).optionsByIndex?.[i]?.[inner.name] as perRowOpts; else defaultOpts"
                           >
-                            {{ option.label }}
-                          </option>
+                            <option
+                              *ngFor="let option of perRowOpts"
+                              [value]="option.value"
+                            >
+                              {{ option.label }}
+                            </option>
+                          </ng-container>
+                          <ng-template #defaultOpts>
+                            <option
+                              *ngFor="let option of inner.options"
+                              [value]="option.value"
+                            >
+                              {{ option.label }}
+                            </option>
+                          </ng-template>
                         </select>
+
                         } }
                       </div>
                       }
