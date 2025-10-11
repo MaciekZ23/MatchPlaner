@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { stringsLogin } from './misc';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../core/auth/auth.service';
+import { NotificationService } from '../core/notifications/notification.service';
 
 declare global {
   interface Window {
@@ -25,9 +26,12 @@ export class LoginComponent implements OnInit, AfterViewInit {
   private route = inject(ActivatedRoute);
   private http = inject(HttpClient);
   private appAuth = inject(AuthService);
+  private notificationService = inject(NotificationService);
 
   loading = false;
   errorMsg = '';
+
+  currentYear = new Date().getFullYear();
 
   private readonly CLIENT_ID =
     '23616475933-lb3r0o8kjt0mll98dlrvcmj5ekq1r4kc.apps.googleusercontent.com';
@@ -141,7 +145,16 @@ export class LoginComponent implements OnInit, AfterViewInit {
         if (!user?.avatarUrl && fallback) {
           this.appAuth.setAvatar(fallback);
         }
+        const info = this.appAuth.getUserInfo();
 
+        if (info.role === 'ADMIN' || info.role === 'USER') {
+          this.notificationService.addWelcome(
+            info.role,
+            info.name ?? undefined
+          );
+        } else if (info.role === 'GUEST') {
+          this.notificationService.addWelcome('GUEST');
+        }
         this.navigateAfterLogin();
       },
       error: (err) => {
@@ -178,6 +191,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
       .subscribe({
         next: ({ token }) => {
           this.appAuth.saveSession(token);
+          this.notificationService.addWelcome('GUEST');
           this.navigateAfterLogin();
         },
         error: (err) => {

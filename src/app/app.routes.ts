@@ -4,6 +4,7 @@ import { TeamsComponent } from './teams/teams.component';
 import { CalendarComponent } from './calendar/calendar.component';
 import { TablesComponent } from './tables/tables.component';
 import { LoginComponent } from './login/login.component';
+import { ProfileComponent } from './profile/profile.component';
 import { TeamResolver } from './teams/services/team.resolver';
 import { AuthGuard } from './core/auth/auth.guard';
 
@@ -22,5 +23,6 @@ export const routes: Routes = [
   },
   { path: 'calendar', component: CalendarComponent, canActivate: [AuthGuard] },
   { path: 'tables', component: TablesComponent, canActivate: [AuthGuard] },
+  { path: 'profile', component: ProfileComponent, canActivate: [AuthGuard] },
   { path: '**', redirectTo: '' },
 ];

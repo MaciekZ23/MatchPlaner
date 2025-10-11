@@ -10,6 +10,15 @@
   z-index: 10000;
 }
 
+.login-footer {
+  position: absolute;
+  bottom: 16px;
+  font-size: 1rem;
+  color: $menu-text;
+  opacity: 0.9;
+  pointer-events: none;
+}
+
 .login-left {
   background: $background-left-panel;
 

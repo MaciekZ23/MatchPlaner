@@ -1,0 +1,66 @@
+@use "../../styles.scss" as *;
+
+.profile-card {
+  background: $background-left-panel;
+  border: 2px solid $dropdown-border-color;
+  border-radius: 16px;
+}
+
+.profile-avatar {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background-color: $primary-blue;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 8px;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+  }
+
+  i {
+    font-size: 3rem;
+    color: $white;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+}
+
+.info-row {
+  display: flex;
+  gap: 5px;
+  padding: 8px 0;
+
+  border-bottom: 1px solid $dropdown-border-color;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  .label {
+    min-width: 130px;
+    color: $menu-text;
+    white-space: nowrap;
+  }
+}
+
+.btn-custom {
+  background-color: $primary-blue;
+  border: none;
+
+  &:hover,
+  &:focus {
+    background-color: $button-hover;
+  }
+}

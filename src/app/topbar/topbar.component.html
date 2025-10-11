@@ -3,11 +3,13 @@
   [class.sidebar-open]="isSidebarOpen"
 >
   <div class="container-fluid d-flex justify-content-end align-items-center">
-    <div class="dropdown me-2">
+    <div class="dropdown me-2" data-bs-auto-close="outside">
       <button
-        class="btn bg-transparent text-white"
+        class="btn bg-transparent text-white position-relative"
         type="button"
         data-bs-toggle="dropdown"
+        data-bs-flip="false"
+        data-bs-boundary="viewport"
         aria-expanded="false"
         aria-label="Powiadomienia"
         aria-haspopup="menu"
@@ -15,16 +17,70 @@
         id="notificationDropdown"
       >
         <i class="fa fa-bell" aria-hidden="true"></i>
+        <span
+          *ngIf="(notifications$ | async)?.length as count"
+          class="position-absolute top-0 start-80 translate-middle badge rounded-pill"
+          >{{ count }}</span
+        >
       </button>
       <div
         id="notificationMenu"
-        class="dropdown-menu dropdown-menu-end"
+        class="dropdown-menu dropdown-menu-end notif-menu"
         aria-labelledby="notificationDropdown"
         role="menu"
       >
-        <span class="dropdown-item-text text-white text-center">{{
-          moduleStrings.notifications.empty
-        }}</span>
+        <div
+          class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom"
+        >
+          <span class="fw-semibold text-white">{{
+            moduleStrings.notifications.header
+          }}</span>
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-danger d-inline-flex align-items-center"
+            (click)="clearNotifications()"
+            [disabled]="!(notifications$ | async)?.length"
+          >
+            <i class="fa-solid fa-trash-can me-2"></i>
+            {{ moduleStrings.notifications.clearNotifications }}
+          </button>
+        </div>
+        <ng-container
+          *ngIf="notifications$ | async as notifs; else emptyNotifs"
+        >
+          <ul class="list-group list-group-flush notif-list">
+            <li
+              *ngFor="let n of notifs | slice : 0 : 15; trackBy: trackById"
+              class="list-group-item d-flex gap-1 align-items-start bg-transparent text-white"
+            >
+              <span
+                class="badge rounded-pill mt-1"
+                [ngClass]="{
+                  'bg-success': n.type === 'success',
+                  'bg-warning': n.type === 'warning',
+                  'bg-info': n.type === 'info'
+                }"
+                >&nbsp;</span
+              >
+              <div class="flex-grow-1">
+                <div class="fw-normal">{{ n.message }}</div>
+                <div class="small text-white">
+                  {{ n.createdAt | date : "short" }}
+                </div>
+              </div>
+            </li>
+          </ul>
+
+          <div *ngIf="!notifs.length" class="text-center text-secondary py-3">
+            {{ moduleStrings.notifications.empty }}
+          </div>
+        </ng-container>
+
+        <ng-template #emptyNotifs>
+          <div class="text-center text-secondary py-3">
+            {{ moduleStrings.notifications.empty }}
+          </div>
+        </ng-template>
       </div>
     </div>
 

@@ -10,6 +10,11 @@
         class="login-logo"
       />
     </div>
+
+    <footer class="login-footer d-none d-md-block">
+      <i class="fa-regular fa-copyright me-1" aria-hidden="true"></i>
+      {{ currentYear }} Maciej Zajdel
+    </footer>
   </section>
 
   <div class="login-right d-flex flex-column align-items-center p-4">
@@ -27,5 +32,10 @@
       <i class="fa-solid fa-user quest" aria-hidden="true"></i>
       {{ moduleStrings.login.questLogin }}
     </button>
+
+    <footer class="login-footer d-block d-md-none">
+      <i class="fa-regular fa-copyright me-1" aria-hidden="true"></i>
+      {{ currentYear }} Maciej Zajdel
+    </footer>
   </div>
 </div>

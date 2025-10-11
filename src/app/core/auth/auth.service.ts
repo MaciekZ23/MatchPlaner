@@ -68,6 +68,37 @@ export class AuthService {
     }
   }
 
+  getUserInfo(): {
+    email: string | null;
+    name: string | null;
+    role: 'ADMIN' | 'USER' | 'GUEST' | 'NONE';
+  } {
+    const t = this.getToken();
+    if (!t) return { email: null, name: null, role: 'NONE' };
+
+    try {
+      const [, b64] = t.split('.');
+      const payload = JSON.parse(
+        atob(b64.replace(/-/g, '+').replace(/_/g, '/'))
+      );
+
+      const email: string | null =
+        payload?.email ?? payload?.upn ?? payload?.sub ?? null;
+
+      const name: string | null =
+        payload?.name ??
+        payload?.given_name ??
+        payload?.preferred_username ??
+        null;
+
+      const role = (payload?.role as 'ADMIN' | 'USER' | 'GUEST') ?? 'USER';
+
+      return { email, name, role };
+    } catch {
+      return { email: null, name: null, role: 'NONE' };
+    }
+  }
+
   isLoggedIn(): boolean {
     return !!localStorage.getItem('token');
   }

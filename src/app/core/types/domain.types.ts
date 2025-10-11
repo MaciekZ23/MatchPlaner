@@ -16,3 +16,4 @@ export interface CreatePlayerPayload {
 }
 export type UpdateTeamPayload = Partial<CreateTeamPayload>;
 export type UpdatePlayerPayload = Partial<CreatePlayerPayload>;
+export type UserRole = 'ADMIN' | 'USER' | 'GUEST' | 'NONE';

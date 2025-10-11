@@ -1,0 +1,72 @@
+<div class="container-fluid py-2">
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-6">
+      <div class="profile-card p-4">
+        <div class="d-flex justify-content-center mb-3">
+          <div class="profile-avatar">
+            <ng-container *ngIf="avatar$ | async as avatar; else defaultAvatar">
+              <img [src]="avatar" alt="Avatar użytkownika" />
+            </ng-container>
+            <ng-template #defaultAvatar>
+              <i class="fa-regular fa-user" aria-hidden="true"></i>
+            </ng-template>
+          </div>
+        </div>
+
+        <h2 class="text-center mb-3">{{ name || "Użytkownik" }}</h2>
+
+        <div class="row align-items-baseline info-row" *ngIf="role !== 'GUEST'">
+          <div class="col-12 col-sm-4 col-lg-3 label">
+            {{ moduleStrings.email }}
+          </div>
+          <div class="col-12 col-sm-8 col-lg-9 value">
+            <ng-container *ngIf="email; else noEmail">{{ email }}</ng-container>
+            <ng-template #noEmail
+              ><span class="text-muted">
+                {{ moduleStrings.noEmail }}
+              </span></ng-template
+            >
+          </div>
+        </div>
+
+        <div class="row align-items-baseline info-row">
+          <div class="col-12 col-sm-4 col-lg-3 label">
+            {{ moduleStrings.userName }}
+          </div>
+          <div class="col-12 col-sm-8 col-lg-9">
+            {{ name || "Użytkownik" }}
+          </div>
+        </div>
+
+        <div class="row align-items-baseline info-row">
+          <div class="col-12 col-sm-4 col-lg-3 label">
+            {{ moduleStrings.roleUser }}
+          </div>
+          <div class="col-12 col-sm-8 col-lg-9">
+            <span>{{ roleLabel }}</span>
+          </div>
+        </div>
+
+        <div class="row align-items-baseline info-row" *ngIf="role === 'GUEST'">
+          <div class="col-12 col-sm-4 col-lg-3 label">
+            {{ moduleStrings.deviceId }}
+          </div>
+          <div class="col-12 col-sm-8 col-lg-9 text-break">
+            {{ deviceId }}
+          </div>
+        </div>
+
+        <div class="d-grid mt-4">
+          <button
+            type="button"
+            class="btn btn-sm btn-custom text-white p-3"
+            (click)="onLogout()"
+          >
+            <i class="fa fa-sign-out-alt me-2" aria-hidden="true"></i>
+            {{ moduleStrings.logout }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

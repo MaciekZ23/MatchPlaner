@@ -70,14 +70,14 @@ export class CalendarComponent {
   private readonly store = inject(TournamentStore);
   private readonly auth = inject(AuthService);
 
+  private latestTeamMap = new Map<string, CoreTeam>();
+  private latestPlayerMap = new Map<string, CorePlayer>();
+
   readonly days$: Observable<CalendarDay[]> =
     this.matchService.getCalendarDays$();
   readonly teamMap$: Observable<Map<string, CoreTeam>> = this.store.teamMap$;
   readonly playerMap$: Observable<Map<string, CorePlayer>> =
     this.store.playerMap$;
-
-  private latestTeamMap = new Map<string, CoreTeam>();
-  private latestPlayerMap = new Map<string, CorePlayer>();
 
   constructor() {
     this.teamMap$.subscribe((m) => (this.latestTeamMap = m));
@@ -130,7 +130,7 @@ export class CalendarComponent {
   editMatchFormFields: FormField[] = [];
   private editingMatch: Match | null = null;
 
-  formTitleGenerate = this.moduleStrings.generateMatches;
+  formTitleGenerate = this.moduleStrings.generateMatchesTitleForm;
   openGenerateFormModal = false;
   generateFormFields: FormField[] = [];
 
@@ -184,7 +184,7 @@ export class CalendarComponent {
     const f = this.reduceFields(fields);
 
     const stageId = String(f['stageId'] ?? '').trim();
-    const dateLocal = String(f['date'] ?? '').trim(); // 'YYYY-MM-DDTHH:mm'
+    const dateLocal = String(f['date'] ?? '').trim();
     if (!stageId || !dateLocal) {
       console.warn('stageId oraz data są wymagane.');
       return;
@@ -577,13 +577,10 @@ export class CalendarComponent {
         playerId: this.playersOptionsForEventTeam(tid, homeTeamId, awayTeamId),
       };
     });
-
-    // nowy obiekt => zmiana referencji, CD odświeży template
     rep.optionsByIndex = byIndex;
   }
 
   private diffEvents(baseEvents: any[], editedEvents: any[]) {
-    // indeksuj stare po id; jeśli brak id, użyj indeksu jako fallback (jak wcześniej)
     const baseById = new Map<string, any>();
     baseEvents.forEach((e, i) => baseById.set(String(e.id ?? i), e));
 
@@ -598,7 +595,6 @@ export class CalendarComponent {
       card?: string | null;
     }> = [];
 
-    // pomoce
     const num = (v: any) => {
       const n = Number(v);
       return Number.isFinite(n) ? n : undefined;
@@ -617,12 +613,10 @@ export class CalendarComponent {
       const card = up(e['card']);
 
       if (!idRaw || !baseById.has(idRaw)) {
-        // NOWE zdarzenie -> append
         const ev: any = { minute, type, playerId, teamId };
-        if (type === 'CARD') ev.card = card || 'YELLOW'; // domyślka gdyby UI nie podał
+        if (type === 'CARD') ev.card = card || 'YELLOW';
         append.push(ev as MatchEventInput);
       } else {
-        // porównaj i dodaj do update tylko zmienione pola
         seen.add(idRaw);
         const old = baseById.get(idRaw) ?? {};
         const out: any = { id: idRaw };
@@ -652,7 +646,6 @@ export class CalendarComponent {
             changed = true;
           }
         } else if (oldCard) {
-          // zmiana z CARD -> inny typ: wyzeruj kartkę
           out.card = null;
           changed = true;
         }
@@ -671,10 +664,13 @@ export class CalendarComponent {
 
   async onDeleteMatch(match: Match): Promise<void> {
     const ok = await this.deleteMatchConfirm.open({
-      title: 'Usuń mecz',
+      title: this.moduleStrings.deleteMatch,
       message: `Czy na pewno chcesz usunąć mecz: ${match.teamA} – ${match.teamB}?`,
       confirmVariant: 'danger',
-      labels: { confirm: 'Usuń', cancel: 'Anuluj' },
+      labels: {
+        confirm: this.moduleStrings.deleteModalLabels.confirm,
+        cancel: this.moduleStrings.deleteModalLabels.cancel,
+      },
     });
     if (!ok) {
       return;
@@ -695,11 +691,14 @@ export class CalendarComponent {
 
   async onDeleteAllMatches(): Promise<void> {
     const ok = await this.deleteAllMatchesConfirm.open({
-      title: 'Usuń wszystkie mecze z fazy grupowej',
+      title: this.moduleStrings.deleteAllMatchesByGroup,
       message:
         'Czy na pewno chcesz usunąć wszystkie mecze z etapu fazy grupowej?',
       confirmVariant: 'danger',
-      labels: { confirm: 'Usuń', cancel: 'Anuluj' },
+      labels: {
+        confirm: this.moduleStrings.deleteModalLabels.confirm,
+        cancel: this.moduleStrings.deleteModalLabels.cancel,
+      },
     });
     if (!ok) {
       return;
@@ -720,7 +719,7 @@ export class CalendarComponent {
       )
       .subscribe({
         next: ({ count }) =>
-          console.log(`Usunięto ${count} mecz(e/y) z etapu GROUP.`),
+          console.log(`Usunięto ${count} mecz(e/y) z etapu GROUP`),
         error: (err) =>
           console.error('Błąd usuwania wszystkich meczów (GROUP):', err),
       });
@@ -808,14 +807,6 @@ export class CalendarComponent {
     });
   }
 
-  openDetails(match: Match): void {
-    this.selectedMatch = match;
-  }
-
-  closeDetails(): void {
-    this.selectedMatch = null;
-  }
-
   private setRepeaterSelectOptions(
     arr: FormField[],
     repeaterName: string,
@@ -832,6 +823,61 @@ export class CalendarComponent {
         ? { ...(f as SelectFormField), options }
         : f
     );
+  }
+
+  onGenerateFormChanged(val: Record<string, any>) {
+    const HHMM = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+    const fields = this.generateFormFields;
+    const get = (name: string) => fields.find((f) => f.name === name);
+    const set = (name: string, patch: Partial<FormField>) =>
+      this.setField(fields, name, patch);
+
+    const timesRaw: Array<{ time?: string }> = Array.isArray(val['matchTimes'])
+      ? val['matchTimes']
+      : [];
+    const cleanedTimes = Array.from(
+      new Set(
+        timesRaw
+          .map((r) => String(r?.time ?? '').trim())
+          .filter((t) => t.length > 0 && HHMM.test(t))
+      )
+    ).sort((a, b) => a.localeCompare(b));
+
+    const mt = get('matchTimes');
+    if (
+      mt &&
+      JSON.stringify(mt.value?.map((x: any) => x.time)) !==
+        JSON.stringify(cleanedTimes)
+    ) {
+      set('matchTimes', { value: cleanedTimes.map((t) => ({ time: t })) });
+    }
+
+    const hasTimes = cleanedTimes.length > 0;
+
+    if (hasTimes) {
+      set('matchIntervalMinutes', { value: '' });
+      set('firstMatchTime', { value: '' });
+    } else {
+      const first = String(val['firstMatchTime'] ?? '').trim();
+      if (!first || !HHMM.test(first)) {
+        set('firstMatchTime', { value: '10:00' });
+      }
+
+      const mim = Number(val['matchIntervalMinutes']);
+      if (!Number.isFinite(mim) || mim < 1) {
+        set('matchIntervalMinutes', { value: 120 });
+      } else {
+        set('matchIntervalMinutes', { value: Math.floor(mim) });
+      }
+    }
+
+    const dayIntRaw = Number(val['dayInterval']);
+    if (!Number.isFinite(dayIntRaw) || dayIntRaw < 1) {
+      set('dayInterval', { value: 1 });
+    } else if (!Number.isInteger(dayIntRaw)) {
+      set('dayInterval', { value: Math.floor(dayIntRaw) });
+    }
   }
 
   private reduceFields<
@@ -876,7 +922,6 @@ export class CalendarComponent {
     if (i >= 0) arr[i] = { ...(arr[i] as any), ...(patch as any) } as FormField;
   }
 
-  // Tu MUSI być zawężenie do SelectFormField
   private setSelectOptions(
     arr: FormField[],
     fieldName: string,
@@ -885,8 +930,26 @@ export class CalendarComponent {
     const i = arr.findIndex((f) => f.name === fieldName && f.type === 'select');
     if (i < 0) return;
     const sf = arr[i] as SelectFormField;
-    sf.options = options; // mutacja in place
+    sf.options = options;
   }
+
+  private toYyyyMmDd(d: Date): string {
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  }
+
+  private yesNoOptions = [
+    {
+      label:
+        this.moduleStrings.generateRoundRobinFieldsFormLabels.yesNoOptions.yes,
+      value: 'true',
+    },
+    {
+      label:
+        this.moduleStrings.generateRoundRobinFieldsFormLabels.yesNoOptions.no,
+      value: 'false',
+    },
+  ];
 
   private getCreateMatchFields(
     t: Tournament | null | undefined,
@@ -902,7 +965,7 @@ export class CalendarComponent {
     return [
       {
         name: 'stageId',
-        label: 'Etap turnieju',
+        label: this.moduleStrings.createeditMatchFieldsLabels.stage,
         type: 'select',
         required: true,
         options: stageOptions,
@@ -910,14 +973,17 @@ export class CalendarComponent {
       },
       {
         name: 'groupId',
-        label: 'Grupa',
+        label: this.moduleStrings.createeditMatchFieldsLabels.group,
         type: 'select',
-        options: [{ label: '— brak —', value: '' }, ...groupOptions],
+        options: [
+          { label: this.moduleStrings.common.noneOption, value: '' },
+          ...groupOptions,
+        ],
         value: '',
       },
       {
         name: 'round',
-        label: 'Runda',
+        label: this.moduleStrings.createeditMatchFieldsLabels.round,
         type: 'number',
         min: 1,
         step: 1,
@@ -925,7 +991,7 @@ export class CalendarComponent {
       },
       {
         name: 'index',
-        label: 'Index w rundzie',
+        label: this.moduleStrings.createeditMatchFieldsLabels.index,
         type: 'number',
         min: 1,
         step: 1,
@@ -933,39 +999,59 @@ export class CalendarComponent {
       },
       {
         name: 'date',
-        label: 'Data i godzina',
+        label: this.moduleStrings.createeditMatchFieldsLabels.date,
         type: 'datetime',
         required: true,
         value: this.toLocalDatetimeInput(new Date().toISOString()),
       },
       {
         name: 'status',
-        label: 'Status',
+        label: this.moduleStrings.createeditMatchFieldsLabels.status,
         type: 'select',
         options: [
-          { label: 'Zaplanowany', value: 'SCHEDULED' },
-          { label: 'Na żywo', value: 'LIVE' },
-          { label: 'Zakończony', value: 'FINISHED' },
+          {
+            label:
+              this.moduleStrings.createeditMatchFieldsLabels.statusOptions
+                .SCHEDULED,
+            value: 'SCHEDULED',
+          },
+          {
+            label:
+              this.moduleStrings.createeditMatchFieldsLabels.statusOptions.LIVE,
+            value: 'LIVE',
+          },
+          {
+            label:
+              this.moduleStrings.createeditMatchFieldsLabels.statusOptions
+                .FINISHED,
+            value: 'FINISHED',
+          },
         ],
         value: 'SCHEDULED',
       },
       {
         name: 'homeTeamId',
-        label: 'Gospodarze',
+        label: this.moduleStrings.createeditMatchFieldsLabels.homeTeam,
         type: 'select',
-        options: [{ label: '— brak —', value: '' }, ...teamOptions],
+        options: [
+          { label: this.moduleStrings.common.noneOption, value: '' },
+          ...teamOptions,
+        ],
         value: '',
       },
       {
         name: 'awayTeamId',
-        label: 'Goście',
+        label: this.moduleStrings.createeditMatchFieldsLabels.awayTeam,
         type: 'select',
-        options: [{ label: '— brak —', value: '' }, ...teamOptions],
+        options: [
+          { label: this.moduleStrings.common.noneOption, value: '' },
+          ...teamOptions,
+        ],
         value: '',
       },
       {
         name: 'scoreHome',
-        label: 'Wynik gospodarzy',
+        label: this.moduleStrings.createeditMatchFieldsLabels.scoreHome,
         type: 'number',
         min: 0,
         step: 1,
@@ -973,7 +1059,7 @@ export class CalendarComponent {
       },
       {
         name: 'scoreAway',
-        label: 'Wynik gości',
+        label: this.moduleStrings.createeditMatchFieldsLabels.scoreAway,
         type: 'number',
         min: 0,
         step: 1,
@@ -981,7 +1067,7 @@ export class CalendarComponent {
       },
       {
         name: 'homeGKIds',
-        label: 'Bramkarze gospodarzy',
+        label: this.moduleStrings.createeditMatchFieldsLabels.homeGKIds,
         type: 'select',
         multiple: true,
         options: [],
@@ -989,13 +1075,19 @@ export class CalendarComponent {
       },
       {
         name: 'awayGKIds',
-        label: 'Bramkarze gości',
+        label: this.moduleStrings.createeditMatchFieldsLabels.awayGKIds,
         type: 'select',
         multiple: true,
         options: [],
         value: [],
       },
-      this.eventsRepeater('events', [], [], playerOptions, 'Zdarzenia meczu'),
+      this.eventsRepeater(
+        'events',
+        [],
+        [],
+        playerOptions,
+        this.moduleStrings.matchEvents
+      ),
     ];
   }
 
@@ -1045,21 +1137,21 @@ export class CalendarComponent {
     return [
       {
         name: 'stageId',
-        label: 'Etap turnieju',
+        label: this.moduleStrings.createeditMatchFieldsLabels.stage,
         type: 'select',
         options: stageOptions,
         value: String(m.stageId ?? ''),
       },
       {
         name: 'groupId',
-        label: 'Grupa',
+        label: this.moduleStrings.createeditMatchFieldsLabels.group,
         type: 'select',
         options: [{ label: '— brak —', value: '' }, ...groupOptions],
         value: String(m.groupId ?? ''),
       },
       {
         name: 'round',
-        label: 'Runda',
+        label: this.moduleStrings.createeditMatchFieldsLabels.round,
         type: 'number',
         min: 1,
         step: 1,
@@ -1067,7 +1159,7 @@ export class CalendarComponent {
       },
       {
         name: 'index',
-        label: 'Index w rundzie',
+        label: this.moduleStrings.createeditMatchFieldsLabels.index,
         type: 'number',
         min: 1,
         step: 1,
@@ -1075,39 +1167,59 @@ export class CalendarComponent {
       },
       {
         name: 'date',
-        label: 'Data i godzina',
+        label: this.moduleStrings.createeditMatchFieldsLabels.date,
         type: 'datetime',
         value: this.toLocalDatetimeInput(m.date),
       },
       {
         name: 'status',
-        label: 'Status',
+        label: this.moduleStrings.createeditMatchFieldsLabels.status,
         type: 'select',
         options: [
-          { label: 'Zaplanowany', value: 'SCHEDULED' },
-          { label: 'Na żywo', value: 'LIVE' },
-          { label: 'Zakończony', value: 'FINISHED' },
+          {
+            label:
+              this.moduleStrings.createeditMatchFieldsLabels.statusOptions
+                .SCHEDULED,
+            value: 'SCHEDULED',
+          },
+          {
+            label:
+              this.moduleStrings.createeditMatchFieldsLabels.statusOptions.LIVE,
+            value: 'LIVE',
+          },
+          {
+            label:
+              this.moduleStrings.createeditMatchFieldsLabels.statusOptions
+                .FINISHED,
+            value: 'FINISHED',
+          },
         ],
         value: String(m.status),
       },
       {
         name: 'homeTeamId',
-        label: 'Gospodarze',
+        label: this.moduleStrings.createeditMatchFieldsLabels.homeTeam,
         type: 'select',
-        options: [{ label: '— brak —', value: '' }, ...teamOptions],
+        options: [
+          { label: this.moduleStrings.common.noneOption, value: '' },
+          ...teamOptions,
+        ],
         value: homeId,
       },
       {
         name: 'awayTeamId',
-        label: 'Goście',
+        label: this.moduleStrings.createeditMatchFieldsLabels.awayTeam,
         type: 'select',
-        options: [{ label: '— brak —', value: '' }, ...teamOptions],
+        options: [
+          { label: this.moduleStrings.common.noneOption, value: '' },
+          ...teamOptions,
+        ],
         value: awayId,
       },
 
       {
         name: 'scoreHome',
-        label: 'Wynik gospodarzy',
+        label: this.moduleStrings.createeditMatchFieldsLabels.scoreHome,
         type: 'number',
         min: 0,
         step: 1,
@@ -1115,7 +1227,7 @@ export class CalendarComponent {
       },
       {
         name: 'scoreAway',
-        label: 'Wynik gości',
+        label: this.moduleStrings.createeditMatchFieldsLabels.scoreAway,
         type: 'number',
         min: 0,
         step: 1,
@@ -1124,7 +1236,7 @@ export class CalendarComponent {
 
       {
         name: 'homeGKIds',
-        label: 'Bramkarze gospodarzy',
+        label: this.moduleStrings.createeditMatchFieldsLabels.homeGKIds,
         type: 'select',
         multiple: true,
         options: this.gkOptionsForTeam(homeId),
@@ -1132,7 +1244,7 @@ export class CalendarComponent {
       },
       {
         name: 'awayGKIds',
-        label: 'Bramkarze gości',
+        label: this.moduleStrings.createeditMatchFieldsLabels.awayGKIds,
         type: 'select',
         multiple: true,
         options: this.gkOptionsForTeam(awayId),
@@ -1143,7 +1255,7 @@ export class CalendarComponent {
         existingEvents,
         teamOptionsForEvents,
         playerOptionsAll,
-        'Zdarzenia meczu'
+        this.moduleStrings.matchEvents
       ),
     ];
   }
@@ -1156,10 +1268,15 @@ export class CalendarComponent {
     label: string
   ): FormField {
     const fields: FormField[] = [
-      { name: 'id', label: 'Id', type: 'hidden', value: '' },
+      {
+        name: 'id',
+        label: this.moduleStrings.matchEventsFormLabels.id,
+        type: 'hidden',
+        value: '',
+      },
       {
         name: 'minute',
-        label: 'Minuta',
+        label: this.moduleStrings.matchEventsFormLabels.minute,
         type: 'number',
         min: 0,
         step: 1,
@@ -1167,20 +1284,33 @@ export class CalendarComponent {
       },
       {
         name: 'type',
-        label: 'Typ zdarzenia',
+        label: this.moduleStrings.matchEventsFormLabels.type,
         type: 'select',
         required: true,
         options: [
-          { label: 'Gol', value: 'GOAL' },
-          { label: 'Asysta', value: 'ASSIST' },
-          { label: 'Bramka samobójcza', value: 'OWN_GOAL' },
-          { label: 'Kartka', value: 'CARD' },
+          {
+            label: this.moduleStrings.matchEventsFormLabels.typeOptions.GOAL,
+            value: 'GOAL',
+          },
+          {
+            label: this.moduleStrings.matchEventsFormLabels.typeOptions.ASSIST,
+            value: 'ASSIST',
+          },
+          {
+            label:
+              this.moduleStrings.matchEventsFormLabels.typeOptions.OWN_GOAL,
+            value: 'OWN_GOAL',
+          },
+          {
+            label: this.moduleStrings.matchEventsFormLabels.typeOptions.CARD,
+            value: 'CARD',
+          },
         ],
         value: 'GOAL',
       },
       {
         name: 'teamId',
-        label: 'Drużyna zdarzenia',
+        label: this.moduleStrings.matchEventsFormLabels.teamId,
         type: 'select',
         required: true,
         options: teamOptions,
@@ -1188,7 +1318,7 @@ export class CalendarComponent {
       },
       {
         name: 'playerId',
-        label: 'Zawodnik',
+        label: this.moduleStrings.matchEventsFormLabels.playerId,
         type: 'select',
         required: true,
         options: playerOptions,
@@ -1196,12 +1326,23 @@ export class CalendarComponent {
       },
       {
         name: 'card',
-        label: 'Rodzaj kartki',
+        label: this.moduleStrings.matchEventsFormLabels.card,
         type: 'select',
         options: [
-          { label: 'Żółta', value: 'YELLOW' },
-          { label: 'Czerwona', value: 'RED' },
-          { label: 'Druga żółta', value: 'SECOND_YELLOW' },
+          {
+            label: this.moduleStrings.matchEventsFormLabels.cardOptions.YELLOW,
+            value: 'YELLOW',
+          },
+          {
+            label: this.moduleStrings.matchEventsFormLabels.cardOptions.RED,
+            value: 'RED',
+          },
+          {
+            label:
+              this.moduleStrings.matchEventsFormLabels.cardOptions
+                .SECOND_YELLOW,
+            value: 'SECOND_YELLOW',
+          },
         ],
         value: '',
       },
@@ -1211,167 +1352,14 @@ export class CalendarComponent {
       name,
       label,
       type: 'repeater',
-      itemLabel: 'Zdarzenie',
-      addLabel: 'Dodaj zdarzenie',
-      removeLabel: 'Usuń zdarzenie',
+      itemLabel: this.moduleStrings.matchEventsFormLabels.event,
+      addLabel: this.moduleStrings.matchEventsFormLabels.addEvent,
+      removeLabel: this.moduleStrings.matchEventsFormLabels.removeEvent,
       fields,
       value: value ?? [],
       totalSpan: 12,
       actualSpan: 12,
     } as FormField;
-  }
-
-  private eventsEditRepeater(
-    name: string,
-    value: any[],
-    teamOptions: { label: string; value: string }[],
-    playerOptions: { label: string; value: string }[],
-    label: string
-  ): FormField {
-    const fields: FormField[] = [
-      { name: 'id', label: 'Id', type: 'hidden', value: '' },
-      {
-        name: 'minute',
-        label: 'Minuta',
-        type: 'number',
-        min: 0,
-        step: 1,
-        value: 0,
-      },
-      {
-        name: 'type',
-        label: 'Typ zdarzenia',
-        type: 'select',
-        required: true,
-        options: [
-          { label: 'Gol', value: 'GOAL' },
-          { label: 'Asysta', value: 'ASSIST' },
-          { label: 'Bramka samobójcza', value: 'OWN_GOAL' },
-          { label: 'Kartka', value: 'CARD' },
-        ],
-        value: 'GOAL',
-      },
-      {
-        name: 'playerId',
-        label: 'Zawodnik',
-        type: 'select',
-        required: true,
-        options: playerOptions,
-        value: '',
-      },
-      {
-        name: 'teamId',
-        label: 'Drużyna zdarzenia',
-        type: 'select',
-        required: true,
-        options: teamOptions,
-        value: '',
-      },
-      {
-        name: 'card',
-        label: 'Rodzaj kartki',
-        type: 'select',
-        options: [
-          { label: 'Żółta', value: 'YELLOW' },
-          { label: 'Czerwona', value: 'RED' },
-          { label: 'Druga żółta', value: 'SECOND_YELLOW' },
-        ],
-        value: '',
-      },
-    ];
-
-    return {
-      name,
-      label,
-      type: 'repeater',
-      itemLabel: 'Zdarzenie',
-      addLabel: 'Dodaj zdarzenie',
-      removeLabel: 'Usuń zdarzenie',
-      fields,
-      value: value ?? [],
-      totalSpan: 12,
-      actualSpan: 12,
-    } as FormField;
-  }
-
-  private toYyyyMmDd(d: Date): string {
-    const pad = (n: number) => String(n).padStart(2, '0');
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-  }
-
-  private yesNoOptions = [
-    { label: 'Tak', value: 'true' },
-    { label: 'Nie', value: 'false' },
-  ];
-
-  onGenerateFormChanged(val: Record<string, any>) {
-    const HHMM = /^([01]\d|2[0-3]):[0-5]\d$/;
-
-    // --- helpers ---
-    const fields = this.generateFormFields;
-    const get = (name: string) => fields.find((f) => f.name === name);
-    const set = (name: string, patch: Partial<FormField>) =>
-      this.setField(fields, name, patch);
-
-    // 1) Zczytaj i wyczyść matchTimes (repeater: [{ time: 'HH:mm' }, ...])
-    const timesRaw: Array<{ time?: string }> = Array.isArray(val['matchTimes'])
-      ? val['matchTimes']
-      : [];
-    const cleanedTimes = Array.from(
-      new Set(
-        timesRaw
-          .map((r) => String(r?.time ?? '').trim())
-          .filter((t) => t.length > 0 && HHMM.test(t))
-      )
-    ).sort((a, b) => a.localeCompare(b));
-
-    // jeśli zmieniła się lista godzin → zaktualizuj repeater value
-    const mt = get('matchTimes');
-    if (
-      mt &&
-      JSON.stringify(mt.value?.map((x: any) => x.time)) !==
-        JSON.stringify(cleanedTimes)
-    ) {
-      set('matchTimes', { value: cleanedTimes.map((t) => ({ time: t })) });
-    }
-
-    // 2) Przełączanie trybów
-    const hasTimes = cleanedTimes.length > 0;
-
-    if (hasTimes) {
-      // Tryb "matchTimes" – czyść interwał
-      set('matchIntervalMinutes', { value: '' });
-      set('firstMatchTime', { value: '' });
-    } else {
-      // Tryb "interwał" – dopilnuj firstMatchTime + matchIntervalMinutes
-      const first = String(val['firstMatchTime'] ?? '').trim();
-      if (!first || !HHMM.test(first)) {
-        set('firstMatchTime', { value: '10:00' });
-      }
-
-      const mim = Number(val['matchIntervalMinutes']);
-      if (!Number.isFinite(mim) || mim < 1) {
-        set('matchIntervalMinutes', { value: 120 }); // sensowna domyślna przerwa (2h)
-      } else {
-        // zaokrąglij do całych minut
-        set('matchIntervalMinutes', { value: Math.floor(mim) });
-      }
-    }
-
-    // 3) dayInterval sanity (min 1)
-    const dayIntRaw = Number(val['dayInterval']);
-    if (!Number.isFinite(dayIntRaw) || dayIntRaw < 1) {
-      set('dayInterval', { value: 1 });
-    } else if (!Number.isInteger(dayIntRaw)) {
-      set('dayInterval', { value: Math.floor(dayIntRaw) });
-    }
-
-    // 4) Opcjonalnie: jeśli używasz booleanów jako select 'true'/'false',
-    // nic nie trzeba — backend dostaje stringi, które mapujesz przy submit.
-    // Jeśli kiedyś dodasz obsługę 'disabled' w DynamicForm, możesz tu dodać:
-    // set('matchIntervalMinutes', { disabled: hasTimes });
-    // set('firstMatchTime', { disabled: hasTimes });
-    // oraz odwrotnie dla pól repeatera.
   }
 
   private getGenerateRoundRobinFields(
@@ -1384,40 +1372,52 @@ export class CalendarComponent {
     return [
       {
         name: 'groupIds',
-        label: 'Grupy do wygenerowania',
+        label: this.moduleStrings.generateRoundRobinFieldsFormLabels.groupIds,
         type: 'select',
         multiple: true,
         options: groupOptions,
-        value: groupOptions.map((o) => o.value), // domyślnie wszystkie
+        value: groupOptions.map((o) => o.value),
       },
       {
         name: 'startDate',
-        label: 'Data startu (YYYY-MM-DD)',
-        type: 'date', // jeśli Twój DynamicForm nie ma 'date', użyj 'text' i wpisuj 'YYYY-MM-DD'
+        label: this.moduleStrings.generateRoundRobinFieldsFormLabels.startDate,
+        type: 'date',
         required: true,
         value: start,
       },
-
-      // Wariant A: stałe godziny dnia (jeśli wypełnisz "matchTimes", interwał jest ignorowany)
       {
         name: 'matchTimes',
-        label: 'Godziny w dniu kolejki (opcjonalnie, HH:mm)',
+        label:
+          this.moduleStrings.generateRoundRobinFieldsFormLabels.matchTimes
+            .label,
         type: 'repeater',
-        itemLabel: 'Godzina',
-        addLabel: 'Dodaj godzinę',
-        removeLabel: 'Usuń',
+        itemLabel:
+          this.moduleStrings.generateRoundRobinFieldsFormLabels.matchTimes.hour,
+        addLabel:
+          this.moduleStrings.generateRoundRobinFieldsFormLabels.matchTimes
+            .addHour,
+        removeLabel:
+          this.moduleStrings.generateRoundRobinFieldsFormLabels.matchTimes
+            .remove,
         totalSpan: 12,
         actualSpan: 12,
         fields: [
-          { name: 'time', label: 'HH:mm', type: 'text', value: '18:00' },
+          {
+            name: 'time',
+            label:
+              this.moduleStrings.generateRoundRobinFieldsFormLabels.matchTimes
+                .fieldTime,
+            type: 'text',
+            value: '18:00',
+          },
         ],
         value: [{ time: '14:00' }, { time: '16:00' }, { time: '18:00' }],
       },
-
-      // Wariant B: interwał zamiast stałych godzin (używany tylko gdy brak matchTimes)
       {
         name: 'matchIntervalMinutes',
-        label: 'Interwał minut między meczami (opcjonalnie)',
+        label:
+          this.moduleStrings.generateRoundRobinFieldsFormLabels
+            .matchIntervalMinutes,
         type: 'number',
         min: 0,
         step: 1,
@@ -1425,14 +1425,16 @@ export class CalendarComponent {
       },
       {
         name: 'firstMatchTime',
-        label: 'Godzina pierwszego meczu (gdy używamy interwału)',
+        label:
+          this.moduleStrings.generateRoundRobinFieldsFormLabels.firstMatchTime,
         type: 'text',
         value: '10:00',
       },
 
       {
         name: 'dayInterval',
-        label: 'Co ile dni nowa kolejka',
+        label:
+          this.moduleStrings.generateRoundRobinFieldsFormLabels.dayInterval,
         type: 'number',
         min: 0,
         step: 1,
@@ -1440,33 +1442,46 @@ export class CalendarComponent {
       },
       {
         name: 'roundInSingleDay',
-        label: 'Cała kolejka jednego dnia',
+        label:
+          this.moduleStrings.generateRoundRobinFieldsFormLabels
+            .roundInSingleDay,
         type: 'select',
         options: this.yesNoOptions,
         value: 'false',
       },
       {
         name: 'doubleRound',
-        label: 'Mecz i rewanż',
+        label:
+          this.moduleStrings.generateRoundRobinFieldsFormLabels.doubleRound,
         type: 'select',
         options: this.yesNoOptions,
         value: 'false',
       },
       {
         name: 'shuffleTeams',
-        label: 'Potasuj drużyny przed losowaniem',
+        label:
+          this.moduleStrings.generateRoundRobinFieldsFormLabels.shuffleTeams,
         type: 'select',
         options: this.yesNoOptions,
         value: 'true',
       },
       {
         name: 'clearExisting',
-        label: 'Wyczyść istniejące mecze w tych grupach',
+        label:
+          this.moduleStrings.generateRoundRobinFieldsFormLabels.clearExisting,
         type: 'select',
         options: this.yesNoOptions,
         value: 'true',
       },
     ];
+  }
+
+  openDetails(match: Match): void {
+    this.selectedMatch = match;
+  }
+
+  closeDetails(): void {
+    this.selectedMatch = null;
   }
 
   trackByDate = (_: number, d: CalendarDay) => d.date;
