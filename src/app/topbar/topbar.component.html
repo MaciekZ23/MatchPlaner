@@ -14,6 +14,8 @@
         aria-label="Powiadomienia"
         aria-haspopup="menu"
         aria-controls="notificationMenu"
+        data-bs-display="static"
+        data-bs-reference="parent"
         id="notificationDropdown"
       >
         <i class="fa fa-bell" aria-hidden="true"></i>
@@ -25,14 +27,14 @@
       </button>
       <div
         id="notificationMenu"
-        class="dropdown-menu dropdown-menu-end notif-menu"
+        class="dropdown-menu dropdown-menu-end notif-menu p-0"
         aria-labelledby="notificationDropdown"
         role="menu"
       >
         <div
           class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom"
         >
-          <span class="fw-semibold text-white">{{
+          <span class="fw-semibold text-white d-none d-md-inline-flex">{{
             moduleStrings.notifications.header
           }}</span>
           <button
@@ -51,10 +53,10 @@
           <ul class="list-group list-group-flush notif-list">
             <li
               *ngFor="let n of notifs | slice : 0 : 15; trackBy: trackById"
-              class="list-group-item d-flex gap-1 align-items-start bg-transparent text-white"
+              class="list-group-item d-flex gap-3 align-items-start bg-transparent text-white"
             >
               <span
-                class="badge rounded-pill mt-1"
+                class="badge rounded-pill mt-1 notif-icon"
                 [ngClass]="{
                   'bg-success': n.type === 'success',
                   'bg-warning': n.type === 'warning',

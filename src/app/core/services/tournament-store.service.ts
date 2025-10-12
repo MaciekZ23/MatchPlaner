@@ -2,6 +2,7 @@ import { Injectable, Inject } from '@angular/core';
 import {
   BehaviorSubject,
   combineLatest,
+  filter,
   forkJoin,
   map,
   of,
@@ -98,6 +99,21 @@ export class TournamentStore {
 
   refreshMatches(): void {
     this.matchesReload$.next();
+  }
+
+  private stageReload$ = new Subject<string>();
+
+  stageMatches$(stageId: string) {
+    return this.stageReload$.pipe(
+      startWith(stageId),
+      filter((id) => id === stageId),
+      switchMap(() => this.api.getMatches(stageId)),
+      shareReplay({ bufferSize: 1, refCount: true })
+    );
+  }
+
+  refreshMatchesForStage(stageId: string) {
+    this.stageReload$.next(stageId);
   }
 
   // Selektory wygodne dla komponentów ---

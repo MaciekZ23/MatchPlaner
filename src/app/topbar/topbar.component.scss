@@ -52,15 +52,11 @@
   background-color: $dropdown-background-color;
   border: 1px solid $dropdown-border-color;
   border-radius: 10px;
-  padding: 0;
+  width: 400px;
 }
 
 .notif-header {
   border-bottom: 1px solid $dropdown-border-color;
-
-  .title {
-    font-weight: 600;
-  }
 }
 
 .notif-list {
@@ -68,24 +64,7 @@
   overflow: auto;
 }
 
-.notif-item {
-  display: flex;
-  gap: 10px;
-  padding: 10px 4px;
-  border-bottom: 1px solid $dropdown-border-color;
-
-  &:last-child {
-    border-bottom: none;
-  }
-}
-
 .notif-icon {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  margin-top: 8px;
-  background: $light-blue;
-
   &.success {
     background: $text-diff-plus;
   }
@@ -97,24 +76,6 @@
   }
 }
 
-.notif-body {
-  flex: 1;
-
-  .notif-message {
-    color: $dropdown-item-color;
-  }
-}
-
-.empty {
-  color: $dropdown-item-color;
-}
-
-@media (min-width: 768px) {
-  .notif-menu {
-    min-width: 28rem;
-  }
-}
-
 @media (max-width: 767.98px) {
   .topbar {
     left: 100px !important;
@@ -122,16 +83,10 @@
   }
 
   .notif-menu {
-    min-width: 0 !important;
-    width: calc(100vw - 1.5rem) !important;
+    width: 180px;
   }
-  .notif-menu.show {
-    position: fixed;
-    right: 0.75rem;
-    left: auto;
-    top: 56px;
-    max-height: 70vh;
-    overflow: auto;
-    transform: none !important;
+
+  .notif-list {
+    max-height: 260px;
   }
 }

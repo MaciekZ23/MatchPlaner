@@ -4,8 +4,9 @@
     class="fs-5 text p-3 card-title card-header bg-transparent d-flex justify-content-between"
   >
     <span>{{ moduleStrings.title }}</span>
-    <div class="d-flex align-items-center gap-3 flex-nowrap ms-auto">
+    <div class="d-flex align-items-center gap-2 flex-nowrap ms-auto">
       <button
+        *ngIf="isAdmin$ | async"
         header-action
         type="button"
         class="btn text-white btn-sm d-none d-md-inline-flex align-items-center"
@@ -15,6 +16,18 @@
       >
         <i class="fa-solid fa-wand-magic-sparkles me-2"></i>
         {{ moduleStrings.generatePlayoffs }}
+      </button>
+
+      <button
+        *ngIf="isAdmin$ | async"
+        header-action
+        type="button"
+        class="btn btn-sm text-white d-none d-md-inline-flex align-items-center"
+        (click)="onDeleteAllPlayoffMatches()"
+        aria-label="Usuń wszystkie mecze (playoff)"
+      >
+        <i class="fa-solid fa-trash-can me-2" aria-hidden="true"></i>
+        {{ moduleStrings.deleteAllMatches }}
       </button>
 
       <div class="dropdown d-inline-block d-md-none">
@@ -28,7 +41,7 @@
           <i class="fa-solid fa-ellipsis-vertical"></i>
         </button>
         <ul class="dropdown-menu dropdown-menu-end shadow">
-          <li>
+          <li *ngIf="isAdmin$ | async" class="d-md-none">
             <button
               class="dropdown-item d-flex align-items-center"
               (click)="generateBracket()"
@@ -37,6 +50,16 @@
             >
               <i class="fa-solid fa-wand-magic-sparkles me-2"></i>
               {{ moduleStrings.generatePlayoffs }}
+            </button>
+          </li>
+          <li><hr class="dropdown-divider" /></li>
+          <li *ngIf="isAdmin$ | async" class="d-md-none">
+            <button
+              class="dropdown-item d-flex align-items-center text-danger"
+              (click)="onDeleteAllPlayoffMatches()"
+            >
+              <i class="fa-solid fa-trash-can me-2"></i>
+              {{ moduleStrings.deleteAllMatches }}
             </button>
           </li>
         </ul>
@@ -211,3 +234,5 @@
     </div>
   </div>
 </div>
+
+<app-confirm-modal #deleteAllPlayoffMatches></app-confirm-modal>

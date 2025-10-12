@@ -21,10 +21,12 @@ import { BracketMatch, BracketTeamSlot } from '../../models';
 import { BracketRoundPipe } from '../../pipes/bracket-round.pipe';
 import {
   combineLatest,
+  finalize,
   map,
   Observable,
   shareReplay,
   Subscription,
+  take,
 } from 'rxjs';
 import { Team as CoreTeam, Player as CorePlayer } from '../../../core/models';
 import { stringsPlayoffsBracket } from '../../misc';
@@ -33,6 +35,8 @@ import { Match } from '../../../calendar/models/match.model';
 import { GeneratePlayoffsPayload } from '../../../core/models/playoffs.models';
 import { TournamentStore } from '../../../core/services/tournament-store.service';
 import { VoteFacade } from '../../../calendar/services/vote.facade';
+import { MatchService } from '../../../calendar/services/match.service';
+import { AuthService } from '../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-playoffs-bracket',
@@ -55,6 +59,9 @@ export class PlayoffsBracketComponent
 
   @ViewChild('confirmModal', { static: true })
   confirmModal!: ConfirmModalComponent;
+
+  @ViewChild('deleteAllPlayoffMatches')
+  deleteAllPlayoffMatchesConfirm!: ConfirmModalComponent;
 
   moduleStrings = stringsPlayoffsBracket;
   confirmStrings = stringsConfirmModal;
@@ -83,10 +90,13 @@ export class PlayoffsBracketComponent
   private readonly store = inject(TournamentStore);
   private readonly voteFacade = inject(VoteFacade);
   private readonly cd = inject(ChangeDetectorRef);
+  private matchService = inject(MatchService);
+  private auth = inject(AuthService);
   private ro?: ResizeObserver;
   private subs = new Subscription();
 
   isGenerating$ = this.bracket.generating$;
+  isAdmin$ = this.auth.isAdmin$;
 
   constructor() {
     this.teamMap$ = this.store.teamMap$;
@@ -142,6 +152,33 @@ export class PlayoffsBracketComponent
     if (ok) {
       this.voteFacade.voteFor(e.matchId as any, e.playerId);
     }
+  }
+
+  async onDeleteAllPlayoffMatches(): Promise<void> {
+    const ok = await this.deleteAllPlayoffMatchesConfirm.open({
+      title: this.moduleStrings.deleteAllMatchesTitle,
+      message: this.moduleStrings.deleteAllMatchesMsg,
+      confirmVariant: 'danger',
+      labels: {
+        confirm: this.moduleStrings.deleteModalLabels?.confirm ?? 'Usuń',
+        cancel: this.moduleStrings.deleteModalLabels?.cancel ?? 'Anuluj',
+      },
+      size: 'md',
+    });
+    if (!ok) return;
+
+    this.matchService
+      .deleteAllByStage$(this.stageId)
+      .pipe(take(1))
+      .subscribe({
+        next: ({ count }) => {
+          this.store.refreshMatchesForStage(this.stageId);
+          this.bracket.loadByTournament();
+          console.log(`Usunięto ${count} mecz(e/y) z etapu PLAYOFF`);
+        },
+        error: (err) =>
+          console.error('Błąd usuwania wszystkich meczów playoff:', err),
+      });
   }
 
   openDetails(match: Match): void {
