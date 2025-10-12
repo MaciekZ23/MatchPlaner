@@ -23,6 +23,11 @@
         <app-playoffs-bracket
           *ngIf="viewmmodel.playoffStageId as sid"
           [stageId]="sid"
+          (generatePlayOffsRequested)="onGeneratePlayoffsRequested()"
+          (deleteAllRequested)="onDeleteAllPlayoffMatches($event)"
+          (voteRequested)="onRequestVoteConfirm($event)"
+          (deleteMatchRequested)="onDeleteMatch($event)"
+          (editMatchRequested)="onEditMatch($event)"
         ></app-playoffs-bracket>
         <div *ngIf="!viewmmodel.playoffStageId" class="alert alert-info">
           {{ moduleStrings.noStage }}
@@ -33,6 +38,11 @@
         <app-playoffs-bracket
           *ngIf="viewmmodel.playoffStageId as sid"
           [stageId]="sid"
+          (generatePlayOffsRequested)="onGeneratePlayoffsRequested()"
+          (deleteAllRequested)="onDeleteAllPlayoffMatches($event)"
+          (voteRequested)="onRequestVoteConfirm($event)"
+          (deleteMatchRequested)="onDeleteMatch($event)"
+          (editMatchRequested)="onEditMatch($event)"
         ></app-playoffs-bracket>
       </ng-container>
 
@@ -41,3 +51,27 @@
     </div>
   </ng-container>
 </div>
+
+<app-confirm-modal #deleteMatchConfirm></app-confirm-modal>
+<app-confirm-modal #deleteAllPlayoffMatches></app-confirm-modal>
+<app-confirm-modal #voteConfirm></app-confirm-modal>
+
+<app-dynamic-form
+  [formTitle]="formTitleEditMatch"
+  [fields]="editMatchFormFields"
+  [isOpen]="openEditMatchFormModal"
+  (formSubmitted)="onEditMatchFormSubmitted($event)"
+  (valueChanges)="onEditMatchFormChanged($event)"
+  (close)="openEditMatchFormModal = false"
+>
+</app-dynamic-form>
+
+<app-dynamic-form
+  [formTitle]="generatePlayoffsTitle"
+  [fields]="generatePlayoffsFields"
+  [isOpen]="openGeneratePlayoffsFormModal"
+  (formSubmitted)="onGeneratePlayoffsFormSubmitted($event)"
+  (valueChanges)="onGeneratePlayoffsFormChanged($event)"
+  (close)="openGeneratePlayoffsFormModal = false"
+>
+</app-dynamic-form>

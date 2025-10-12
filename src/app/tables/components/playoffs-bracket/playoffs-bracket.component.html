@@ -10,7 +10,7 @@
         header-action
         type="button"
         class="btn text-white btn-sm d-none d-md-inline-flex align-items-center"
-        (click)="generateBracket()"
+        (click)="onGenerateRequested()"
         [disabled]="!(canGenerate$ | async)"
         [attr.aria-label]="'Generuj drabinkę'"
       >
@@ -44,7 +44,7 @@
           <li *ngIf="isAdmin$ | async" class="d-md-none">
             <button
               class="dropdown-item d-flex align-items-center"
-              (click)="generateBracket()"
+              (click)="onGenerateRequested()"
               [class.disabled]="!(canGenerate$ | async)"
               [attr.aria-disabled]="!(canGenerate$ | async)"
             >
@@ -66,12 +66,17 @@
       </div>
 
       <button
+        #collapseBtn
         class="btn btn-link text-white p-0 btn-sm"
         type="button"
-        (click)="toggleCollapse()"
+        (click)="toggleCollapse(); hideTooltip($event)"
         [attr.aria-label]="isCollapsed ? 'Rozwiń sekcję' : 'Zwiń sekcję'"
         [attr.aria-expanded]="!isCollapsed"
         aria-controls="playoffsCollapse"
+        data-bs-toggle="tooltip"
+        data-bs-placement="top"
+        data-bs-trigger="hover"
+        [attr.data-bs-title]="isCollapsed ? 'Rozwiń sekcję' : 'Zwiń sekcję'"
       >
         <i
           class="fas"
@@ -131,6 +136,8 @@
                               class="match-card-compact"
                               [match]="ui.get(m.id)!"
                               (openDetails)="openDetails($event)"
+                              (editMatch)="onRequestEditMatch($event)"
+                              (deleteMatch)="onRequestDeleteMatch($event)"
                             ></app-match-card>
                           </div>
                         </ng-container>
@@ -151,6 +158,8 @@
                         class="match-card-compact"
                         [match]="ui.get(finalsArr[0].id)!"
                         (openDetails)="openDetails($event)"
+                        (editMatch)="onRequestEditMatch($event)"
+                        (deleteMatch)="onRequestDeleteMatch($event)"
                       ></app-match-card>
                     </div>
                   </div>
@@ -164,6 +173,8 @@
                         class="match-card-compact"
                         [match]="ui.get(finalsArr[1].id)!"
                         (openDetails)="openDetails($event)"
+                        (editMatch)="onRequestEditMatch($event)"
+                        (deleteMatch)="onRequestDeleteMatch($event)"
                       ></app-match-card>
                     </div>
                   </div>
@@ -199,6 +210,8 @@
                               class="match-card-compact"
                               [match]="ui.get(m.id)!"
                               (openDetails)="openDetails($event)"
+                              (editMatch)="onRequestEditMatch($event)"
+                              (deleteMatch)="onRequestDeleteMatch($event)"
                             ></app-match-card>
                           </div>
                         </ng-container>
@@ -213,7 +226,7 @@
       </ng-container>
       <ng-template #emptyTpl>
         <div class="alert alert-secondary m-0">
-          Brak danych drabinki do wyświetlenia.
+          Brak danych drabinki do wyświetlenia
         </div>
       </ng-template>
       <app-match-details-modal
@@ -223,16 +236,6 @@
         (close)="closeDetails()"
         (requestVoteConfirm)="onRequestVoteConfirm($event)"
       ></app-match-details-modal>
-      <app-confirm-modal
-        #confirmModal
-        [title]="confirmStrings.title"
-        [message]="confirmStrings.message"
-        [labels]="confirmStrings.labels"
-        [size]="'md'"
-        [confirmVariant]="'primary'"
-      ></app-confirm-modal>
     </div>
   </div>
 </div>
-
-<app-confirm-modal #deleteAllPlayoffMatches></app-confirm-modal>

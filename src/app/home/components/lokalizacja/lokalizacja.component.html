@@ -5,13 +5,18 @@
     <i class="fa-solid fa-location-dot me-2" aria-hidden="true"></i>
     <strong>{{ moduleStrings.title }}</strong>
     <button
+      #locToggleBtn
       class="btn btn-link text-white ms-auto"
-      (click)="toggleLocation()"
+      (click)="toggleLocation(); hideTooltip($event)"
       [attr.aria-label]="
         isLocationOpen ? 'Zwiń sekcję lokalizacji' : 'Rozwiń sekcję lokalizacji'
       "
       [attr.aria-expanded]="isLocationOpen"
       [attr.aria-controls]="'locationPanel'"
+      data-bs-toggle="tooltip"
+      data-bs-placement="top"
+      data-bs-trigger="hover"
+      [attr.data-bs-title]="isLocationOpen ? 'Zwiń sekcję' : 'Rozwiń sekcję'"
     >
       <i
         class="fas"

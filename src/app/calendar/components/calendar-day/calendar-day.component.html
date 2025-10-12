@@ -4,8 +4,9 @@
   >
     <span>{{ date }}</span>
     <button
+      #toggleBtn
       class="btn btn-link text-white p-0 btn-sm"
-      (click)="toggle()"
+      (click)="toggle(); hideTooltip($event)"
       [attr.aria-label]="
         expanded
           ? 'Zwiń mecze dla dnia ' + date
@@ -13,6 +14,10 @@
       "
       [attr.aria-expanded]="expanded"
       [attr.aria-controls]="'dayPanel'"
+      data-bs-toggle="tooltip"
+      data-bs-placement="top"
+      data-bs-trigger="hover"
+      [attr.data-bs-title]="expanded ? 'Zwiń sekcję' : 'Rozwiń sekcję'"
     >
       <i
         class="fas"

@@ -1,4 +1,13 @@
-import { Component, Input, EventEmitter, Output } from '@angular/core';
+import {
+  Component,
+  Input,
+  EventEmitter,
+  Output,
+  SimpleChanges,
+  OnDestroy,
+  OnChanges,
+  ElementRef,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { stringsTeamTable } from '../../misc';
 import { HealthStatus } from '../../types/health-status.type';
@@ -10,7 +19,7 @@ import { HealthStatus } from '../../types/health-status.type';
   styleUrls: ['./team-table.component.scss'],
   standalone: true,
 })
-export class TeamTableComponent {
+export class TeamTableComponent implements OnDestroy, OnChanges {
   moduleStrings = stringsTeamTable;
   @Input() players: any[] = [];
   @Input() teamName: string = '';
@@ -19,6 +28,57 @@ export class TeamTableComponent {
   @Output() backClick = new EventEmitter<void>();
   @Output() editPlayer = new EventEmitter<any>();
   @Output() deletePlayer = new EventEmitter<any>();
+
+  private tooltipInstances: any[] = [];
+
+  constructor(private host: ElementRef<HTMLElement>) {}
+
+  ngAfterViewInit(): void {
+    this.initTooltips();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['players'] || changes['canManage']) {
+      queueMicrotask(() => this.reinitTooltips());
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.disposeTooltips();
+  }
+
+  private initTooltips(): void {
+    const bs = (window as any).bootstrap;
+    if (!bs?.Tooltip) return;
+
+    const root = this.host.nativeElement;
+    const nodes = root.querySelectorAll<HTMLElement>(
+      '[data-bs-toggle="tooltip"]'
+    );
+
+    this.tooltipInstances = Array.from(nodes).map(
+      (el) =>
+        bs.Tooltip.getInstance?.(el) ?? new bs.Tooltip(el, { placement: 'top' })
+    );
+  }
+
+  private disposeTooltips(): void {
+    this.tooltipInstances.forEach((t) => t?.dispose?.());
+    this.tooltipInstances = [];
+  }
+
+  private reinitTooltips(): void {
+    this.disposeTooltips();
+    this.initTooltips();
+  }
+
+  hideTooltip(ev: Event) {
+    const el = ev.currentTarget as HTMLElement;
+    const bs = (window as any).bootstrap;
+    const inst = bs?.Tooltip?.getInstance?.(el);
+    inst?.hide();
+    el.blur();
+  }
 
   isCollapsed: boolean = true;
 
@@ -44,6 +104,7 @@ export class TeamTableComponent {
       }
       return 0;
     });
+    this.reinitTooltips();
   }
 
   getHealthBadgeClass(player: { healthStatus: HealthStatus }): string[] {

@@ -19,8 +19,26 @@
           <div class="col-12 col-sm-4 col-lg-3 label">
             {{ moduleStrings.email }}
           </div>
-          <div class="col-12 col-sm-8 col-lg-9 value">
-            <ng-container *ngIf="email; else noEmail">{{ email }}</ng-container>
+
+          <div class="d-flex align-items-center justify-content-between">
+            <ng-container *ngIf="email; else noEmail">
+              <span>
+                {{ email }}
+              </span>
+              <button
+                #copyEmailBtn
+                type="button"
+                class="btn btn-copy btn-sm ms-auto"
+                (click)="copyToClipboard(email!, copyEmailBtn, 'Skopiowano!')"
+                data-bs-toggle="tooltip"
+                data-bs-placement="top"
+                [attr.data-bs-title]="'Kopiuj e-mail'"
+                [attr.data-original-label]="'Kopiuj e-mail'"
+                aria-label="Kopiuj e-mail"
+              >
+                <i class="fa-solid fa-copy"></i>
+              </button>
+            </ng-container>
             <ng-template #noEmail
               ><span class="text-muted">
                 {{ moduleStrings.noEmail }}
@@ -33,8 +51,27 @@
           <div class="col-12 col-sm-4 col-lg-3 label">
             {{ moduleStrings.userName }}
           </div>
-          <div class="col-12 col-sm-8 col-lg-9">
-            {{ name || "Użytkownik" }}
+          <div class="d-flex align-items-center justify-content-between">
+            <span>{{ name || "Użytkownik" }}</span>
+            <button
+              #copyNameBtn
+              type="button"
+              class="btn btn-copy btn-sm ms-auto"
+              (click)="
+                copyToClipboard(
+                  name || 'Użytkownik',
+                  copyNameBtn,
+                  'Skopiowano!'
+                )
+              "
+              data-bs-toggle="tooltip"
+              data-bs-placement="top"
+              [attr.data-bs-title]="'Kopiuj nazwę użytkownika'"
+              [attr.data-original-label]="'Kopiuj nazwę użytkownika'"
+              aria-label="Kopiuj nazwę użytkownika"
+            >
+              <i class="fa-solid fa-copy"></i>
+            </button>
           </div>
         </div>
 
@@ -42,7 +79,7 @@
           <div class="col-12 col-sm-4 col-lg-3 label">
             {{ moduleStrings.roleUser }}
           </div>
-          <div class="col-12 col-sm-8 col-lg-9">
+          <div class="col-12 col-sm-8 col-lg-9 d-flex align-items-center">
             <span>{{ roleLabel }}</span>
           </div>
         </div>
@@ -51,8 +88,23 @@
           <div class="col-12 col-sm-4 col-lg-3 label">
             {{ moduleStrings.deviceId }}
           </div>
-          <div class="col-12 col-sm-8 col-lg-9 text-break">
-            {{ deviceId }}
+          <div class="d-flex align-items-center justify-content-between">
+            <span>{{ deviceId }}</span>
+            <button
+              #copyDevBtn
+              type="button"
+              class="btn btn-copy btn-sm ms-auto"
+              (click)="
+                copyToClipboard(deviceId || '', copyDevBtn, 'Skopiowano!')
+              "
+              data-bs-toggle="tooltip"
+              data-bs-placement="top"
+              [attr.data-bs-title]="'Kopiuj ID urządzenia'"
+              [attr.data-original-label]="'Kopiuj ID urządzenia'"
+              aria-label="Kopiuj ID urządzenia"
+            >
+              <i class="fa-solid fa-copy"></i>
+            </button>
           </div>
         </div>
 

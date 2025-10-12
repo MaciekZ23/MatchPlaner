@@ -21,20 +21,26 @@
       <button
         type="button"
         class="icon-btn me-2 bg-transparent"
-        title="Edytuj drużynę"
+        (click)="onEdit($event); hideTooltip($event)"
+        data-bs-toggle="tooltip"
+        data-bs-placement="top"
+        data-bs-trigger="hover"
+        [attr.data-bs-title]="'Edytuj drużynę'"
         aria-label="Edytuj drużynę"
-        (click)="onEdit($event)"
       >
-        <i class="fa fa-edit"></i>
+        <i class="fa fa-edit" aria-hidden="true"></i>
       </button>
       <button
         type="button"
         class="icon-btn bg-transparent"
-        title="Usuń drużynę"
+        (click)="onDelete($event); hideTooltip($event)"
+        data-bs-toggle="tooltip"
+        data-bs-placement="top"
+        data-bs-trigger="hover"
+        [attr.data-bs-title]="'Usuń drużynę'"
         aria-label="Usuń drużynę"
-        (click)="onDelete($event)"
       >
-        <i class="fa fa-trash"></i>
+        <i class="fa fa-trash" aria-hidden="true"></i>
       </button>
     </div>
   </div>

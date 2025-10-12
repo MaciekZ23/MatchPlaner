@@ -153,8 +153,8 @@ export class TeamsComponent implements OnInit {
   }
 
   onAddPlayer(team: Team): void {
-    this.addPlayerForTeamId = team.id; // zapamiętaj UI id drużyny
-    this.addPlayerFormFields = this.getEmptyPlayerFields(); // reset pól
+    this.addPlayerForTeamId = team.id;
+    this.addPlayerFormFields = this.getEmptyPlayerFields();
     this.openAddPlayerFormModal = true;
   }
 

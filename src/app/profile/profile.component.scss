@@ -64,3 +64,24 @@
     background-color: $button-hover;
   }
 }
+
+.btn-copy {
+  background: transparent;
+  color: $white;
+  border-radius: 10px;
+
+  &:hover,
+  &:focus {
+    background: $primary-blue;
+    border-color: $primary-blue;
+    color: $white;
+  }
+
+  i {
+    font-size: 1rem;
+
+    @media (max-width: 767.98px) {
+      font-size: 0.9rem;
+    }
+  }
+}
