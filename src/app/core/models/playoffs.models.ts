@@ -1,8 +1,11 @@
 export interface GeneratePlayoffsPayload {
-  startDateISO: string;
-  matchDurationMin: number;
-  gapBetweenMatchesMin: number;
-  matchesPerDay: number;
-  withThirdPlace: boolean;
   stageName?: string;
+  startDate: string;
+  matchTimes?: string[];
+  firstMatchTime?: string;
+  matchIntervalMinutes?: number;
+  dayInterval?: number;
+  roundInSingleDay?: boolean;
+  withThirdPlace?: boolean;
+  clearExisting?: boolean;
 }

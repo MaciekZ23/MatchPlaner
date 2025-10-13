@@ -339,27 +339,13 @@ export class PlayoffsBracketService {
         console.error('Brak aktywnego turnieju – nie generuję drabinki.');
         return;
       }
-
-      const payload: GeneratePlayoffsPayload = {
-        startDateISO: new Date().toISOString(),
-        matchDurationMin: 40,
-        gapBetweenMatchesMin: 10,
-        matchesPerDay: 8,
-        withThirdPlace: true,
-        ...(options ?? {}),
-      };
+      const payload = { ...(options ?? {}) } as GeneratePlayoffsPayload;
 
       this.generating$$.next(true);
       this.api.generate(t.id, payload).subscribe({
-        next: () => {
-          this.loadByTournament();
-        },
-        error: (err) => {
-          console.error('Playoffs generate error', err);
-        },
-        complete: () => {
-          this.generating$$.next(false);
-        },
+        next: () => this.loadByTournament(),
+        error: (err) => console.error('Playoffs generate error', err),
+        complete: () => this.generating$$.next(false),
       });
     });
   }

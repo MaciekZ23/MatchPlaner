@@ -868,70 +868,98 @@ export class TablesComponent implements OnInit {
   }
 
   onOpenGeneratePlayoffs(): void {
-    // defaulty możesz podkręcić wg potrzeb
-    const pad = (n: number) => String(n).padStart(2, '0');
-    const now = new Date();
-    const local = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(
-      now.getDate()
-    )}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+    const toYyyyMmDd = (d: Date) => {
+      const pad = (n: number) => String(n).padStart(2, '0');
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    };
+
+    const start = toYyyyMmDd(new Date());
+    const yesNoOptions = [
+      { label: this.playoffsStrings.form!.yesNoOptions.yes, value: 'true' },
+      { label: this.playoffsStrings.form!.yesNoOptions.no, value: 'false' },
+    ];
+
+    this.generatePlayoffsTitle =
+      this.playoffsStrings.form?.title ?? this.playoffsStrings.generatePlayoffs;
 
     this.generatePlayoffsFields = [
-      {
-        name: 'startDateISO',
-        label: this.playoffsStrings.form?.startDateISO,
-        type: 'datetime',
-        required: true,
-        value: local,
-      },
-      {
-        name: 'matchDurationMin',
-        label: this.playoffsStrings.form?.matchDurationMin,
-        type: 'number',
-        min: 1,
-        step: 1,
-        value: 40,
-      },
-      {
-        name: 'gapBetweenMatchesMin',
-        label: this.playoffsStrings.form?.gapBetweenMatchesMin,
-        type: 'number',
-        min: 1,
-        step: 1,
-        value: 10,
-      },
-      {
-        name: 'matchesPerDay',
-        label: this.playoffsStrings.form?.matchesPerDay,
-        type: 'number',
-        min: 1,
-        step: 1,
-        value: 8,
-      },
-      {
-        name: 'withThirdPlace',
-        label: this.playoffsStrings.form?.withThirdPlace,
-        type: 'select',
-        options: [
-          {
-            label:
-              this.calendarStrings.generateRoundRobinFieldsFormLabels
-                .yesNoOptions.yes,
-            value: 'true',
-          },
-          {
-            label:
-              this.calendarStrings.generateRoundRobinFieldsFormLabels
-                .yesNoOptions.no,
-            value: 'false',
-          },
-        ],
-        value: 'true',
-      },
       {
         name: 'stageName',
         label: this.playoffsStrings.form?.stageName,
         type: 'text',
         value: 'Playoffs',
+      },
+      {
+        name: 'startDate',
+        label: this.playoffsStrings.form?.startDate,
+        type: 'date',
+        required: true,
+        value: start,
+      },
+      {
+        name: 'matchTimes',
+        label: this.playoffsStrings.form?.matchTimes.label,
+        type: 'repeater',
+        itemLabel: this.playoffsStrings.form?.matchTimes.hour,
+        addLabel: this.playoffsStrings.form?.matchTimes.addHour,
+        removeLabel: this.playoffsStrings.form?.matchTimes.remove,
+        totalSpan: 12,
+        actualSpan: 12,
+        fields: [
+          {
+            name: 'time',
+            label: this.playoffsStrings.form?.matchTimes.fieldTime,
+            type: 'text',
+            value: '18:00',
+          },
+        ],
+        value: [{ time: '14:00' }, { time: '16:00' }, { time: '18:00' }],
+      },
+      {
+        name: 'firstMatchTime',
+        label: this.playoffsStrings.form?.firstMatchTime,
+        type: 'text',
+        value: '',
+        placeholder: '09:00',
+      },
+      {
+        name: 'matchIntervalMinutes',
+        label: this.playoffsStrings.form?.matchIntervalMinutes,
+        type: 'number',
+        min: 0,
+        step: 1,
+        value: '',
+        placeholder: '50',
+      },
+      {
+        name: 'dayInterval',
+        label: this.playoffsStrings.form?.dayInterval,
+        type: 'number',
+        min: 0,
+        step: 1,
+        value: '',
+        placeholder: '0',
+      },
+      {
+        name: 'roundInSingleDay',
+        label: this.playoffsStrings.form?.roundInSingleDay,
+        type: 'select',
+        options: yesNoOptions,
+        value: 'false',
+      },
+      {
+        name: 'withThirdPlace',
+        label: this.playoffsStrings.form?.withThirdPlace,
+        type: 'select',
+        options: yesNoOptions,
+        value: 'true',
+      },
+      {
+        name: 'clearExisting',
+        label: this.playoffsStrings.form?.clearExisting,
+        type: 'select',
+        options: yesNoOptions,
+        value: 'true',
       },
     ];
 
@@ -942,31 +970,53 @@ export class TablesComponent implements OnInit {
     const set = (name: string, patch: Partial<FormField>) =>
       this.setField(this.generatePlayoffsFields, name, patch);
 
-    const ints: Array<{ name: string; min: number; def: number }> = [
-      { name: 'matchDurationMin', min: 1, def: 40 },
-      { name: 'gapBetweenMatchesMin', min: 1, def: 10 },
-      { name: 'matchesPerDay', min: 1, def: 4 },
-    ];
-    for (const it of ints) {
-      const raw = Number(val[it.name]);
-      if (!Number.isFinite(raw) || raw < it.min) {
-        set(it.name, { value: it.def });
-      } else if (!Number.isInteger(raw)) {
-        set(it.name, { value: Math.floor(raw) });
-      }
+    const di = Number(val['dayInterval']);
+    if (
+      val['dayInterval'] !== '' &&
+      Number.isFinite(di) &&
+      di >= 0 &&
+      !Number.isInteger(di)
+    ) {
+      set('dayInterval', { value: Math.floor(di) });
+    }
+
+    const mim = Number(val['matchIntervalMinutes']);
+    if (
+      val['matchIntervalMinutes'] !== '' &&
+      Number.isFinite(mim) &&
+      mim >= 1 &&
+      !Number.isInteger(mim)
+    ) {
+      set('matchIntervalMinutes', { value: Math.floor(mim) });
     }
   }
 
   onGeneratePlayoffsFormSubmitted(fields: FormField[]): void {
     const f = this.reduceFields<Record<string, any>>(fields);
 
+    const matchTimes = Array.isArray(f['matchTimes'])
+      ? (f['matchTimes'] as Array<{ time?: string }>)
+          .map((x) => String(x?.time || '').trim())
+          .filter(Boolean)
+      : [];
+
     const payload = {
-      startDateISO: this.toIsoFromLocal(String(f['startDateISO'] ?? '')),
-      matchDurationMin: Number(f['matchDurationMin'] ?? 40),
-      gapBetweenMatchesMin: Number(f['gapBetweenMatchesMin'] ?? 10),
-      matchesPerDay: Number(f['matchesPerDay'] ?? 8),
-      withThirdPlace: String(f['withThirdPlace'] ?? 'true') === 'true',
       stageName: String(f['stageName'] ?? '').trim() || undefined,
+      startDate: String(f['startDate'] ?? '').trim(), // YYYY-MM-DD
+
+      ...(matchTimes.length > 0 ? { matchTimes } : {}),
+
+      ...(matchTimes.length === 0
+        ? {
+            firstMatchTime: String(f['firstMatchTime'] ?? '').trim() || '10:00',
+            matchIntervalMinutes: Number(f['matchIntervalMinutes'] ?? 120),
+          }
+        : {}),
+
+      dayInterval: Number(f['dayInterval'] ?? 0),
+      roundInSingleDay: String(f['roundInSingleDay'] ?? 'true') === 'true',
+      withThirdPlace: String(f['withThirdPlace'] ?? 'true') === 'true',
+      clearExisting: String(f['clearExisting'] ?? 'false') === 'true',
     };
 
     this.openGeneratePlayoffsFormModal = false;

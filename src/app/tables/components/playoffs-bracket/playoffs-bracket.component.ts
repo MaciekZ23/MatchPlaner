@@ -220,19 +220,6 @@ export class PlayoffsBracketComponent
     }
   }
 
-  generateBracket(): void {
-    const payload: Partial<GeneratePlayoffsPayload> = {
-      startDateISO: new Date().toISOString(),
-      matchDurationMin: 40,
-      gapBetweenMatchesMin: 10,
-      matchesPerDay: 8,
-      withThirdPlace: true,
-      stageName: 'Playoffs',
-    };
-
-    this.bracket.generateForCurrentTournament(payload);
-  }
-
   trackMatch = (_: number, m: BracketMatch | Match) => (m as any).id;
   trackRound = (_: number, r: number) => r;
 

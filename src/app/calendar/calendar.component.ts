@@ -1438,7 +1438,7 @@ export class CalendarComponent {
         type: 'number',
         min: 0,
         step: 1,
-        value: 7,
+        value: 0,
       },
       {
         name: 'roundInSingleDay',
