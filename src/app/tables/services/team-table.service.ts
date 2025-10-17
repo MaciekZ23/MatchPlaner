@@ -96,21 +96,17 @@ export class TeamTableService {
     return groups;
   }
 
-  /** Pomocniczy type-guard: tylko mecze z ustawionymi teamId */
   private hasTeams(
     m: CoreMatch
   ): m is CoreMatch & { homeTeamId: string; awayTeamId: string } {
     return !!m.homeTeamId && !!m.awayTeamId;
   }
 
-  /** Liczenie surowych statystyk i sortowanie pełnymi tie-breakerami */
   private buildAndSortGroupTable(
     matches: CoreMatch[],
     teamMap: Map<string, CoreTeam>
   ): TeamStats[] {
     const finished = matches.filter((m) => m.status === 'FINISHED');
-
-    // Bierzemy tylko te z pewnymi ID zespołów (type guard zwęża typy)
     const withTeams = finished.filter((m) => this.hasTeams(m));
 
     const teamIds = new Set<string>();
@@ -139,13 +135,11 @@ export class TeamTableService {
 
     for (const m of withTeams) {
       const { home, away } = getScore(m);
-
       const homeRow = base.get(m.homeTeamId)!;
       const awayRow = base.get(m.awayTeamId)!;
 
       homeRow.rm++;
       awayRow.rm++;
-
       homeRow.bz += home;
       homeRow.bs += away;
       awayRow.bz += away;
@@ -167,26 +161,153 @@ export class TeamTableService {
       }
     }
 
-    for (const row of base.values()) {
-      row.diff = row.bz - row.bs;
+    for (const row of base.values()) row.diff = row.bz - row.bs;
+
+    // --- sortowanie: klastry remisu
+    const table = Array.from(base.entries()).map(([teamId, row]) => ({
+      teamId,
+      row,
+    }));
+    table.sort((a, b) => b.row.pkt - a.row.pkt);
+
+    const resolved: { teamId: string; row: TeamStats }[] = [];
+    let i = 0;
+    while (i < table.length) {
+      let j = i + 1;
+      while (j < table.length && table[j].row.pkt === table[i].row.pkt) j++;
+
+      const cluster = table.slice(i, j);
+      if (cluster.length === 1) {
+        resolved.push(cluster[0]);
+      } else if (cluster.length === 2) {
+        cluster.sort((A, B) =>
+          this.compareTwo(A.teamId, B.teamId, A.row, B.row, withTeams)
+        );
+        resolved.push(...cluster);
+      } else {
+        const ids = new Set(cluster.map((x) => x.teamId));
+        const mini = this.buildMiniTable(ids, withTeams);
+
+        cluster.sort((A, B) => {
+          if (mini.get(B.teamId)!.pts !== mini.get(A.teamId)!.pts)
+            return mini.get(B.teamId)!.pts - mini.get(A.teamId)!.pts;
+          if (mini.get(B.teamId)!.gd !== mini.get(A.teamId)!.gd)
+            return mini.get(B.teamId)!.gd - mini.get(A.teamId)!.gd;
+          if (B.row.diff !== A.row.diff) return B.row.diff - A.row.diff;
+          if (B.row.bz !== A.row.bz) return B.row.bz - A.row.bz;
+          if (B.row.w !== A.row.w) return B.row.w - A.row.w;
+          // proxy na away-wins: policz z meczów
+          const awA = this.countAwayWins(A.teamId, withTeams);
+          const awB = this.countAwayWins(B.teamId, withTeams);
+          if (awB !== awA) return awB - awA;
+          return A.teamId.localeCompare(B.teamId);
+        });
+
+        resolved.push(...cluster);
+      }
+      i = j;
     }
 
-    const cardsPointsByTeam = buildDisciplineIndex(withTeams);
-    const awayWinsIndex = buildAwayWinsIndex(withTeams);
-    const comparator = makeStandingsComparator(
-      withTeams,
-      cardsPointsByTeam,
-      awayWinsIndex
-    );
-
-    const rows = Array.from(base.entries()).map(([teamId, row]) => {
-      return { teamId, row };
-    });
-    rows.sort((a, b) => comparator(a.teamId, b.teamId, a.row, b.row));
-    rows.forEach((it, idx) => {
+    resolved.forEach((it, idx) => {
       it.row.id = idx + 1;
     });
+    return resolved.map((it) => it.row);
+  }
 
-    return rows.map((it) => it.row);
+  private compareTwo(
+    aId: string,
+    bId: string,
+    a: TeamStats,
+    b: TeamStats,
+    matches: CoreMatch[]
+  ): number {
+    if (a.pkt !== b.pkt) return b.pkt - a.pkt;
+
+    // H2H między a-b
+    let aPts = 0,
+      bPts = 0,
+      aGD = 0,
+      bGD = 0;
+    for (const m of matches) {
+      const isAB = m.homeTeamId === aId && m.awayTeamId === bId;
+      const isBA = m.homeTeamId === bId && m.awayTeamId === aId;
+      if (!isAB && !isBA) continue;
+
+      const { home, away } = getScore(m);
+      if (isAB) {
+        if (home > away) aPts += 3;
+        else if (home < away) bPts += 3;
+        else {
+          aPts++;
+          bPts++;
+        }
+        aGD += home - away;
+        bGD += away - home;
+      } else {
+        if (home > away) bPts += 3;
+        else if (home < away) aPts += 3;
+        else {
+          aPts++;
+          bPts++;
+        }
+        bGD += home - away;
+        aGD += away - home;
+      }
+    }
+
+    if (aPts !== bPts) return bPts - aPts;
+    if (aGD !== bGD) return bGD - aGD;
+    if (a.diff !== b.diff) return b.diff - a.diff;
+    if (a.bz !== b.bz) return b.bz - a.bz;
+    if (a.w !== b.w) return b.w - a.w;
+    const awA = this.countAwayWins(aId, matches);
+    const awB = this.countAwayWins(bId, matches);
+    if (awB !== awA) return awB - awA;
+    return a.name.localeCompare(b.name, 'pl');
+  }
+
+  private buildMiniTable(teams: Set<string>, matches: CoreMatch[]) {
+    const res = new Map<
+      string,
+      { pts: number; gd: number; gf: number; ga: number }
+    >();
+    for (const id of teams) res.set(id, { pts: 0, gd: 0, gf: 0, ga: 0 });
+
+    for (const m of matches) {
+      if (!m.homeTeamId || !m.awayTeamId) continue;
+      if (!teams.has(m.homeTeamId) || !teams.has(m.awayTeamId)) continue;
+
+      const { home, away } = getScore(m);
+      const A = res.get(m.homeTeamId)!;
+      const B = res.get(m.awayTeamId)!;
+
+      A.gf += home;
+      A.ga += away;
+      B.gf += away;
+      B.ga += home;
+      A.gd = A.gf - A.ga;
+      B.gd = B.gf - B.ga;
+
+      if (home > away) A.pts += 3;
+      else if (home < away) B.pts += 3;
+      else {
+        A.pts++;
+        B.pts++;
+      }
+    }
+
+    const out = new Map<string, { pts: number; gd: number; gf: number }>();
+    for (const [id, v] of res) out.set(id, { pts: v.pts, gd: v.gd, gf: v.gf });
+    return out;
+  }
+
+  private countAwayWins(teamId: string, matches: CoreMatch[]) {
+    let w = 0;
+    for (const m of matches) {
+      if (m.awayTeamId !== teamId) continue;
+      const { home, away } = getScore(m);
+      if (away > home) w++;
+    }
+    return w;
   }
 }

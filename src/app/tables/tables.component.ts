@@ -1,7 +1,7 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   OnInit,
-  ChangeDetectionStrategy,
   ViewChild,
   inject,
 } from '@angular/core';
@@ -44,6 +44,8 @@ import {
   Tournament,
 } from '../core/models';
 import { DynamicFormComponent } from '../shared/components/dynamic-form/dynamic-form.component';
+import { MatchDetailsModalComponent } from '../calendar/components/match-details-modal/match-details-modal.component';
+import { isoToLocalInput, localInputToIso } from '../core/utils';
 
 @Component({
   selector: 'app-tables',
@@ -56,6 +58,7 @@ import { DynamicFormComponent } from '../shared/components/dynamic-form/dynamic-
     PlayoffsBracketComponent,
     ConfirmModalComponent,
     DynamicFormComponent,
+    MatchDetailsModalComponent,
   ],
   templateUrl: './tables.component.html',
   styleUrls: ['./tables.component.scss'],
@@ -70,6 +73,7 @@ export class TablesComponent implements OnInit {
   viewmodel$!: Observable<TablesVM>;
 
   isLoading = false;
+  selectedMatch: Match | null = null;
 
   @ViewChild('deleteAllPlayoffMatches', { static: true })
   deleteAllPlayoffMatchesConfirm!: ConfirmModalComponent;
@@ -178,7 +182,6 @@ export class TablesComponent implements OnInit {
       .deleteMatch$(match.id)
       .pipe(
         tap(() => {
-          // playoffy → odśwież zarówno listę meczów dla etapu, jak i drabinkę
           if (match.stageId) this.store.refreshMatchesForStage(match.stageId);
           else this.store.refreshMatches();
           this.bracket.loadByTournament();
@@ -322,11 +325,21 @@ export class TablesComponent implements OnInit {
     if (stageId && stageId !== base.stageId) patch.stageId = stageId;
 
     const groupIdRaw = String(f['groupId'] ?? '').trim();
-    const newGroupId = groupIdRaw === '' ? null : groupIdRaw;
+    const nextGroupId = groupIdRaw === '' ? null : groupIdRaw;
+
+    if (nextGroupId !== base.groupId) {
+      patch.groupId = nextGroupId;
+    }
 
     const index = this.numOrUndefined(f['index']);
-    if (!newGroupId && index !== undefined && index >= 1) patch.index = index;
-    else if (newGroupId) patch.index = null;
+
+    if (nextGroupId === null) {
+      if (index !== undefined && index >= 1) {
+        patch.index = index;
+      }
+    } else if (nextGroupId !== base.groupId) {
+      patch.index = null;
+    }
 
     const editedEvents = Array.isArray(f['events'])
       ? (f['events'] as any[])
@@ -341,7 +354,7 @@ export class TablesComponent implements OnInit {
     if (round !== undefined) patch.round = round;
 
     const dateLocal = String(f['date'] ?? '').trim();
-    if (dateLocal) patch.date = this.toIsoFromLocal(dateLocal);
+    if (dateLocal) patch.date = localInputToIso(dateLocal);
 
     const status = String(f['status'] ?? '')
       .trim()
@@ -462,22 +475,8 @@ export class TablesComponent implements OnInit {
     );
   }
 
-  private toIsoFromLocal(local: string): string {
-    const d = new Date(local);
-    return isNaN(d.getTime()) ? new Date().toISOString() : d.toISOString();
-  }
-
-  private toLocalDatetimeInput(iso?: string | null): string {
-    if (!iso) return '';
-    const d = new Date(iso);
-    if (isNaN(d.getTime())) return '';
-    const pad = (n: number) => String(n).padStart(2, '0');
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(
-      d.getDate()
-    )}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-  }
-
   private numOrUndefined(v: any): number | undefined {
+    if (v === '' || v === null || v === undefined) return undefined;
     const n = Number(v);
     return Number.isFinite(n) ? n : undefined;
   }
@@ -777,7 +776,7 @@ export class TablesComponent implements OnInit {
         name: 'date',
         label: this.calendarStrings.createeditMatchFieldsLabels.date,
         type: 'datetime',
-        value: this.toLocalDatetimeInput(m.date),
+        value: isoToLocalInput(m.date),
       },
       {
         name: 'status',
@@ -1002,7 +1001,7 @@ export class TablesComponent implements OnInit {
 
     const payload = {
       stageName: String(f['stageName'] ?? '').trim() || undefined,
-      startDate: String(f['startDate'] ?? '').trim(), // YYYY-MM-DD
+      startDate: String(f['startDate'] ?? '').trim(),
 
       ...(matchTimes.length > 0 ? { matchTimes } : {}),
 
@@ -1030,5 +1029,13 @@ export class TablesComponent implements OnInit {
 
   onGeneratePlayoffsRequested() {
     this.onOpenGeneratePlayoffs();
+  }
+
+  openDetails(match: Match) {
+    this.selectedMatch = match;
+  }
+
+  closeDetails() {
+    this.selectedMatch = null;
   }
 }

@@ -13,7 +13,7 @@ export function buildAwayWinsIndex(matches: Match[]): Map<string, number> {
     }
     const { home, away } = getScore(m);
     if (away > home) {
-      const awayId = m.awayTeamId ?? undefined; // gdyby jednak przyszło null
+      const awayId = m.awayTeamId ?? undefined;
       if (awayId) {
         bump(awayId);
       }

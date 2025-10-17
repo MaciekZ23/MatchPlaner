@@ -10,8 +10,11 @@ import {
 import { BracketMatch, BracketTeamSlot } from '../models';
 import { TournamentStore } from '../../core/services/tournament-store.service';
 import { Match } from '../../calendar/models/match.model';
-import { Team as CoreTeam, Match as CoreMatch } from '../../core/models';
-
+import {
+  Team as CoreTeam,
+  Match as CoreMatch,
+  Player as CorePlayer,
+} from '../../core/models';
 import { matchTitle as matchTitleHelper } from './helpers';
 import { IPlayoffsApi, PLAYOFFS_API } from '../../core/api/playoffs.api';
 import { HttpPlayoffsApi } from '../../core/api/http-playoffs.api';
@@ -29,7 +32,6 @@ export class PlayoffsBracketService {
     inject<IPlayoffsApi>(PLAYOFFS_API, { optional: true }) ??
     inject(HttpPlayoffsApi);
 
-  // Pobieranie drabinki dla bieżącego turnieju
   loadByTournament(): void {
     this.store.tournament$.pipe(take(1)).subscribe((t) => {
       if (!t?.id) {
@@ -73,12 +75,16 @@ export class PlayoffsBracketService {
   }
 
   uiMatchById$(stageId: string): Observable<Map<string, Match>> {
-    return combineLatest([this.getMatches$(stageId), this.store.teamMap$]).pipe(
-      map(([ms, teamMap]) => {
+    return combineLatest([
+      this.getMatches$(stageId),
+      this.store.teamMap$,
+      this.store.playerMap$,
+    ]).pipe(
+      map(([ms, teamMap, playerMap]) => {
         const bmById = new Map<string, BracketMatch>(ms.map((m) => [m.id, m]));
         const byId = new Map<string, Match>();
         for (const bm of ms) {
-          byId.set(bm.id, this.toCardMatch(bm, teamMap, bmById));
+          byId.set(bm.id, this.toCardMatch(bm, teamMap, bmById, playerMap));
         }
         return byId;
       })
@@ -171,21 +177,26 @@ export class PlayoffsBracketService {
         awaySourceRef ?? null
       ),
       score: hasScore ? { home: homeScore!, away: awayScore! } : undefined,
+      events: (m as any).events ?? [],
     };
   }
 
   private toCardMatch(
     bm: BracketMatch,
     teamMap: Map<string, CoreTeam>,
-    bmById: Map<string, BracketMatch>
+    bmById: Map<string, BracketMatch>,
+    playerMap: Map<string, CorePlayer>
   ): Match {
     const [nameA, logoA] = this.nameLogoFromSlot(bm.home, teamMap, bmById);
     const [nameB, logoB] = this.nameLogoFromSlot(bm.away, teamMap, bmById);
 
+    // ⬇️ policz szczegóły do timeline (tak jak w Calendar)
+    const details = this.detailsFromEvents(bm, playerMap);
+
     return {
       id: bm.id,
       stageId: bm.stageId,
-      groupId: matchTitleHelper(bm.round, bm.index), // zostawiasz tu swój tytuł rundy
+      groupId: matchTitleHelper(bm.round, bm.index),
       round: bm.round,
       index: bm.index,
       date: bm.date,
@@ -193,7 +204,6 @@ export class PlayoffsBracketService {
       homeTeamId: this.teamIdForUi(bm.home),
       awayTeamId: this.teamIdForUi(bm.away),
 
-      // źródła slotów (NOWE POLA):
       ...(() => {
         const h = this.slotSourceFromSlot(bm.home);
         const a = this.slotSourceFromSlot(bm.away);
@@ -205,22 +215,96 @@ export class PlayoffsBracketService {
         };
       })(),
 
-      // score/eventy/ustawienia (opcjonalne, ale przydatne):
       score: bm.score
         ? { home: bm.score.home, away: bm.score.away }
         : undefined,
-      events: [], // brak eventów w drabince – pusta tablica/undefined też ok
+      events: (bm as any).events ?? [],
       lineups: undefined,
 
-      // --- pola widokowe:
       teamA: nameA,
       teamB: nameB,
       logoA,
       logoB,
       scoreA: bm.score?.home ?? 0,
       scoreB: bm.score?.away ?? 0,
-      details: [],
+      details,
     };
+  }
+
+  private detailsFromEvents(
+    bm: BracketMatch,
+    playerMap: Map<string, CorePlayer>
+  ) {
+    const events = (bm.events ?? [])
+      .slice()
+      .sort((a: any, b: any) => a.minute - b.minute);
+
+    // realne teamId ze slotów (TEAM -> teamId/ref; WINNER/LOSER -> ref do meczu poprzedniego – timeline i tak pokaże po teamId eventu)
+    const homeId = (bm.home as any).teamId ?? bm.home?.ref ?? null;
+    const awayId = (bm.away as any).teamId ?? bm.away?.ref ?? null;
+
+    let liveA = 0;
+    let liveB = 0;
+    const details: any[] = [];
+
+    for (const ev of events) {
+      const playerName = playerMap.get(ev.playerId)?.name ?? ev.playerId;
+      const isHome = homeId && ev.teamId === homeId;
+      const teamSide: 'A' | 'B' = isHome ? 'A' : 'B';
+
+      switch (ev.type) {
+        case 'GOAL': {
+          if (isHome) liveA++;
+          else liveB++;
+          details.push({
+            player: playerName,
+            time: String(ev.minute),
+            score: `${liveA} - ${liveB}`,
+            scoringTeam: teamSide,
+            event: 'GOAL',
+          });
+          break;
+        }
+        case 'OWN_GOAL': {
+          const scoringSide: 'A' | 'B' = isHome ? 'B' : 'A';
+          if (isHome) liveB++;
+          else liveA++;
+          details.push({
+            player: playerName,
+            time: String(ev.minute),
+            score: `${liveA} - ${liveB}`,
+            scoringTeam: scoringSide,
+            event: 'OWN_GOAL',
+          });
+          break;
+        }
+        case 'CARD': {
+          details.push({
+            player: playerName,
+            time: String(ev.minute),
+            score: `${liveA} - ${liveB}`,
+            scoringTeam: teamSide,
+            event: 'CARD',
+            card: ev.card,
+          });
+          break;
+        }
+        case 'ASSIST': {
+          details.push({
+            player: playerName,
+            time: String(ev.minute),
+            score: `${liveA} - ${liveB}`,
+            scoringTeam: teamSide,
+            event: 'ASSIST',
+          });
+          break;
+        }
+        default:
+          break;
+      }
+    }
+
+    return details;
   }
 
   private slotSourceFromSlot(slot?: BracketTeamSlot): {
@@ -229,7 +313,6 @@ export class PlayoffsBracketService {
   } {
     if (!slot) return { kind: null, ref: null };
 
-    // jeżeli backend dośle w slocie "teamId", traktujemy to jako TEAM z ref=teamId
     const knownId = (slot as any).teamId as string | undefined;
     if (knownId) {
       return { kind: 'TEAM', ref: knownId };

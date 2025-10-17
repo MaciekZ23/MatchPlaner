@@ -7,13 +7,19 @@ export type Position = 'GK' | 'DEF' | 'MID' | 'FWD';
 export type HealthStatus = 'HEALTHY' | 'INJURED';
 export type MatchEventType = 'GOAL' | 'ASSIST' | 'OWN_GOAL' | 'CARD';
 export type CardKind = 'YELLOW' | 'RED' | 'SECOND_YELLOW';
-export type CreateTeamPayload = { name: string; logo?: string };
+export type CreateTeamPayload = {
+  name: string;
+  logo?: string | null;
+};
 export interface CreatePlayerPayload {
   name: string;
   position: Position;
   shirtNumber?: number;
   healthStatus: HealthStatus;
 }
-export type UpdateTeamPayload = Partial<CreateTeamPayload>;
+export type UpdateTeamPayload = {
+  name?: string;
+  logo?: string | null;
+};
 export type UpdatePlayerPayload = Partial<CreatePlayerPayload>;
 export type UserRole = 'ADMIN' | 'USER' | 'GUEST' | 'NONE';

@@ -23,6 +23,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { SimpleChanges } from '@angular/core';
 import { distinctUntilChanged } from 'rxjs';
+import { isoToLocalInput } from '../../../core/utils';
 
 declare const bootstrap: any;
 
@@ -263,12 +264,23 @@ export class DynamicFormComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   private coerceValue(field: FormField) {
-    if (
-      field.type === 'datetime' &&
-      field.value &&
-      !isNaN(Date.parse(field.value))
-    ) {
-      return new Date(field.value).toISOString().slice(0, 16);
+    if (field.type === 'datetime') {
+      const v = field.value;
+      if (!v) return '';
+
+      if (typeof v === 'string' && /([+-]\d{2}:\d{2}|Z)$/.test(v)) {
+        return isoToLocalInput(v);
+      }
+
+      if (v instanceof Date) {
+        return isoToLocalInput(v.toISOString());
+      }
+
+      if (typeof v === 'string') {
+        return v.length > 16 ? v.slice(0, 16) : v;
+      }
+
+      return '';
     }
     if (field.type === 'number') {
       if (field.value === '' || field.value == null) return null;

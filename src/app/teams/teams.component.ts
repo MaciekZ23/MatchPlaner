@@ -269,9 +269,12 @@ export class TeamsComponent implements OnInit {
       return;
     }
 
-    const payload: UpdateTeamPayload = logoStr
-      ? { name, logo: logoStr }
-      : { name };
+    const payload: UpdateTeamPayload =
+      logoStr === undefined
+        ? { name }
+        : logoStr
+        ? { name, logo: logoStr }
+        : { name, logo: null };
 
     this.isLoading = true;
     this.teamService

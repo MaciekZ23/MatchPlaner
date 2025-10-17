@@ -16,8 +16,6 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatchCardComponent } from '../../../calendar/components/match-card/match-card.component';
-import { MatchDetailsModalComponent } from '../../../calendar/components/match-details-modal/match-details-modal.component';
-import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
 import { PlayoffsBracketService } from '../../services/playoffs-bracket.service';
 import { BracketMatch } from '../../models';
 import { BracketRoundPipe } from '../../pipes/bracket-round.pipe';
@@ -31,7 +29,7 @@ import {
 import { Team as CoreTeam, Player as CorePlayer } from '../../../core/models';
 import { stringsPlayoffsBracket } from '../../misc';
 import { Match } from '../../../calendar/models/match.model';
-import { GeneratePlayoffsPayload } from '../../../core/models/playoffs.models';
+
 import { TournamentStore } from '../../../core/services/tournament-store.service';
 import { AuthService } from '../../../core/auth/auth.service';
 
@@ -41,7 +39,6 @@ import { AuthService } from '../../../core/auth/auth.service';
     CommonModule,
     BracketRoundPipe,
     MatchCardComponent,
-    MatchDetailsModalComponent,
   ],
   templateUrl: './playoffs-bracket.component.html',
   styleUrl: './playoffs-bracket.component.scss',
@@ -61,6 +58,7 @@ export class PlayoffsBracketComponent
   @Output() deleteMatchRequested = new EventEmitter<Match>();
   @Output() editMatchRequested = new EventEmitter<Match>();
   @Output() generatePlayOffsRequested = new EventEmitter<void>();
+  @Output() matchClicked = new EventEmitter<Match>();
 
   @ViewChild('collapseBtn', { static: true })
   collapseBtn!: ElementRef<HTMLElement>;
@@ -82,8 +80,6 @@ export class PlayoffsBracketComponent
   matchCardHeight = 150;
   vGap = 30;
   isCollapsed = true;
-
-  selectedMatch: Match | null = null;
 
   @ViewChildren('cardProbe', { read: ElementRef })
   private probes!: QueryList<ElementRef<HTMLElement>>;
@@ -161,12 +157,8 @@ export class PlayoffsBracketComponent
     this.generatePlayOffsRequested.emit();
   }
 
-  openDetails(match: Match): void {
-    this.selectedMatch = match;
-  }
-
-  closeDetails(): void {
-    this.selectedMatch = null;
+  openDetails(m: Match) {
+    this.matchClicked.emit(m);
   }
 
   toggleCollapse(): void {

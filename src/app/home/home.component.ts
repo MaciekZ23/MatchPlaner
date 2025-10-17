@@ -528,7 +528,6 @@ export class HomeComponent {
         value: '',
         rows: 3,
       },
-
       {
         name: 'venue',
         label: 'Nazwa obiektu turnieju',

@@ -15,6 +15,7 @@ export interface BracketMatch {
   away: BracketTeamSlot;
   status: 'SCHEDULED' | 'LIVE' | 'FINISHED';
   score?: { home: number; away: number };
+  events?: any[];
   date: string;
   parentMatchId?: string;
 }

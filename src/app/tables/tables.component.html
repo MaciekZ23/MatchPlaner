@@ -28,6 +28,7 @@
           (voteRequested)="onRequestVoteConfirm($event)"
           (deleteMatchRequested)="onDeleteMatch($event)"
           (editMatchRequested)="onEditMatch($event)"
+          (matchClicked)="openDetails($event)"
         ></app-playoffs-bracket>
         <div *ngIf="!viewmmodel.playoffStageId" class="alert alert-info">
           {{ moduleStrings.noStage }}
@@ -43,6 +44,7 @@
           (voteRequested)="onRequestVoteConfirm($event)"
           (deleteMatchRequested)="onDeleteMatch($event)"
           (editMatchRequested)="onEditMatch($event)"
+          (matchClicked)="openDetails($event)"
         ></app-playoffs-bracket>
       </ng-container>
 
@@ -51,6 +53,15 @@
     </div>
   </ng-container>
 </div>
+
+<app-match-details-modal
+  [match]="selectedMatch"
+  [teamMap]="teamMap$ | async"
+  [playerMap]="playerMap$ | async"
+  (close)="closeDetails()"
+  (requestVoteConfirm)="onRequestVoteConfirm($event)"
+>
+</app-match-details-modal>
 
 <app-confirm-modal #deleteMatchConfirm></app-confirm-modal>
 <app-confirm-modal #deleteAllPlayoffMatches></app-confirm-modal>

@@ -10,7 +10,6 @@ import {
 // Złożony komparator tabeli (łańcuch tie-breakerów)
 export function makeStandingsComparator(
   groupMatches: Match[],
-  cardsPointsByTeam: Map<string, number>,
   awayWinsIndex: Map<string, number>
 ) {
   return (aId: string, bId: string, a: TeamStats, b: TeamStats): number => {
@@ -32,11 +31,11 @@ export function makeStandingsComparator(
     }
 
     // Reguła wyjazdowa H2H
-    const awayA = headToHeadAwayGoals(h2h, aId);
-    const awayB = headToHeadAwayGoals(h2h, bId);
-    if (awayA !== awayB) {
-      return awayB - awayA;
-    }
+    // const awayA = headToHeadAwayGoals(h2h, aId);
+    // const awayB = headToHeadAwayGoals(h2h, bId);
+    // if (awayA !== awayB) {
+    //   return awayB - awayA;
+    // }
 
     // Różnica bramek ogółem
     if (a.diff !== b.diff) {
@@ -61,11 +60,11 @@ export function makeStandingsComparator(
     }
 
     // Dyscyplina fair-play (mniej = lepiej)
-    const aDisc = cardsPointsByTeam.get(aId) ?? 0;
-    const bDisc = cardsPointsByTeam.get(bId) ?? 0;
-    if (aDisc !== bDisc) {
-      return aDisc - bDisc;
-    }
+    // const aDisc = cardsPointsByTeam.get(aId) ?? 0;
+    // const bDisc = cardsPointsByTeam.get(bId) ?? 0;
+    // if (aDisc !== bDisc) {
+    //   return aDisc - bDisc;
+    // }
 
     return a.name.localeCompare(b.name, 'pl');
   };

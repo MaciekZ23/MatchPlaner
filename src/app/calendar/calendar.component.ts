@@ -25,6 +25,7 @@ import {
   UpdateMatchPayload,
   CreateMatchPayload,
   Tournament,
+  Group,
 } from '../core/models';
 import { TournamentStore } from '../core/services/tournament-store.service';
 import { VoteFacade } from './services/vote.facade';
@@ -37,6 +38,7 @@ import {
   SelectFormField,
   SelectOption,
 } from '../shared/components/dynamic-form/models/form-field';
+import { isoToLocalInput, localInputToIso } from '../core/utils';
 
 @Component({
   selector: 'app-calendar',
@@ -72,6 +74,7 @@ export class CalendarComponent {
 
   private latestTeamMap = new Map<string, CoreTeam>();
   private latestPlayerMap = new Map<string, CorePlayer>();
+  private latestGroupMap = new Map<string, Group>();
 
   readonly days$: Observable<CalendarDay[]> =
     this.matchService.getCalendarDays$();
@@ -82,6 +85,7 @@ export class CalendarComponent {
   constructor() {
     this.teamMap$.subscribe((m) => (this.latestTeamMap = m));
     this.playerMap$.subscribe((m) => (this.latestPlayerMap = m));
+    this.store.groupMap$.subscribe((m) => (this.latestGroupMap = m));
   }
 
   readonly teamsOptions$ = this.teamMap$.pipe(
@@ -141,6 +145,34 @@ export class CalendarComponent {
       .map((p) => ({ label: p.name, value: String(p.id) }));
   }
 
+  private teamOptionsAll(): SelectOption[] {
+    return Array.from(this.latestTeamMap.values()).map((t) => ({
+      label: t.name,
+      value: String(t.id),
+    }));
+  }
+
+  private teamOptionsForGroup(groupId?: string | null): SelectOption[] {
+    if (!groupId) return this.teamOptionsAll();
+    const g = this.latestGroupMap.get(groupId);
+    if (!g) return this.teamOptionsAll();
+    return g.teamIds
+      .map((id) => this.latestTeamMap.get(id))
+      .filter((t): t is CoreTeam => !!t)
+      .map((t) => ({ label: t.name, value: String(t.id) }));
+  }
+
+  private ensureSelectedInOptions(
+    fields: FormField[],
+    fieldName: string,
+    allowed: SelectOption[]
+  ) {
+    const current = (this.fieldValue(fields, fieldName) ?? '').toString();
+    if (!current) return;
+    const ok = allowed.some((o) => o.value === current);
+    if (!ok) this.setField(fields, fieldName, { value: '' });
+  }
+
   async onRequestVoteConfirm(e: {
     matchId: string;
     playerId: string;
@@ -192,7 +224,7 @@ export class CalendarComponent {
 
     const payload: CreateMatchPayload = {
       stageId,
-      date: this.toIsoFromLocal(dateLocal),
+      date: localInputToIso(dateLocal),
     };
 
     const groupId = String(f['groupId'] ?? '').trim();
@@ -295,6 +327,36 @@ export class CalendarComponent {
   onAddMatchFormChanged(val: Record<string, any>) {
     const fields = this.addMatchFormFields;
 
+    const groupId =
+      (val['groupId'] ?? this.fieldValue(fields, 'groupId') ?? '')
+        .toString()
+        .trim() || null;
+
+    const allowedTeamOptions = this.teamOptionsForGroup(groupId);
+
+    this.setSelectOptions(fields, 'homeTeamId', [
+      { label: this.moduleStrings.common.noneOption, value: '' },
+      ...allowedTeamOptions,
+    ]);
+    this.setSelectOptions(fields, 'awayTeamId', [
+      { label: this.moduleStrings.common.noneOption, value: '' },
+      ...allowedTeamOptions,
+    ]);
+
+    this.ensureSelectedInOptions(fields, 'homeTeamId', allowedTeamOptions);
+    this.ensureSelectedInOptions(fields, 'awayTeamId', allowedTeamOptions);
+
+    const roundRaw = Number(val['round'] ?? this.fieldValue(fields, 'round'));
+    const roundValid = Number.isFinite(roundRaw) && roundRaw >= 1;
+
+    this.setField(fields, 'round', { required: !!groupId, min: 1 });
+
+    if (groupId) {
+      if (!roundValid) this.setField(fields, 'round', { value: 1 });
+    } else {
+      if (!roundValid) this.setField(fields, 'round', { value: '' });
+    }
+
     const homeTeamId =
       (val['homeTeamId'] ?? this.fieldValue(fields, 'homeTeamId') ?? '')
         .toString()
@@ -334,6 +396,7 @@ export class CalendarComponent {
           ]
         : []),
     ]);
+
     const eventsVal = Array.isArray(val['events']) ? val['events'] : [];
     this.setRepeaterPlayersOptionsByIndex(
       fields,
@@ -347,6 +410,36 @@ export class CalendarComponent {
   onEditMatchFormChanged(val: Record<string, any>) {
     if (!this.editingMatch) return;
     const fields = this.editMatchFormFields;
+
+    const groupId =
+      (val['groupId'] ?? this.fieldValue(fields, 'groupId') ?? '')
+        .toString()
+        .trim() || null;
+
+    const allowedTeamOptions = this.teamOptionsForGroup(groupId);
+
+    this.setSelectOptions(fields, 'homeTeamId', [
+      { label: this.moduleStrings.common.noneOption, value: '' },
+      ...allowedTeamOptions,
+    ]);
+    this.setSelectOptions(fields, 'awayTeamId', [
+      { label: this.moduleStrings.common.noneOption, value: '' },
+      ...allowedTeamOptions,
+    ]);
+
+    this.ensureSelectedInOptions(fields, 'homeTeamId', allowedTeamOptions);
+    this.ensureSelectedInOptions(fields, 'awayTeamId', allowedTeamOptions);
+
+    const roundRaw = Number(val['round'] ?? this.fieldValue(fields, 'round'));
+    const roundValid = Number.isFinite(roundRaw) && roundRaw >= 1;
+
+    this.setField(fields, 'round', { required: !!groupId, min: 1 });
+
+    if (groupId) {
+      if (!roundValid) this.setField(fields, 'round', { value: 1 });
+    } else {
+      if (!roundValid) this.setField(fields, 'round', { value: '' });
+    }
 
     const homeTeamId =
       (val['homeTeamId'] ?? this.fieldValue(fields, 'homeTeamId') ?? '')
@@ -475,7 +568,7 @@ export class CalendarComponent {
 
     const dateLocal = String(f['date'] ?? '').trim();
     if (dateLocal) {
-      patch.date = this.toIsoFromLocal(dateLocal);
+      patch.date = localInputToIso(dateLocal);
     }
 
     const status = String(f['status'] ?? '')
@@ -889,25 +982,6 @@ export class CalendarComponent {
     }, {} as T);
   }
 
-  private toIsoFromLocal(local: string): string {
-    const d = new Date(local);
-    return isNaN(d.getTime()) ? new Date().toISOString() : d.toISOString();
-  }
-
-  private toLocalDatetimeInput(iso?: string | null): string {
-    if (!iso) {
-      return '';
-    }
-    const d = new Date(iso);
-    if (isNaN(d.getTime())) {
-      return '';
-    }
-    const pad = (n: number) => String(n).padStart(2, '0');
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(
-      d.getDate()
-    )}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-  }
-
   private numOrUndefined(v: any): number | undefined {
     const n = Number(v);
     return Number.isFinite(n) ? n : undefined;
@@ -985,6 +1059,7 @@ export class CalendarComponent {
         name: 'round',
         label: this.moduleStrings.createeditMatchFieldsLabels.round,
         type: 'number',
+        required: true,
         min: 1,
         step: 1,
         value: '',
@@ -1002,7 +1077,7 @@ export class CalendarComponent {
         label: this.moduleStrings.createeditMatchFieldsLabels.date,
         type: 'datetime',
         required: true,
-        value: this.toLocalDatetimeInput(new Date().toISOString()),
+        value: isoToLocalInput(new Date().toISOString()),
       },
       {
         name: 'status',
@@ -1153,6 +1228,7 @@ export class CalendarComponent {
         name: 'round',
         label: this.moduleStrings.createeditMatchFieldsLabels.round,
         type: 'number',
+        required: true,
         min: 1,
         step: 1,
         value: m.round ?? '',
@@ -1169,7 +1245,7 @@ export class CalendarComponent {
         name: 'date',
         label: this.moduleStrings.createeditMatchFieldsLabels.date,
         type: 'datetime',
-        value: this.toLocalDatetimeInput(m.date),
+        value: isoToLocalInput(m.date),
       },
       {
         name: 'status',

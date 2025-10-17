@@ -229,13 +229,6 @@
           Brak danych drabinki do wyświetlenia
         </div>
       </ng-template>
-      <app-match-details-modal
-        [match]="selectedMatch"
-        [teamMap]="teamMap$ | async"
-        [playerMap]="playerMap$ | async"
-        (close)="closeDetails()"
-        (requestVoteConfirm)="onRequestVoteConfirm($event)"
-      ></app-match-details-modal>
     </div>
   </div>
 </div>
