@@ -25,6 +25,11 @@
     &:hover {
       background-color: $button-hover;
     }
+
+    &:focus-visible {
+      box-shadow: 0 0 0 4px $primary-dark;
+      border-color: transparent;
+    }
   }
 
   table {
@@ -35,6 +40,18 @@
     td {
       text-align: center;
       vertical-align: middle;
+    }
+  }
+
+  .icon-btn {
+    border: 0;
+    color: $white;
+    line-height: 1;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+
+    i {
+      font-size: 1rem;
     }
   }
 }
@@ -82,6 +99,18 @@
       th,
       td {
         font-size: 0.75rem;
+      }
+    }
+
+    .icon-btn {
+      border: 0;
+      color: $white;
+      line-height: 1;
+      cursor: pointer;
+      transition: opacity 0.2s ease;
+
+      i {
+        font-size: 0.8rem;
       }
     }
   }

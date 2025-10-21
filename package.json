@@ -1,8 +1,9 @@
 {
   "name": "match-planer",
-  "version": "1.9.0",
+  "version": "1.10.0",
   "scripts": {
     "ng": "ng",
+    "startWithProxy": "ng serve --proxy-config proxy.conf.json",
     "start": "ng serve",
     "startMobile": "ng serve --host 0.0.0.0",
     "build": "ng build",

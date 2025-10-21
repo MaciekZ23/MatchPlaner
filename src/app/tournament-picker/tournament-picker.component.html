@@ -1,0 +1,150 @@
+<div class="container tournament-page p-0 px-sm-1 py-sm-1">
+  <app-page-header [title]="moduleStrings.header">
+    <div
+      *ngIf="isAdmin$ | async"
+      header-action
+      class="d-none d-sm-flex align-items-center gap-2 ms-auto"
+    >
+      <button
+        header-action
+        type="button"
+        class="btn text-white btn-sm d-inline-flex align-items-center"
+        (click)="onAddTournamentClick()"
+        [attr.aria-label]="moduleStrings.addTournament"
+      >
+        <i class="fa-solid fa-plus" aria-hidden="true"></i>
+        <span class="ms-2">{{ moduleStrings.addTournament }}</span>
+      </button>
+    </div>
+
+    <div
+      *ngIf="isAdmin$ | async"
+      header-action
+      class="d-flex d-sm-none ms-auto"
+    >
+      <div class="dropdown">
+        <button
+          class="btn btn-sm text-white"
+          type="button"
+          data-bs-toggle="dropdown"
+          aria-expanded="false"
+          aria-label="Więcej akcji"
+        >
+          <i class="fa-solid fa-ellipsis-vertical"></i>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li>
+            <button
+              class="dropdown-item d-flex align-items-center"
+              (click)="onAddTournamentClick()"
+            >
+              <i class="fa-solid fa-plus me-2"></i>
+              {{ moduleStrings.addTournament }}
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </app-page-header>
+
+  <div class="tournament-list">
+    <ng-container *ngIf="tournaments$ | async as tournaments; else loading">
+      <div *ngIf="tournaments.length === 0" class="custom-text">
+        {{ moduleStrings.empty }}
+      </div>
+
+      <div class="row g-3">
+        <div class="col-12 col-md-6 col-lg-4" *ngFor="let t of tournaments">
+          <div class="card bg-dark text-white border-0 h-100">
+            <div class="card-body d-flex flex-column">
+              <div class="text-center">
+                <div class="fs-5 mb-2 custom-name">{{ t.name }}</div>
+
+                <div class="custom-text mb-2">
+                  <ng-container *ngIf="t.startDate || t.endDate; else noDates">
+                    {{ dateRange(t) }}
+                  </ng-container>
+                  <ng-template #noDates>{{
+                    moduleStrings.noDates
+                  }}</ng-template>
+                </div>
+
+                <div class="mb-2">
+                  <span class="badge rounded-pill badge-custom">
+                    {{ modeLabel(t.mode) }}
+                  </span>
+                </div>
+
+                <div class="mt-auto d-flex align-items-center">
+                  <ng-container *ngIf="isAdmin$ | async">
+                    <div class="d-flex gap-2">
+                      <button
+                        header-action
+                        type="button"
+                        class="btn text-white btn-sm"
+                        (click)="
+                          $event.stopPropagation(); onEditTournamentClick(t)
+                        "
+                        [attr.aria-label]="moduleStrings.editTournament"
+                      >
+                        <i class="fa-solid fa-edit" aria-hidden="true"></i>
+                        <span class="ms-2">{{
+                          moduleStrings.editTournament
+                        }}</span>
+                      </button>
+
+                      <button
+                        header-action
+                        type="button"
+                        class="btn text-white btn-sm"
+                        (click)="
+                          $event.stopPropagation(); onDeleteTournamentClick(t)
+                        "
+                        [attr.aria-label]="moduleStrings.deleteTournament"
+                      >
+                        <i class="fa-solid fa-trash" aria-hidden="true"></i>
+                        <span class="ms-2">{{
+                          moduleStrings.deleteTournament
+                        }}</span>
+                      </button>
+                    </div>
+                  </ng-container>
+
+                  <button
+                    class="btn btn-success btn-sm ms-auto"
+                    (click)="$event.stopPropagation(); selectTournament(t.id)"
+                  >
+                    <i class="fa-solid fa-check me-2" aria-hidden="true"></i
+                    >{{ moduleStrings.selectTournament }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <ng-template #loading>
+      <div class="custom-text">{{ moduleStrings.loading }}</div>
+    </ng-template>
+  </div>
+</div>
+
+<app-dynamic-form
+  [formTitle]="formTitleAddTournament"
+  [fields]="addTournamentFormFields"
+  [isOpen]="openAddTournamentFormModal"
+  (formSubmitted)="onAddTournamentFormSubmitted($event)"
+  (close)="openAddTournamentFormModal = false"
+></app-dynamic-form>
+
+<app-dynamic-form
+  [formTitle]="formTitleEditTournament"
+  [fields]="editTournamentFormFields"
+  [isOpen]="openEditTournamentFormModal"
+  (formSubmitted)="onEditTournamentFormSubmitted($event)"
+  (close)="onEditModalClose()"
+></app-dynamic-form>
+
+<app-confirm-modal #deleteConfirm></app-confirm-modal>

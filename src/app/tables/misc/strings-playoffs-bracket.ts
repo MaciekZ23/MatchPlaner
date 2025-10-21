@@ -1,4 +1,31 @@
 export const stringsPlayoffsBracket = {
+  deleteMatch: 'Usuń mecz',
+  deleteAllMatches: 'Usuń wszystkie mecze',
+  deleteAllMatchesTitle: 'Usuń wszystkie mecze z playoffów',
+  deleteAllMatchesMsg:
+    'Czy na pewno chcesz usunąć wszystkie mecze z tej fazy pucharowej?',
+  deleteModalLabels: { confirm: 'Usuń', cancel: 'Anuluj' },
+  editMatch: 'Edytuj mecz',
   title: 'Drabinka play-off',
   thirdPlace: 'Mecz o 3. miejsce',
+  generatePlayoffs: 'Wygeneruj drabinkę pucharową',
+  form: {
+    title: 'Generuj drabinkę play-off',
+    stageName: 'Nazwa etapu',
+    startDate: 'Data startu',
+    matchTimes: {
+      label: 'Godziny meczów (alternatywa dla interwału)',
+      hour: 'Godzina',
+      addHour: 'Dodaj godzinę',
+      remove: 'Usuń',
+      fieldTime: 'HH:mm',
+    },
+    firstMatchTime: 'Pierwszy mecz (HH:mm)',
+    matchIntervalMinutes: 'Interwał między meczami (min)',
+    dayInterval: 'Odstęp dni między rundami',
+    roundInSingleDay: 'Cała runda jednego dnia',
+    withThirdPlace: 'Mecz o 3. miejsce',
+    clearExisting: 'Wyczyść istniejące mecze',
+    yesNoOptions: { yes: 'Tak', no: 'Nie' },
+  },
 };

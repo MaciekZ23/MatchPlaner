@@ -1,3 +1,5 @@
+@use "../../styles.scss" as *;
+
 .calendar-page {
   display: flex;
   flex-direction: column;
@@ -10,4 +12,20 @@
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
+}
+
+.calendar-page [header-action].btn {
+  background-color: $table-highlight-2;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: $button-hover;
+  }
+
+  &:focus-visible {
+    box-shadow: 0 0 0 4px $primary-dark;
+    border-color: transparent;
+  }
 }

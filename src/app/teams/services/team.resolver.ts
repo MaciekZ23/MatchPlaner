@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { Resolve, ActivatedRouteSnapshot, Router } from '@angular/router';
-import { Observable, of, map, take, tap, delay } from 'rxjs';
+import { Observable, of, map, take, tap } from 'rxjs';
 import { Team } from '../models/team';
 import { TeamService } from './team.service';
 
@@ -21,8 +21,7 @@ export class TeamResolver implements Resolve<Team | null> {
       tap((team) => {
         if (!team) this.router.navigate(['/teams']);
       }),
-      map((team) => team ?? null),
-      delay(1000)
+      map((team) => team ?? null)
     );
   }
 }

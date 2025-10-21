@@ -1,3 +1,5 @@
+@use "../../../../styles.scss" as *;
+
 .bracket-grid {
   --card-h: 150px;
   --v-gap: 30px;
@@ -61,4 +63,32 @@
   display: block;
   width: 300px;
   max-width: 100%;
+}
+
+.card [header-action].btn {
+  background-color: $table-highlight-2;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: $button-hover;
+  }
+
+  &:focus-visible {
+    box-shadow: 0 0 0 4px $primary-dark;
+    border-color: transparent;
+  }
+}
+
+@media (max-width: 767.98px) {
+  // Padding (p-3 to 1rem lub 16px)
+  h6.card-title {
+    padding: 0.8rem !important;
+  }
+
+  // Tytuł (fs-5 to 1.25rem lub 20px)
+  .card-title span {
+    font-size: 1rem;
+  }
 }

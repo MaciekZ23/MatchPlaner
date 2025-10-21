@@ -5,11 +5,16 @@
   >
     <span>{{ moduleStrings.title }}</span>
     <button
+      #collapseBtn
       class="btn btn-link text-white p-0 btn-sm"
-      (click)="toggleCollapse()"
+      (click)="toggleCollapse(); hideTooltip($event)"
       [attr.aria-label]="isCollapsed ? 'Rozwiń sekcję' : 'Zwiń sekcję'"
       [attr.aria-expanded]="!isCollapsed"
       aria-controls="goalkeepersCollapse"
+      data-bs-toggle="tooltip"
+      data-bs-placement="top"
+      data-bs-trigger="hover"
+      [attr.data-bs-title]="isCollapsed ? 'Rozwiń sekcję' : 'Zwiń sekcję'"
     >
       <i
         class="fas"
@@ -43,13 +48,27 @@
             <th
               scope="col"
               class="sortable"
-              (click)="sortData('cleanSheets')"
+              role="button"
+              tabindex="0"
+              (click)="sortData('cleanSheets'); hideTooltip($event)"
+              (keydown.enter)="sortData('cleanSheets')"
+              (keydown.space)="sortData('cleanSheets'); $event.preventDefault()"
               [attr.aria-sort]="
                 sortColumn === 'cleanSheets'
                   ? sortDirection === 'asc'
                     ? 'ascending'
                     : 'descending'
                   : 'none'
+              "
+              data-bs-toggle="tooltip"
+              data-bs-placement="top"
+              data-bs-trigger="hover"
+              [attr.data-bs-title]="
+                sortColumn === 'cleanSheets'
+                  ? sortDirection === 'asc'
+                    ? 'Sortuj malejąco'
+                    : 'Sortuj rosnąco'
+                  : 'Sortuj'
               "
             >
               {{ moduleStrings.headers.cleanSheets }}

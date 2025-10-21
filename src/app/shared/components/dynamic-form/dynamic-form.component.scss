@@ -1,0 +1,30 @@
+@use "../../../../styles.scss" as *;
+
+.form-label {
+  font-weight: 500;
+}
+
+.btn-close {
+  filter: invert(1);
+}
+
+input,
+textarea {
+  background-color: #2d373d;
+  color: $white;
+  border: 2px solid $primary-blue;
+
+  &::placeholder {
+    color: $sky-blue;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: $primary-dark;
+    box-shadow: 0 0 0 0.2rem rgba(6, 79, 216, 0.25);
+  }
+}
+
+.text-danger {
+  font-size: 0.875rem;
+}

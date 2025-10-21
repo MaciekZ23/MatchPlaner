@@ -9,19 +9,20 @@ import {
   startWith,
 } from 'rxjs';
 import { Countdown } from '../modules';
+import { parseApiDate } from '../../core/utils';
 
 @Injectable({ providedIn: 'root' })
 export class MatchTimerService {
   private readonly store = inject(TournamentStore);
 
   readonly startDate$ = this.store.tournament$.pipe(
-    map((t) => (t.startDate ? new Date(t.startDate) : null)),
+    map((t) => parseApiDate(t.startDate)),
     distinctUntilChanged((a, b) => (a?.getTime() ?? 0) === (b?.getTime() ?? 0)),
     shareReplay({ bufferSize: 1, refCount: true })
   );
 
   readonly endDate$ = this.store.tournament$.pipe(
-    map((t) => (t.endDate ? new Date(t.endDate) : null)),
+    map((t) => parseApiDate(t.endDate)),
     distinctUntilChanged((a, b) => (a?.getTime() ?? 0) === (b?.getTime() ?? 0)),
     shareReplay({ bufferSize: 1, refCount: true })
   );

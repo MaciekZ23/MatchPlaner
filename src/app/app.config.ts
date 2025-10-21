@@ -9,13 +9,27 @@ import { registerLocaleData } from '@angular/common';
 import localePl from '@angular/common/locales/pl';
 registerLocaleData(localePl);
 import { TOURNAMENT_API } from './core/api/tournament.api';
-import { MockTournamentApi } from './core/mocks/mock-tournament.api';
+import { HttpTournamentApi } from './core/api/http-tournament.api';
+import { HttpVotingApi } from './core/api/http-voting.api';
+import { VOTING_API } from './core/api/voting.api';
+import { HttpPlayoffsApi } from './core/api/http-playoffs.api';
+import { PLAYOFFS_API } from './core/api/playoffs.api';
+import {
+  provideHttpClient,
+  withInterceptorsFromDi,
+} from '@angular/common/http';
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
+import { AuthTokenInterceptor } from './core/auth/auth-token.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
+    provideHttpClient(withInterceptorsFromDi()),
     { provide: LOCALE_ID, useValue: 'pl' },
-    { provide: TOURNAMENT_API, useClass: MockTournamentApi },
+    { provide: TOURNAMENT_API, useClass: HttpTournamentApi },
+    { provide: VOTING_API, useClass: HttpVotingApi },
+    { provide: PLAYOFFS_API, useClass: HttpPlayoffsApi },
+    { provide: HTTP_INTERCEPTORS, useClass: AuthTokenInterceptor, multi: true },
   ],
 };

@@ -1,3 +1,5 @@
+@use "../../styles.scss" as *;
+
 .teams-page {
   display: flex; // włączamy flexbox – łatwiej dzielić przestrzeń
   flex-direction: column; // układamy elementy jeden pod drugim (nagłówek nad listą)
@@ -10,4 +12,20 @@
   min-height: 0; // pozwala liście zmniejszyć się i włączyć scroll zamiast wypychać stronę
   overflow-y: auto; // przewijanie tylko w pionie, gdy lista jest za długa
   overflow-x: hidden; // ukrycie przewijania w poziomie
+}
+
+.teams-page [header-action].btn {
+  background-color: $table-highlight-2;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: $button-hover;
+  }
+
+  &:focus-visible {
+    box-shadow: 0 0 0 4px $primary-dark;
+    border-color: transparent;
+  }
 }

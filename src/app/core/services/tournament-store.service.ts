@@ -2,9 +2,13 @@ import { Injectable, Inject } from '@angular/core';
 import {
   BehaviorSubject,
   combineLatest,
+  filter,
+  forkJoin,
   map,
   of,
   shareReplay,
+  startWith,
+  Subject,
   switchMap,
 } from 'rxjs';
 import { ITournamentApi, TOURNAMENT_API } from '../api/tournament.api';
@@ -12,11 +16,17 @@ import { Team, Player, Match, Group } from '../models';
 
 @Injectable({ providedIn: 'root' })
 export class TournamentStore {
-  // Który turniej oglądamy (na razie 't1')
-  private tournamentId$ = new BehaviorSubject<string>('t1');
+  private readonly KEY = 'selectedTournamentId';
 
-  // Podstawowe strumienie
+  private tournamentId$ = new BehaviorSubject<string | null>(
+    localStorage.getItem(this.KEY)
+  );
+
+  hasTournament$ = this.tournamentId$.pipe(map(Boolean));
+  selectedId$ = this.tournamentId$.asObservable();
+
   tournament$ = this.tournamentId$.pipe(
+    filter((id): id is string => !!id),
     switchMap((id) => this.api.getTournament(id)),
     shareReplay({ bufferSize: 1, refCount: true })
   );
@@ -32,11 +42,28 @@ export class TournamentStore {
   );
 
   teams$ = this.tournamentId$.pipe(
+    filter((id): id is string => !!id),
     switchMap((id) => this.api.getTeams(id)),
     shareReplay({ bufferSize: 1, refCount: true })
   );
 
+  refreshTeams(): void {
+    const id = this.tournamentId$.getValue();
+    this.tournamentId$.next(id);
+  }
+
+  refreshPlayers(): void {
+    const id = this.tournamentId$.getValue();
+    this.tournamentId$.next(id);
+  }
+
+  refreshTournament(): void {
+    const id = this.tournamentId$.getValue();
+    this.tournamentId$.next(id);
+  }
+
   players$ = this.tournamentId$.pipe(
+    filter((id): id is string => !!id),
     switchMap((id) => this.api.getPlayers(id)),
     shareReplay({ bufferSize: 1, refCount: true })
   );
@@ -57,11 +84,15 @@ export class TournamentStore {
     shareReplay({ bufferSize: 1, refCount: true })
   );
 
-  // Mecze per stage (mapa: stageId -> Match[])
-  matchesByStage$ = this.stages$.pipe(
-    switchMap((stages) =>
+  private matchesReload$ = new Subject<void>();
+
+  matchesByStage$ = combineLatest([
+    this.stages$,
+    this.matchesReload$.pipe(startWith(void 0)), // pierwszy load + ręczne refresh
+  ]).pipe(
+    switchMap(([stages]) =>
       stages.length
-        ? combineLatest(
+        ? forkJoin(
             stages.map((s) =>
               this.api
                 .getMatches(s.id)
@@ -73,6 +104,25 @@ export class TournamentStore {
     map((entries) => new Map<string, Match[]>(entries)),
     shareReplay({ bufferSize: 1, refCount: true })
   );
+
+  refreshMatches(): void {
+    this.matchesReload$.next();
+  }
+
+  private stageReload$ = new Subject<string>();
+
+  stageMatches$(stageId: string) {
+    return this.stageReload$.pipe(
+      startWith(stageId),
+      filter((id) => id === stageId),
+      switchMap(() => this.api.getMatches(stageId)),
+      shareReplay({ bufferSize: 1, refCount: true })
+    );
+  }
+
+  refreshMatchesForStage(stageId: string) {
+    this.stageReload$.next(stageId);
+  }
 
   // Selektory wygodne dla komponentów ---
   getMatchesForStage(stageId: string) {
@@ -93,8 +143,21 @@ export class TournamentStore {
     );
   }
 
-  setTournament(id: string) {
+  getSelectedIdSync(): string | null {
+    return this['tournamentId$'].getValue();
+  }
+
+  setTournament(id: string | null) {
     this.tournamentId$.next(id);
+    if (id) {
+      localStorage.setItem(this.KEY, id);
+    } else {
+      localStorage.removeItem(this.KEY);
+    }
+  }
+
+  clearTournament() {
+    this.setTournament(null);
   }
 
   constructor(@Inject(TOURNAMENT_API) private api: ITournamentApi) {}

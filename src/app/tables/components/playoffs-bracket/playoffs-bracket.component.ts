@@ -11,21 +11,27 @@ import {
   OnDestroy,
   ChangeDetectorRef,
   ViewChild,
+  Output,
+  EventEmitter,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatchCardComponent } from '../../../calendar/components/match-card/match-card.component';
-import { MatchDetailsModalComponent } from '../../../calendar/components/match-details-modal/match-details-modal.component';
-import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
-import { BracketService } from '../../services/bracket.service';
-import { BracketMatch, BracketTeamSlot } from '../../models';
+import { PlayoffsBracketService } from '../../services/playoffs-bracket.service';
+import { BracketMatch } from '../../models';
 import { BracketRoundPipe } from '../../pipes/bracket-round.pipe';
-import { Observable, Subscription } from 'rxjs';
+import {
+  combineLatest,
+  map,
+  Observable,
+  shareReplay,
+  Subscription,
+} from 'rxjs';
 import { Team as CoreTeam, Player as CorePlayer } from '../../../core/models';
 import { stringsPlayoffsBracket } from '../../misc';
-import { stringsConfirmModal } from '../../../calendar/misc';
 import { Match } from '../../../calendar/models/match.model';
+
 import { TournamentStore } from '../../../core/services/tournament-store.service';
-import { VoteFacade } from '../../../calendar/services/vote.facade';
+import { AuthService } from '../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-playoffs-bracket',
@@ -33,8 +39,6 @@ import { VoteFacade } from '../../../calendar/services/vote.facade';
     CommonModule,
     BracketRoundPipe,
     MatchCardComponent,
-    MatchDetailsModalComponent,
-    ConfirmModalComponent,
   ],
   templateUrl: './playoffs-bracket.component.html',
   styleUrl: './playoffs-bracket.component.scss',
@@ -45,13 +49,25 @@ export class PlayoffsBracketComponent
   implements OnInit, OnDestroy, AfterViewInit
 {
   @Input() stageId!: string;
+  @Output() deleteAllRequested = new EventEmitter<string>();
+  @Output() voteRequested = new EventEmitter<{
+    matchId: string;
+    playerId: string;
+    playerName?: string;
+  }>();
+  @Output() deleteMatchRequested = new EventEmitter<Match>();
+  @Output() editMatchRequested = new EventEmitter<Match>();
+  @Output() generatePlayOffsRequested = new EventEmitter<void>();
+  @Output() matchClicked = new EventEmitter<Match>();
 
-  @ViewChild('confirmModal', { static: true })
-  confirmModal!: ConfirmModalComponent;
+  @ViewChild('collapseBtn', { static: true })
+  collapseBtn!: ElementRef<HTMLElement>;
+  private collapseTooltip: any | null = null;
 
   moduleStrings = stringsPlayoffsBracket;
-  confirmStrings = stringsConfirmModal;
 
+  hasBracket$!: Observable<boolean>;
+  canGenerate$!: Observable<boolean>;
   matches$!: Observable<BracketMatch[]>;
   rounds$!: Observable<number[]>;
   uiMatchById$!: Observable<Map<string, Match>>;
@@ -65,17 +81,18 @@ export class PlayoffsBracketComponent
   vGap = 30;
   isCollapsed = true;
 
-  selectedMatch: Match | null = null;
-
   @ViewChildren('cardProbe', { read: ElementRef })
   private probes!: QueryList<ElementRef<HTMLElement>>;
 
-  readonly bracket = inject(BracketService);
+  readonly bracket = inject(PlayoffsBracketService);
   private readonly store = inject(TournamentStore);
-  private readonly voteFacade = inject(VoteFacade);
   private readonly cd = inject(ChangeDetectorRef);
+  private auth = inject(AuthService);
   private ro?: ResizeObserver;
   private subs = new Subscription();
+
+  isGenerating$ = this.bracket.generating$;
+  isAdmin$ = this.auth.isAdmin$;
 
   constructor() {
     this.teamMap$ = this.store.teamMap$;
@@ -83,12 +100,21 @@ export class PlayoffsBracketComponent
   }
 
   ngOnInit(): void {
-    this.bracket.initAutoGeneration(this.stageId);
+    this.bracket.loadByTournament();
     this.matches$ = this.bracket.getMatches$(this.stageId);
     this.rounds$ = this.bracket.rounds$(this.stageId);
     this.uiMatchById$ = this.bracket.uiMatchById$(this.stageId);
     this.roundSides$ = this.bracket.roundsForSides$(this.stageId);
     this.roundOffsetMult$ = this.bracket.offsetMultipliers$(this.stageId);
+    this.hasBracket$ = this.bracket.hasBracketForStage$(this.stageId);
+
+    this.canGenerate$ = combineLatest([
+      this.isGenerating$,
+      this.hasBracket$,
+    ]).pipe(
+      map(([gen, has]) => !gen && !has),
+      shareReplay(1)
+    );
   }
 
   ngAfterViewInit(): void {
@@ -98,42 +124,71 @@ export class PlayoffsBracketComponent
     this.ro = new ResizeObserver(() => this.measureCardHeight());
     this.ro.observe(document.body);
     setTimeout(() => this.measureCardHeight());
+    this.initCollapseTooltip();
   }
 
   ngOnDestroy(): void {
     this.subs.unsubscribe();
     this.ro?.disconnect();
+    this.disposeCollapseTooltip();
   }
 
-  async onRequestVoteConfirm(e: {
+  onRequestVoteConfirm(e: {
     matchId: string;
     playerId: string;
     playerName?: string;
   }) {
-    const playerName = e.playerName ?? e.playerId;
-    const ok = await this.confirmModal.open({
-      title: this.confirmStrings.title,
-      message: `${this.confirmStrings.message} (${playerName})`,
-      labels: this.confirmStrings.labels,
-      confirmVariant: 'primary',
-      size: 'md',
-    });
-
-    if (ok) {
-      this.voteFacade.voteFor(e.matchId as any, e.playerId);
-    }
+    this.voteRequested.emit(e);
   }
 
-  openDetails(match: Match): void {
-    this.selectedMatch = match;
+  onRequestEditMatch(match: Match): void {
+    this.editMatchRequested.emit(match);
   }
 
-  closeDetails(): void {
-    this.selectedMatch = null;
+  onRequestDeleteMatch(match: Match): void {
+    this.deleteMatchRequested.emit(match);
+  }
+
+  onDeleteAllPlayoffMatches(): void {
+    this.deleteAllRequested.emit(this.stageId);
+  }
+
+  onGenerateRequested(): void {
+    this.generatePlayOffsRequested.emit();
+  }
+
+  openDetails(m: Match) {
+    this.matchClicked.emit(m);
   }
 
   toggleCollapse(): void {
     this.isCollapsed = !this.isCollapsed;
+    const el = this.collapseBtn?.nativeElement;
+    if (!el) return;
+    el.setAttribute(
+      'data-bs-title',
+      this.isCollapsed ? 'Rozwiń sekcję' : 'Zwiń sekcję'
+    );
+
+    const bs = (window as any).bootstrap;
+    const inst = this.collapseTooltip ?? bs?.Tooltip?.getInstance?.(el);
+
+    if (inst?.setContent) {
+      inst.setContent({
+        '.tooltip-inner': el.getAttribute('data-bs-title') || '',
+      });
+    } else if (bs?.Tooltip) {
+      inst?.dispose?.();
+      this.collapseTooltip = new bs.Tooltip(el, { placement: 'top' });
+    }
+  }
+
+  hideTooltip(ev: Event) {
+    const el = ev.currentTarget as HTMLElement;
+    const bs = (window as any).bootstrap;
+    const inst = bs?.Tooltip?.getInstance?.(el);
+    inst?.hide();
+    el.blur();
   }
 
   leftHalf(all: BracketMatch[], r: number) {
@@ -159,4 +214,18 @@ export class PlayoffsBracketComponent
 
   trackMatch = (_: number, m: BracketMatch | Match) => (m as any).id;
   trackRound = (_: number, r: number) => r;
+
+  private initCollapseTooltip(): void {
+    const bs = (window as any).bootstrap;
+    if (!bs?.Tooltip) return;
+    const el = this.collapseBtn?.nativeElement;
+    if (!el) return;
+    this.collapseTooltip =
+      bs.Tooltip.getInstance?.(el) ?? new bs.Tooltip(el, { placement: 'top' });
+  }
+
+  private disposeCollapseTooltip(): void {
+    this.collapseTooltip?.dispose?.();
+    this.collapseTooltip = null;
+  }
 }

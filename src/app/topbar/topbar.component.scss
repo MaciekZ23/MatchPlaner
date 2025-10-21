@@ -21,10 +21,38 @@
     width: calc(100% - 100px);
   }
 
+  &.full {
+    left: 0 !important;
+    width: 100% !important;
+  }
+
   .btn .fa-bell {
     font-size: 1.4rem;
     width: 1.2em;
   }
+}
+
+.topbar .btn:focus {
+  outline: 0;
+}
+
+.topbar .btn:focus-visible {
+  box-shadow: 0 0 0 2px $navbar-topbar-background-color, 0 0 0 4px $white;
+  border-color: transparent;
+}
+
+.topbar .dropdown-item:focus {
+  outline: 0;
+}
+
+.topbar .dropdown-item:focus-visible {
+  box-shadow: 0 0 0 2px $dropdown-background-color, 0 0 0 4px $white;
+}
+
+.badge {
+  font-size: 0.6rem;
+  color: $white;
+  background-color: $primary-blue;
 }
 
 .dropdown-menu {
@@ -42,9 +70,66 @@
   }
 }
 
+.notif-menu {
+  background-color: $dropdown-background-color;
+  border: 1px solid $dropdown-border-color;
+  border-radius: 10px;
+  width: 400px;
+}
+
+.notif-header {
+  border-bottom: 1px solid $dropdown-border-color;
+}
+
+.notif-list {
+  max-height: 360px;
+  overflow: auto;
+}
+
+.notif-icon {
+  &.success {
+    background: $text-diff-plus;
+  }
+  &.warning {
+    background: $modal-card-icon-yellow;
+  }
+  &.info {
+    background: $light-blue;
+  }
+}
+
+.topbar-actions-desktop [header-action].btn {
+  background-color: $table-highlight-2;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: $button-hover;
+  }
+
+  &:focus-visible {
+    box-shadow: 0 0 0 4px $primary-dark;
+    border-color: transparent;
+  }
+}
+
 @media (max-width: 767.98px) {
   .topbar {
     left: 100px !important;
     width: calc(100% - 100px) !important;
+
+    &.full {
+      left: 0 !important;
+      width: 100% !important;
+    }
+  }
+
+  .notif-menu {
+    width: 180px;
+  }
+
+  .notif-list {
+    max-height: 260px;
   }
 }

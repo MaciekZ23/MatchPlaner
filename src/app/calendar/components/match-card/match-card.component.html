@@ -47,7 +47,7 @@
     <div
       class="custom-group d-flex justify-content-center align-items-center small mt-1"
     >
-      <span>{{ moduleStrings.group }} {{ match.group }}</span>
+      <span>{{ moduleStrings.group }} {{ match.groupId }}</span>
 
       <ng-container *ngIf="match.date">
         <span class="mx-2"></span>
@@ -63,6 +63,34 @@
           </span>
         </ng-template>
       </ng-container>
+    </div>
+
+    <div
+      *ngIf="isAdmin$ | async"
+      header-action
+      class="d-flex align-items-center gap-2 ms-auto mt-2"
+    >
+      <button
+        header-action
+        type="button"
+        class="btn btn-sm text-white d-inline-flex align-items-center action-btn"
+        (click)="onEdit($event)"
+        aria-label="Edytuj mecz"
+      >
+        <i class="fa-solid fa-edit" aria-hidden="true"></i>
+        <span class="ms-2">{{ moduleStrings.editMatch }}</span>
+      </button>
+
+      <button
+        header-action
+        type="button"
+        class="btn btn-sm text-white d-inline-flex align-items-center ms-auto action-btn"
+        (click)="onDelete($event)"
+        aria-label="Usuń mecz"
+      >
+        <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
+        <span class="ms-2">{{ moduleStrings.deleteMatch }}</span>
+      </button>
     </div>
   </div>
 </div>
