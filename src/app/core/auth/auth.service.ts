@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, map, Observable } from 'rxjs';
 import { TournamentStore } from '../services/tournament-store.service';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
@@ -9,7 +10,8 @@ import { TournamentStore } from '../services/tournament-store.service';
 export class AuthService {
   private http = inject(HttpClient);
   private store = inject(TournamentStore);
-  private readonly backendUrl = '/api/v1/admin/auth';
+  private readonly adminBase = `${environment.apiUrl}/admin/auth`;
+  private readonly authBase = `${environment.apiUrl}/auth`;
 
   private avatarSubject = new BehaviorSubject<string | null>(
     localStorage.getItem('avatar')
@@ -26,8 +28,25 @@ export class AuthService {
     idToken: string
   ): Observable<{ token: string; user?: { avatarUrl?: string } }> {
     return this.http.post<{ token: string; user?: { avatarUrl?: string } }>(
-      `${this.backendUrl}/google/verify`,
+      `${this.adminBase}/google/verify`,
       { idToken }
+    );
+  }
+
+  private ensureDeviceId(): string {
+    let id = localStorage.getItem('deviceId');
+    if (!id) {
+      id = 'web-' + Math.random().toString(36).substring(2);
+      localStorage.setItem('deviceId', id);
+    }
+    return id;
+  }
+
+  loginAsGuest(): Observable<{ token: string; guestId?: string }> {
+    const deviceId = this.ensureDeviceId();
+    return this.http.post<{ token: string; guestId?: string }>(
+      `${this.authBase}/guest`,
+      { deviceId }
     );
   }
 

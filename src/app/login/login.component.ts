@@ -182,24 +182,18 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this.loading = true;
     this.errorMsg = '';
 
-    const deviceId = this.ensureDeviceId();
-
-    this.http
-      .post<{ token: string; guestId?: string }>('/api/v1/auth/guest', {
-        deviceId,
-      })
-      .subscribe({
-        next: ({ token }) => {
-          this.appAuth.saveSession(token);
-          this.notificationService.addWelcome('GUEST');
-          this.navigateAfterLogin();
-        },
-        error: (err) => {
-          console.error('Guest login error:', err);
-          this.errorMsg = 'Nie udało się rozpocząć sesji gościa.';
-          this.loading = false;
-        },
-      });
+    this.appAuth.loginAsGuest().subscribe({
+      next: ({ token }) => {
+        this.appAuth.saveSession(token);
+        this.notificationService.addWelcome('GUEST');
+        this.navigateAfterLogin();
+      },
+      error: (err) => {
+        console.error('Guest login error:', err);
+        this.errorMsg = 'Nie udało się rozpocząć sesji gościa.';
+        this.loading = false;
+      },
+    });
   }
 
   signOut(): void {
