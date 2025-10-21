@@ -13,55 +13,21 @@ import { statusFromMatch, positionPl, healthPl } from './helpers';
 import { UiCandidate } from '../models/candidate.model';
 import { UiVoteSummary } from '../models/vote-summary.model';
 
-type AnyMatch = CoreMatch | CalendarMatch;
+type MinimalMatch = {
+  id: string;
+  homeTeamId: string;
+  awayTeamId: string;
+  score?: { home: number; away: number };
+  scoreA?: number;
+  scoreB?: number;
+};
 
 @Injectable({ providedIn: 'root' })
 export class VoteFacade {
   constructor(private vote: VoteService) {}
 
-  // Inicjalizuje stan głosowania dla meczu (core lub calendar) budując VotingSeed i zapisując go w VoteService
-  initMatch(
-    match: AnyMatch,
-    teamMap: Map<string, CoreTeam>,
-    playerMap: Map<string, CorePlayer>
-  ): void {
-    const statusInfo = statusFromMatch({
-      date: match.date,
-      status: match.status,
-    });
-
-    const { matchId, homeTeamId, awayTeamId, events, lineups } =
-      this.adaptMatch(match, playerMap);
-
-    const seed = this.vote.buildSeedForMatch({
-      matchId: matchId as MatchId,
-      status: statusInfo.status,
-      homeTeamId,
-      awayTeamId,
-      events,
-      lineups,
-      teamMap: new Map(
-        [...teamMap.entries()].map(([id, t]) => [
-          id,
-          { id: t.id, name: t.name, playerIds: t.playerIds },
-        ])
-      ),
-      playerMap: new Map(
-        [...playerMap.entries()].map(([id, p]) => [
-          id,
-          {
-            id: p.id,
-            teamId: p.teamId,
-            name: p.name,
-            position: p.position,
-            healthStatus: p.healthStatus,
-            shirtNumber: p.shirtNumber,
-          },
-        ])
-      ),
-    });
-    seed.closesAtISO = statusInfo.closesAtISO;
-    this.vote.init(matchId as MatchId, seed);
+  load(matchId: MatchId): void {
+    this.vote.fetchState(matchId);
   }
 
   // Strumień całego stanu głosowania dla meczu
@@ -72,16 +38,16 @@ export class VoteFacade {
   // Strumień kandydatów z mapowanymi polami prezentacyjnymi
   candidates$(
     matchId: MatchId,
-    match: AnyMatch,
-    playerMap: Map<string, CorePlayer>
+    match?: MinimalMatch
   ): Observable<UiCandidate[]> {
     return this.vote.selectState$(matchId).pipe(
       map((s) =>
         s.candidates.map((c) => {
-          const player = playerMap.get(c.playerId);
-          const teamId = player?.teamId ?? c.teamId;
-          const conceded = this.goalsConcededForTeam(match, teamId);
+          const conceded = match
+            ? goalsConcededForTeam(match, c.teamId)
+            : undefined;
           const hasCleanSheet = !!(
+            match &&
             c.isGoalkeeper &&
             c.playedAsGK &&
             conceded === 0
@@ -102,10 +68,9 @@ export class VoteFacade {
   homeCandidates$(
     matchId: MatchId,
     homeTeamId: TeamId,
-    match: AnyMatch,
-    playerMap: Map<string, CorePlayer>
+    match?: MinimalMatch
   ): Observable<UiCandidate[]> {
-    return this.candidates$(matchId, match, playerMap).pipe(
+    return this.candidates$(matchId, match).pipe(
       map((list) => list.filter((c) => c.teamId === homeTeamId))
     );
   }
@@ -114,10 +79,9 @@ export class VoteFacade {
   awayCandidates$(
     matchId: MatchId,
     awayTeamId: TeamId,
-    match: AnyMatch,
-    playerMap: Map<string, CorePlayer>
+    match?: MinimalMatch
   ): Observable<UiCandidate[]> {
-    return this.candidates$(matchId, match, playerMap).pipe(
+    return this.candidates$(matchId, match).pipe(
       map((list) => list.filter((c) => c.teamId === awayTeamId))
     );
   }
@@ -125,8 +89,7 @@ export class VoteFacade {
   // Podsumowanie głosów (nazwy, drużyny, %, zwycięzcy) posortowane malejąco
   summary$(
     matchId: MatchId,
-    teamMap: Map<string, CoreTeam>,
-    playerMap: Map<string, CorePlayer>
+    teamMap: Map<string, CoreTeam>
   ): Observable<UiVoteSummary[]> {
     return this.vote.selectState$(matchId).pipe(
       map((state) => {
@@ -134,12 +97,10 @@ export class VoteFacade {
         const byId = new Map(state.candidates.map((c) => [c.playerId, c]));
         const max = state.summary.reduce((m, x) => Math.max(m, x.votes), 0);
 
-        const rows: UiVoteSummary[] = state.summary.map((x) => {
+        const rows = state.summary.map<UiVoteSummary>((x) => {
           const cand = byId.get(x.playerId);
-          const p = playerMap.get(x.playerId);
-
-          const name = p?.name ?? cand?.name ?? x.playerId;
-          const teamId = p?.teamId ?? cand?.teamId ?? '';
+          const name = cand?.name ?? x.playerId;
+          const teamId = cand?.teamId ?? '';
           const teamName = teamId
             ? teamMap.get(teamId)?.name ?? teamId
             : undefined;
@@ -164,73 +125,14 @@ export class VoteFacade {
   voteFor(matchId: MatchId, playerId: string): void {
     this.vote.vote(matchId, playerId as any);
   }
+}
 
-  // Normalizacja różnych modeli meczu (core/calendar) do wspólnego formatu
-  private adaptMatch(
-    match: AnyMatch,
-    playerMap: Map<string, CorePlayer>
-  ): {
-    matchId: string;
-    homeTeamId: string;
-    awayTeamId: string;
-    events: Array<{
-      playerId: string;
-      type: 'GOAL' | 'OWN_GOAL' | 'ASSIST' | 'CARD';
-      card?: 'YELLOW' | 'SECOND_YELLOW' | 'RED';
-    }>;
-    lineups?: { homeGKIds?: string[]; awayGKIds?: string[] };
-  } {
-    if (this.isCoreMatch(match)) {
-      return {
-        matchId: match.id,
-        homeTeamId: match.homeTeamId,
-        awayTeamId: match.awayTeamId,
-        events:
-          match.events?.map((e) => ({
-            playerId: e.playerId,
-            type: e.type,
-            card: e.card,
-          })) ?? [],
-        lineups: match.lineups,
-      };
-    }
-
-    return {
-      matchId: match.id,
-      homeTeamId: match.homeTeamId,
-      awayTeamId: match.awayTeamId,
-      events: match.details.map((d) => ({
-        playerId: this.resolvePlayerIdByName(d.player, playerMap),
-        type: d.event,
-        card: d.card,
-      })),
-      lineups: match.lineups,
-    };
+function goalsConcededForTeam(match: MinimalMatch, teamId: string): number {
+  if ('score' in match && match.score) {
+    return teamId === match.homeTeamId ? match.score.away : match.score.home;
   }
-
-  // Policzenie liczby straconych goli przez wskazaną drużynę
-  private goalsConcededForTeam(match: AnyMatch, teamId: string): number {
-    if (this.isCoreMatch(match)) {
-      if (!match.score) return 0;
-      return teamId === match.homeTeamId ? match.score.away : match.score.home;
-    } else {
-      return teamId === match.homeTeamId ? match.scoreB : match.scoreA;
-    }
+  if ('scoreA' in match) {
+    return teamId === match.homeTeamId ? match.scoreB ?? 0 : match.scoreA ?? 0;
   }
-
-  private isCoreMatch(m: AnyMatch): m is CoreMatch {
-    return 'score' in m;
-  }
-
-  // Znalezienie identyfikatora zawodnika po nazwie lub zwrócenie nazwy jako fallback
-  private resolvePlayerIdByName(
-    name: string,
-    players?: Map<string, CorePlayer>
-  ): string {
-    if (!players || players.size === 0) {
-      return name;
-    }
-    const found = [...players.values()].find((p) => p.name === name);
-    return found?.id ?? name;
-  }
+  return 0;
 }

@@ -5,13 +5,18 @@
     <i class="fas fa-clock me-2" aria-hidden="true"></i>
     <strong>{{ moduleStrings.title }}</strong>
     <button
+      #timerBtn
       class="btn btn-link text-white ms-auto"
-      (click)="toggleTimer()"
+      (click)="toggleTimer(); hideTooltip($event)"
       [attr.aria-label]="
         isTimerOpen ? 'Zwiń sekcję timera' : 'Rozwiń sekcję timera'
       "
       [attr.aria-expanded]="isTimerOpen"
       aria-controls="timerPanel"
+      data-bs-toggle="tooltip"
+      data-bs-placement="top"
+      data-bs-trigger="hover"
+      [attr.data-bs-title]="isTimerOpen ? 'Zwiń sekcję' : 'Rozwiń sekcję'"
     >
       <i
         class="fas"

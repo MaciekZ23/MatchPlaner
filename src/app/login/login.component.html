@@ -1,0 +1,41 @@
+<div class="login-container d-flex min-vh-100 w-100">
+  <section
+    class="login-left d-none d-md-flex justify-content-center align-items-center flex-grow-1"
+  >
+    <div class="text-center">
+      <h1 class="login-title fw-bold">{{ moduleStrings.appName }}</h1>
+      <img
+        [src]="moduleStrings.logoPath"
+        [alt]="moduleStrings.appName + ' logo'"
+        class="login-logo"
+      />
+    </div>
+
+    <footer class="login-footer d-none d-md-block">
+      <i class="fa-regular fa-copyright me-1" aria-hidden="true"></i>
+      {{ currentYear }} Maciej Zajdel
+    </footer>
+  </section>
+
+  <div class="login-right d-flex flex-column align-items-center p-4">
+    <h1 class="text-center fs-2 pt-5">
+      {{ moduleStrings.login.welcome }}
+    </h1>
+
+    <div id="googleBtn" class="mt-5"></div>
+
+    <button
+      type="button"
+      class="btn btn-sm btn-custom d-flex justify-content-center align-items-center text-white mt-4 gap-4 p-3"
+      (click)="continueAsGuest()"
+    >
+      <i class="fa-solid fa-user quest" aria-hidden="true"></i>
+      {{ moduleStrings.login.questLogin }}
+    </button>
+
+    <footer class="login-footer d-block d-md-none">
+      <i class="fa-regular fa-copyright me-1" aria-hidden="true"></i>
+      {{ currentYear }} Maciej Zajdel
+    </footer>
+  </div>
+</div>

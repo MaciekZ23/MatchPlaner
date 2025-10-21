@@ -3,12 +3,23 @@
     <app-topbar [isSidebarOpen]="isSidebarOpen"></app-topbar>
   </header>
 
-  <nav class="sidebar-nav" aria-label="Główna nawigacja">
+  <nav
+    class="sidebar-nav"
+    aria-label="Główna nawigacja"
+    *ngIf="showSidebar$ | async"
+  >
     <app-navbar [isOpen]="isSidebarOpen" (toggleSidebar)="toggleSidebar()">
     </app-navbar>
   </nav>
 
-  <main id="main" class="content" [ngClass]="{ collapsed: !isSidebarOpen }">
+  <main
+    id="main"
+    class="content"
+    [ngClass]="{
+      collapsed: (showSidebar$ | async) && !isSidebarOpen,
+      full: !(showSidebar$ | async)
+    }"
+  >
     <router-outlet></router-outlet>
   </main>
 </div>

@@ -52,6 +52,7 @@
           <th class="d-none d-md-table-cell">
             {{ moduleStrings.columns.health }}
           </th>
+          <th *ngIf="canManage" class="text-end"></th>
         </tr>
       </thead>
       <tbody>
@@ -64,6 +65,33 @@
             <span class="badge" [ngClass]="getHealthBadgeClass(player)">
               {{ player.healthStatus }}
             </span>
+          </td>
+          <td *ngIf="canManage" class="text-end text-nowrap">
+            <button
+              type="button"
+              class="icon-btn me-2 bg-transparent"
+              (click)="onEditPlayer(player, $event); hideTooltip($event)"
+              data-bs-toggle="tooltip"
+              data-bs-placement="top"
+              data-bs-trigger="hover"
+              [attr.data-bs-title]="'Edytuj zawodnika'"
+              aria-label="Edytuj zawodnika"
+            >
+              <i class="fa fa-edit" aria-hidden="true"></i>
+            </button>
+
+            <button
+              type="button"
+              class="icon-btn bg-transparent"
+              (click)="onDeletePlayer(player, $event); hideTooltip($event)"
+              data-bs-toggle="tooltip"
+              data-bs-placement="top"
+              data-bs-trigger="hover"
+              [attr.data-bs-title]="'Usuń zawodnika'"
+              aria-label="Usuń zawodnika"
+            >
+              <i class="fa fa-trash" aria-hidden="true"></i>
+            </button>
           </td>
         </tr>
       </tbody>

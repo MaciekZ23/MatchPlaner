@@ -5,11 +5,16 @@
   >
     <span>{{ moduleStrings.title }}</span>
     <button
+      #collapseBtn
       class="btn btn-link text-white p-0 btn-sm"
-      (click)="toggleCollapse()"
+      (click)="toggleCollapse(); hideTooltip($event)"
       [attr.aria-label]="isCollapsed ? 'Rozwiń sekcję' : 'Zwiń sekcję'"
       [attr.aria-expanded]="!isCollapsed"
       aria-controls="topScorersCollapse"
+      data-bs-toggle="tooltip"
+      data-bs-placement="top"
+      data-bs-trigger="hover"
+      [attr.data-bs-title]="isCollapsed ? 'Rozwiń sekcję' : 'Zwiń sekcję'"
     >
       <i
         class="fas"
@@ -43,13 +48,27 @@
             <th
               scope="col"
               class="sortable"
-              (click)="sortData('goals')"
+              role="button"
+              tabindex="0"
+              (click)="sortData('goals'); hideTooltip($event)"
+              (keydown.enter)="sortData('goals')"
+              (keydown.space)="sortData('goals'); $event.preventDefault()"
               [attr.aria-sort]="
                 sortColumn === 'goals'
                   ? sortDirection === 'asc'
                     ? 'ascending'
                     : 'descending'
                   : 'none'
+              "
+              data-bs-toggle="tooltip"
+              data-bs-placement="top"
+              data-bs-trigger="hover"
+              [attr.data-bs-title]="
+                sortColumn === 'goals'
+                  ? sortDirection === 'asc'
+                    ? 'Sortuj malejąco'
+                    : 'Sortuj rosnąco'
+                  : 'Sortuj po golach'
               "
             >
               {{ moduleStrings.headers.goals }}
@@ -65,13 +84,27 @@
             <th
               scope="col"
               class="sortable d-none d-md-table-cell"
-              (click)="sortData('assists')"
+              role="button"
+              tabindex="0"
+              (click)="sortData('assists'); hideTooltip($event)"
+              (keydown.enter)="sortData('assists')"
+              (keydown.space)="sortData('assists'); $event.preventDefault()"
               [attr.aria-sort]="
                 sortColumn === 'assists'
                   ? sortDirection === 'asc'
                     ? 'ascending'
                     : 'descending'
                   : 'none'
+              "
+              data-bs-toggle="tooltip"
+              data-bs-placement="top"
+              data-bs-trigger="hover"
+              [attr.data-bs-title]="
+                sortColumn === 'assists'
+                  ? sortDirection === 'asc'
+                    ? 'Sortuj malejąco'
+                    : 'Sortuj rosnąco'
+                  : 'Sortuj po asystach'
               "
             >
               {{ moduleStrings.headers.assists }}
@@ -87,13 +120,27 @@
             <th
               scope="col"
               class="sortable d-none d-md-table-cell"
-              (click)="sortData('points')"
+              role="button"
+              tabindex="0"
+              (click)="sortData('points'); hideTooltip($event)"
+              (keydown.enter)="sortData('points')"
+              (keydown.space)="sortData('points'); $event.preventDefault()"
               [attr.aria-sort]="
                 sortColumn === 'points'
                   ? sortDirection === 'asc'
                     ? 'ascending'
                     : 'descending'
                   : 'none'
+              "
+              data-bs-toggle="tooltip"
+              data-bs-placement="top"
+              data-bs-trigger="hover"
+              [attr.data-bs-title]="
+                sortColumn === 'points'
+                  ? sortDirection === 'asc'
+                    ? 'Sortuj malejąco'
+                    : 'Sortuj rosnąco'
+                  : 'Sortuj po punktach'
               "
             >
               {{ moduleStrings.headers.points }}

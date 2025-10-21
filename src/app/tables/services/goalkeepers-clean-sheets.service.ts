@@ -91,9 +91,14 @@ export class GoalkeepersCleanSheetsService {
     playerMap: Map<string, CorePlayer>
   ): string[] {
     const teamId = side === 'HOME' ? m.homeTeamId : m.awayTeamId;
+    if (!teamId) {
+      return [];
+    }
 
     const fromLineup = this.pickGoalkeeperIdsFromLineup(m, side);
-    if (fromLineup.length) return fromLineup;
+    if (fromLineup.length) {
+      return fromLineup;
+    }
 
     const fallback = this.pickDefaultGoalkeeperFromRoster(teamId, playerMap);
     return fallback ? [fallback] : [];

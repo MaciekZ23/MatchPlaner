@@ -1,0 +1,124 @@
+<div class="container-fluid py-2">
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-6">
+      <div class="profile-card p-4">
+        <div class="d-flex justify-content-center mb-3">
+          <div class="profile-avatar">
+            <ng-container *ngIf="avatar$ | async as avatar; else defaultAvatar">
+              <img [src]="avatar" alt="Avatar użytkownika" />
+            </ng-container>
+            <ng-template #defaultAvatar>
+              <i class="fa-regular fa-user" aria-hidden="true"></i>
+            </ng-template>
+          </div>
+        </div>
+
+        <h2 class="text-center mb-3">{{ name || "Użytkownik" }}</h2>
+
+        <div class="row align-items-baseline info-row" *ngIf="role !== 'GUEST'">
+          <div class="col-12 col-sm-4 col-lg-3 label">
+            {{ moduleStrings.email }}
+          </div>
+
+          <div class="d-flex align-items-center justify-content-between">
+            <ng-container *ngIf="email; else noEmail">
+              <span>
+                {{ email }}
+              </span>
+              <button
+                #copyEmailBtn
+                type="button"
+                class="btn btn-copy btn-sm ms-auto"
+                (click)="copyToClipboard(email!, copyEmailBtn, 'Skopiowano!')"
+                data-bs-toggle="tooltip"
+                data-bs-placement="top"
+                [attr.data-bs-title]="'Kopiuj e-mail'"
+                [attr.data-original-label]="'Kopiuj e-mail'"
+                aria-label="Kopiuj e-mail"
+              >
+                <i class="fa-solid fa-copy"></i>
+              </button>
+            </ng-container>
+            <ng-template #noEmail
+              ><span class="text-muted">
+                {{ moduleStrings.noEmail }}
+              </span></ng-template
+            >
+          </div>
+        </div>
+
+        <div class="row align-items-baseline info-row">
+          <div class="col-12 col-sm-4 col-lg-3 label">
+            {{ moduleStrings.userName }}
+          </div>
+          <div class="d-flex align-items-center justify-content-between">
+            <span>{{ name || "Użytkownik" }}</span>
+            <button
+              #copyNameBtn
+              type="button"
+              class="btn btn-copy btn-sm ms-auto"
+              (click)="
+                copyToClipboard(
+                  name || 'Użytkownik',
+                  copyNameBtn,
+                  'Skopiowano!'
+                )
+              "
+              data-bs-toggle="tooltip"
+              data-bs-placement="top"
+              [attr.data-bs-title]="'Kopiuj nazwę użytkownika'"
+              [attr.data-original-label]="'Kopiuj nazwę użytkownika'"
+              aria-label="Kopiuj nazwę użytkownika"
+            >
+              <i class="fa-solid fa-copy"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="row align-items-baseline info-row">
+          <div class="col-12 col-sm-4 col-lg-3 label">
+            {{ moduleStrings.roleUser }}
+          </div>
+          <div class="col-12 col-sm-8 col-lg-9 d-flex align-items-center">
+            <span>{{ roleLabel }}</span>
+          </div>
+        </div>
+
+        <div class="row align-items-baseline info-row" *ngIf="role === 'GUEST'">
+          <div class="col-12 col-sm-4 col-lg-3 label">
+            {{ moduleStrings.deviceId }}
+          </div>
+          <div class="d-flex align-items-center justify-content-between">
+            <span>{{ deviceId }}</span>
+            <button
+              #copyDevBtn
+              type="button"
+              class="btn btn-copy btn-sm ms-auto"
+              (click)="
+                copyToClipboard(deviceId || '', copyDevBtn, 'Skopiowano!')
+              "
+              data-bs-toggle="tooltip"
+              data-bs-placement="top"
+              [attr.data-bs-title]="'Kopiuj ID urządzenia'"
+              [attr.data-original-label]="'Kopiuj ID urządzenia'"
+              aria-label="Kopiuj ID urządzenia"
+            >
+              <i class="fa-solid fa-copy"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="d-grid mt-4">
+          <button
+            type="button"
+            class="btn btn-sm btn-custom text-white p-3"
+            (click)="onLogout()"
+          >
+            <i class="fa fa-sign-out-alt me-2" aria-hidden="true"></i>
+            {{ moduleStrings.logout }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -13,6 +13,7 @@ import { Subscription, interval } from 'rxjs';
 import { Match } from '../../models/match.model';
 import { isWithinLive } from '../../../core/utils';
 import { stringsMatchDetails } from '../../misc';
+import { AuthService } from '../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-match-card',
@@ -23,14 +24,19 @@ import { stringsMatchDetails } from '../../misc';
 export class MatchCardComponent implements OnInit, OnDestroy {
   @Input() match!: Match;
   @Output() openDetails = new EventEmitter<Match>();
+  @Output() editMatch = new EventEmitter<Match>();
+  @Output() deleteMatch = new EventEmitter<Match>();
 
   moduleStrings = stringsMatchDetails;
 
+  private readonly auth = inject(AuthService);
   private readonly cd = inject(ChangeDetectorRef);
   private tickSub?: Subscription;
 
   private readonly LIVE_PRE_MS = 0;
   private readonly LIVE_WINDOW_MS = 50 * 60 * 1000;
+
+  isAdmin$ = this.auth.isAdmin$;
 
   ngOnInit(): void {
     this.tickSub = interval(30_000).subscribe(() => this.cd.markForCheck());
@@ -42,6 +48,16 @@ export class MatchCardComponent implements OnInit, OnDestroy {
 
   onClick() {
     this.openDetails.emit(this.match);
+  }
+
+  onEdit(ev: MouseEvent): void {
+    ev.stopPropagation();
+    this.editMatch.emit(this.match);
+  }
+
+  onDelete(ev: MouseEvent): void {
+    ev.stopPropagation();
+    this.deleteMatch.emit(this.match);
   }
 
   get isFinished(): boolean {

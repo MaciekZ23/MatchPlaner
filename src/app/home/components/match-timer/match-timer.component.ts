@@ -1,4 +1,12 @@
-import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
+import {
+  Component,
+  ChangeDetectionStrategy,
+  inject,
+  AfterViewInit,
+  OnDestroy,
+  ElementRef,
+  ViewChild,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { stringsMatchTimer } from '../../misc';
 import { MatchTimerService } from '../../services/match-timer.service';
@@ -11,7 +19,7 @@ import { MatchTimerService } from '../../services/match-timer.service';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class MatchTimerComponent {
+export class MatchTimerComponent implements AfterViewInit, OnDestroy {
   moduleStrings = stringsMatchTimer;
   isTimerOpen = false;
 
@@ -19,7 +27,53 @@ export class MatchTimerComponent {
 
   countdown$ = this.service.countdown$;
 
+  @ViewChild('timerBtn', { static: false }) timerBtn!: ElementRef<HTMLElement>;
+  private tooltipInstance: any | null = null;
+
+  ngAfterViewInit(): void {
+    const bs = (window as any)?.bootstrap;
+    const el = this.timerBtn?.nativeElement;
+    if (bs?.Tooltip && el) {
+      this.tooltipInstance =
+        bs.Tooltip.getInstance?.(el) ??
+        new bs.Tooltip(el, { placement: 'top' });
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.tooltipInstance?.dispose?.();
+    this.tooltipInstance = null;
+  }
+
   toggleTimer(): void {
     this.isTimerOpen = !this.isTimerOpen;
+    const bs = (window as any)?.bootstrap;
+    const el = this.timerBtn?.nativeElement;
+    if (!bs?.Tooltip || !el) {
+      return;
+    }
+
+    el.setAttribute(
+      'data-bs-title',
+      this.isTimerOpen ? 'Zwiń sekcję' : 'Rozwiń sekcję'
+    );
+
+    const inst = this.tooltipInstance ?? bs.Tooltip.getInstance?.(el);
+    if (inst?.setContent) {
+      inst.setContent({
+        '.tooltip-inner': el.getAttribute('data-bs-title') || '',
+      });
+    } else {
+      inst?.dispose?.();
+      this.tooltipInstance = new bs.Tooltip(el, { placement: 'top' });
+    }
+  }
+
+  hideTooltip(ev: Event) {
+    const el = ev.currentTarget as HTMLElement;
+    const bs = (window as any).bootstrap;
+    const inst = bs?.Tooltip?.getInstance?.(el);
+    inst?.hide();
+    el.blur();
   }
 }

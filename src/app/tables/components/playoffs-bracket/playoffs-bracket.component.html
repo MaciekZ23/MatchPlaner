@@ -1,0 +1,234 @@
+<div class="card bg-dark text-white">
+  <h2
+    id="playoffsTitle"
+    class="fs-5 text p-3 card-title card-header bg-transparent d-flex justify-content-between"
+  >
+    <span>{{ moduleStrings.title }}</span>
+    <div class="d-flex align-items-center gap-2 flex-nowrap ms-auto">
+      <button
+        *ngIf="isAdmin$ | async"
+        header-action
+        type="button"
+        class="btn text-white btn-sm d-none d-md-inline-flex align-items-center"
+        (click)="onGenerateRequested()"
+        [disabled]="!(canGenerate$ | async)"
+        [attr.aria-label]="'Generuj drabinkę'"
+      >
+        <i class="fa-solid fa-wand-magic-sparkles me-2"></i>
+        {{ moduleStrings.generatePlayoffs }}
+      </button>
+
+      <button
+        *ngIf="isAdmin$ | async"
+        header-action
+        type="button"
+        class="btn btn-sm text-white d-none d-md-inline-flex align-items-center"
+        (click)="onDeleteAllPlayoffMatches()"
+        aria-label="Usuń wszystkie mecze (playoff)"
+      >
+        <i class="fa-solid fa-trash-can me-2" aria-hidden="true"></i>
+        {{ moduleStrings.deleteAllMatches }}
+      </button>
+
+      <div class="dropdown d-inline-block d-md-none">
+        <button
+          type="button"
+          class="btn text-white btn-sm action-btn px-2"
+          data-bs-toggle="dropdown"
+          aria-expanded="false"
+          aria-label="Akcje drabinki"
+        >
+          <i class="fa-solid fa-ellipsis-vertical"></i>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end shadow">
+          <li *ngIf="isAdmin$ | async" class="d-md-none">
+            <button
+              class="dropdown-item d-flex align-items-center"
+              (click)="onGenerateRequested()"
+              [class.disabled]="!(canGenerate$ | async)"
+              [attr.aria-disabled]="!(canGenerate$ | async)"
+            >
+              <i class="fa-solid fa-wand-magic-sparkles me-2"></i>
+              {{ moduleStrings.generatePlayoffs }}
+            </button>
+          </li>
+          <li><hr class="dropdown-divider" /></li>
+          <li *ngIf="isAdmin$ | async" class="d-md-none">
+            <button
+              class="dropdown-item d-flex align-items-center text-danger"
+              (click)="onDeleteAllPlayoffMatches()"
+            >
+              <i class="fa-solid fa-trash-can me-2"></i>
+              {{ moduleStrings.deleteAllMatches }}
+            </button>
+          </li>
+        </ul>
+      </div>
+
+      <button
+        #collapseBtn
+        class="btn btn-link text-white p-0 btn-sm"
+        type="button"
+        (click)="toggleCollapse(); hideTooltip($event)"
+        [attr.aria-label]="isCollapsed ? 'Rozwiń sekcję' : 'Zwiń sekcję'"
+        [attr.aria-expanded]="!isCollapsed"
+        aria-controls="playoffsCollapse"
+        data-bs-toggle="tooltip"
+        data-bs-placement="top"
+        data-bs-trigger="hover"
+        [attr.data-bs-title]="isCollapsed ? 'Rozwiń sekcję' : 'Zwiń sekcję'"
+      >
+        <i
+          class="fas"
+          [ngClass]="{
+            'fa-chevron-down': isCollapsed,
+            'fa-chevron-up': !isCollapsed
+          }"
+          aria-hidden="true"
+        ></i>
+      </button>
+    </div>
+  </h2>
+  <div
+    class="collapse"
+    [ngClass]="{ show: !isCollapsed }"
+    id="playoffsCollapse"
+  >
+    <div
+      class="card-body"
+      tabindex="0"
+      role="region"
+      aria-labelledby="playoffsTitle"
+    >
+      <ng-container *ngIf="matches$ | async as matches">
+        <ng-container *ngIf="roundSides$ | async as sides; else emptyTpl">
+          <ng-container *ngIf="uiMatchById$ | async as ui">
+            <div
+              #grid
+              class="bracket-grid"
+              [style.--card-h.px]="matchCardHeight"
+              [style.--v-gap.px]="vGap"
+            >
+              <div class="side left">
+                <ng-container *ngFor="let r of sides.left; trackBy: trackRound">
+                  <ng-container *ngIf="r > 1">
+                    <div
+                      class="round"
+                      [attr.data-round]="r"
+                      [style.--offset-mult]="
+                        (roundOffsetMult$ | async)?.get(r) ?? 0
+                      "
+                    >
+                      <div class="round-col">
+                        <ng-container *ngIf="matches | bracketRound : r as arr">
+                          <div
+                            class="match-wrap"
+                            *ngFor="
+                              let m of leftHalf(matches, r);
+                              trackBy: trackMatch
+                            "
+                          >
+                            <div class="text-white text-center">
+                              {{ bracket.matchTitle(m.round, m.index) }}
+                            </div>
+                            <app-match-card
+                              #cardProbe
+                              class="match-card-compact"
+                              [match]="ui.get(m.id)!"
+                              (openDetails)="openDetails($event)"
+                              (editMatch)="onRequestEditMatch($event)"
+                              (deleteMatch)="onRequestDeleteMatch($event)"
+                            ></app-match-card>
+                          </div>
+                        </ng-container>
+                      </div>
+                    </div>
+                  </ng-container>
+                </ng-container>
+              </div>
+
+              <div class="center-col">
+                <ng-container *ngIf="matches | bracketRound : 1 as finalsArr">
+                  <div class="center-final" *ngIf="finalsArr.length > 0">
+                    <div class="round-title text-center">
+                      {{ bracket.matchTitle(1, 1) }}
+                    </div>
+                    <div class="match-wrap center">
+                      <app-match-card
+                        class="match-card-compact"
+                        [match]="ui.get(finalsArr[0].id)!"
+                        (openDetails)="openDetails($event)"
+                        (editMatch)="onRequestEditMatch($event)"
+                        (deleteMatch)="onRequestDeleteMatch($event)"
+                      ></app-match-card>
+                    </div>
+                  </div>
+
+                  <div class="center-third" *ngIf="finalsArr.length > 1">
+                    <div class="round-title text-center">
+                      {{ bracket.matchTitle(1, 2) }}
+                    </div>
+                    <div class="match-wrap center">
+                      <app-match-card
+                        class="match-card-compact"
+                        [match]="ui.get(finalsArr[1].id)!"
+                        (openDetails)="openDetails($event)"
+                        (editMatch)="onRequestEditMatch($event)"
+                        (deleteMatch)="onRequestDeleteMatch($event)"
+                      ></app-match-card>
+                    </div>
+                  </div>
+                </ng-container>
+              </div>
+
+              <div class="side right">
+                <ng-container
+                  *ngFor="let r of sides.right; trackBy: trackRound"
+                >
+                  <ng-container *ngIf="r > 1">
+                    <div
+                      class="round"
+                      [attr.data-round]="r"
+                      [style.--offset-mult]="
+                        (roundOffsetMult$ | async)?.get(r) ?? 0
+                      "
+                    >
+                      <div class="round-col">
+                        <ng-container *ngIf="matches | bracketRound : r as arr">
+                          <div
+                            class="match-wrap"
+                            *ngFor="
+                              let m of rightHalf(matches, r);
+                              trackBy: trackMatch
+                            "
+                          >
+                            <div class="text-white text-center">
+                              {{ bracket.matchTitle(m.round, m.index) }}
+                            </div>
+                            <app-match-card
+                              #cardProbe
+                              class="match-card-compact"
+                              [match]="ui.get(m.id)!"
+                              (openDetails)="openDetails($event)"
+                              (editMatch)="onRequestEditMatch($event)"
+                              (deleteMatch)="onRequestDeleteMatch($event)"
+                            ></app-match-card>
+                          </div>
+                        </ng-container>
+                      </div>
+                    </div>
+                  </ng-container>
+                </ng-container>
+              </div>
+            </div>
+          </ng-container>
+        </ng-container>
+      </ng-container>
+      <ng-template #emptyTpl>
+        <div class="alert alert-secondary m-0">
+          Brak danych drabinki do wyświetlenia
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</div>

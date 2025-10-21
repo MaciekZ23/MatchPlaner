@@ -5,7 +5,79 @@
         ? moduleStrings.headerTitle
         : moduleStrings.headerTitleTeam
     "
-  ></app-page-header>
+  >
+    <div
+      *ngIf="isAdmin$ | async"
+      header-action
+      class="d-none d-sm-flex ms-auto"
+    >
+      @if (selectedTeam$ | async; as selectedTeam) {
+      <button
+        *ngIf="isAdmin$ | async"
+        header-action
+        type="button"
+        class="btn text-white btn-sm"
+        (click)="onAddPlayer(selectedTeam)"
+        aria-label="Dodaj zawodnika"
+      >
+        <i class="fa-solid fa-plus" aria-hidden="true"></i>
+        <span class="ms-1"> {{ moduleStrings.addPlayer }}</span>
+      </button>
+      } @else {
+      <button
+        *ngIf="isAdmin$ | async"
+        header-action
+        type="button"
+        class="btn text-white btn-sm"
+        (click)="onAddTeam()"
+        aria-label="Dodaj drużynę"
+      >
+        <i class="fa-solid fa-plus" aria-hidden="true"></i>
+        <span class="ms-1"> {{ moduleStrings.addTeam }}</span>
+      </button>
+      }
+    </div>
+    <div
+      *ngIf="isAdmin$ | async"
+      header-action
+      class="d-flex d-sm-none ms-auto"
+    >
+      <div class="dropdown">
+        <button
+          class="btn btn-sm text-white"
+          type="button"
+          data-bs-toggle="dropdown"
+          aria-expanded="false"
+          aria-label="Więcej akcji"
+        >
+          <i class="fa-solid fa-ellipsis-vertical"></i>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+          @if (selectedTeam$ | async; as selectedTeam) {
+          <li>
+            <button
+              class="dropdown-item d-flex align-items-center"
+              (click)="onAddPlayer(selectedTeam)"
+            >
+              <i class="fa-solid fa-plus me-2"></i>
+              {{ moduleStrings.addPlayer }}
+            </button>
+          </li>
+          } @else {
+          <li>
+            <button
+              class="dropdown-item d-flex align-items-center"
+              (click)="onAddTeam()"
+            >
+              <i class="fa-solid fa-plus me-2"></i>
+              {{ moduleStrings.addTeam }}
+            </button>
+          </li>
+          }
+        </ul>
+      </div>
+    </div>
+  </app-page-header>
 
   <div
     *ngIf="!(selectedTeam$ | async)"
@@ -19,6 +91,9 @@
         <app-team-card
           [team]="team"
           (teamClick)="onTeamClick(team)"
+          [canManage]="(isAdmin$ | async) ?? false"
+          (editTeam)="onEditTeam(team)"
+          (deleteTeam)="onDeleteTeam(team)"
         ></app-team-card>
       </div>
     </div>
@@ -36,8 +111,54 @@
       [players]="selectedTeam.players"
       [teamLogo]="selectedTeam.logo"
       (backClick)="onBackClick()"
+      [canManage]="(isAdmin$ | async) ?? false"
+      (editPlayer)="onEditPlayer($event)"
+      (deletePlayer)="onDeletePlayer($event)"
     ></app-team-table>
   </div>
 </div>
 
 <app-spinner *ngIf="isLoading"></app-spinner>
+
+<!-- Formularz do dodawania drużyny -->
+<app-dynamic-form
+  [formTitle]="formTitleAddTeam"
+  [fields]="addTeamFormFields"
+  [isOpen]="openAddTeamFormModal"
+  (formSubmitted)="onAddTeamFormSubmitted($event)"
+  (close)="openAddTeamFormModal = false"
+>
+</app-dynamic-form>
+
+<!-- Formularz do dodawania zawodnika do drużyny -->
+<app-dynamic-form
+  [formTitle]="formTitleAddPlayer"
+  [fields]="addPlayerFormFields"
+  [isOpen]="openAddPlayerFormModal"
+  (formSubmitted)="onAddPlayerFormSubmitted($event)"
+  (close)="openAddPlayerFormModal = false"
+></app-dynamic-form>
+
+<!-- Formularz do edycji drużyny -->
+<app-dynamic-form
+  [formTitle]="formTitleEditTeam"
+  [fields]="editTeamFormFields"
+  [isOpen]="openEditTeamFormModal"
+  (formSubmitted)="onEditTeamFormSubmitted($event)"
+  (close)="openEditTeamFormModal = false"
+></app-dynamic-form>
+
+<!-- Formularz do edycji zawodnika -->
+<app-dynamic-form
+  [formTitle]="formTitleEditPlayer"
+  [fields]="editPlayerFormFields"
+  [isOpen]="openEditPlayerFormModal"
+  (formSubmitted)="onEditPlayerFormSubmitted($event)"
+  (close)="openEditPlayerFormModal = false"
+></app-dynamic-form>
+
+<!-- Modal potwierdzający kasowanie drużyny -->
+<app-confirm-modal #teamConfirm></app-confirm-modal>
+
+<!-- Modal potwierdzający kasowanie zawodnika -->
+<app-confirm-modal #playerConfirm></app-confirm-modal>

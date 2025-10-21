@@ -42,21 +42,36 @@
 
   <!--Nawigacja-->
   <ul class="nav nav-pills flex-column" (click)="onNavClick($event)">
-    <li class="nav-item">
+    <li class="nav-item" *ngIf="tid$ | async as tid; else noTidHome">
       <a
-        routerLink="/"
+        [routerLink]="['/', tid, 'home']"
         routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }"
         class="nav-link my-2"
         [attr.aria-label]="moduleStrings.links.tournament"
+        aria-current="page"
       >
         <i class="fa-solid fa-trophy me-4" aria-hidden="true"></i>
         <span *ngIf="isOpen">{{ moduleStrings.links.tournament }}</span>
       </a>
     </li>
-    <li>
+    <ng-template #noTidHome>
+      <li class="nav-item">
+        <a
+          class="nav-link my-2 disabled"
+          tabindex="-1"
+          aria-disabled="true"
+          (click)="goOrPick(null, ['home'])"
+          role="link"
+        >
+          <i class="fa-solid fa-trophy me-4" aria-hidden="true"></i>
+          <span *ngIf="isOpen">{{ moduleStrings.links.tournament }}</span>
+        </a>
+      </li>
+    </ng-template>
+    <li *ngIf="tid$ | async as tid; else noTidTeams">
       <a
-        routerLink="/teams"
+        [routerLink]="['/', tid, 'teams']"
         routerLinkActive="active"
         class="nav-link my-2"
         [attr.aria-label]="moduleStrings.links.teams"
@@ -65,9 +80,22 @@
         <span *ngIf="isOpen">{{ moduleStrings.links.teams }}</span>
       </a>
     </li>
-    <li>
+    <ng-template #noTidTeams>
+      <li class="nav-item">
+        <a
+          class="nav-link my-2 disabled"
+          tabindex="-1"
+          aria-disabled="true"
+          (click)="goOrPick(null, ['teams'])"
+        >
+          <i class="fa-solid fa-people-group me-4" aria-hidden="true"></i>
+          <span *ngIf="isOpen">{{ moduleStrings.links.teams }}</span>
+        </a>
+      </li>
+    </ng-template>
+    <li *ngIf="tid$ | async as tid; else noTidTables">
       <a
-        routerLink="/tables"
+        [routerLink]="['/', tid, 'tables']"
         routerLinkActive="active"
         class="nav-link my-2"
         [attr.aria-label]="moduleStrings.links.tables"
@@ -76,9 +104,22 @@
         <span *ngIf="isOpen">{{ moduleStrings.links.tables }}</span>
       </a>
     </li>
-    <li>
+    <ng-template #noTidTables>
+      <li class="nav-item">
+        <a
+          class="nav-link my-2 disabled"
+          tabindex="-1"
+          aria-disabled="true"
+          (click)="goOrPick(null, ['tables'])"
+        >
+          <i class="fa-solid fa-table-list me-4" aria-hidden="true"></i>
+          <span *ngIf="isOpen">{{ moduleStrings.links.tables }}</span>
+        </a>
+      </li>
+    </ng-template>
+    <li *ngIf="tid$ | async as tid; else noTidCalendar">
       <a
-        routerLink="/calendar"
+        [routerLink]="['/', tid, 'calendar']"
         routerLinkActive="active"
         class="nav-link my-2"
         [attr.aria-label]="moduleStrings.links.calendar"
@@ -87,5 +128,18 @@
         <span *ngIf="isOpen">{{ moduleStrings.links.calendar }}</span>
       </a>
     </li>
+    <ng-template #noTidCalendar>
+      <li class="nav-item">
+        <a
+          class="nav-link my-2 disabled"
+          tabindex="-1"
+          aria-disabled="true"
+          (click)="goOrPick(null, ['calendar'])"
+        >
+          <i class="fa-solid fa-calendar-days me-4" aria-hidden="true"></i>
+          <span *ngIf="isOpen">{{ moduleStrings.links.calendar }}</span>
+        </a>
+      </li>
+    </ng-template>
   </ul>
 </div>

@@ -1,30 +1,131 @@
 <nav
   class="navbar navbar-expand text-white fixed-top topbar"
-  [class.sidebar-open]="isSidebarOpen"
+  [ngClass]="{
+    'sidebar-open': isSidebarOpen && (showSidebar$ | async),
+    full: !(isNotTournamentPage$ | async)
+  }"
 >
-  <div class="container-fluid d-flex justify-content-end align-items-center">
-    <div class="dropdown me-2">
+  <div
+    class="container-fluid d-flex justify-content-end align-items-center topbar-actions-desktop"
+  >
+    <button
+      header-action
+      *ngIf="(hasTournament$ | async) && (isNotTournamentPage$ | async)"
+      type="button"
+      class="btn text-white btn-sm me-2 d-none d-md-inline-flex align-items-center gap-2"
+      (click)="changeTournament()"
+      aria-label="Wróć do wyboru turnieju"
+    >
+      <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+      <span>{{ moduleStrings.changeTournament }}</span>
+    </button>
+
+    <div
+      *ngIf="(hasTournament$ | async) && (isNotTournamentPage$ | async)"
+      class="dropdown d-inline-block d-md-none me-2"
+    >
       <button
-        class="btn bg-transparent text-white"
+        type="button"
+        class="btn text-white btn-sm action-btn px-2"
+        data-bs-toggle="dropdown"
+        aria-expanded="false"
+        aria-label="Wróć do wyboru turnieju"
+      >
+        <i class="fa-solid fa-ellipsis-vertical"></i>
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end">
+        <li>
+          <button
+            class="dropdown-item d-flex align-items-center"
+            (click)="changeTournament()"
+          >
+            <i class="fa-solid fa-arrow-left me-2"></i>
+            {{ moduleStrings.changeTournament }}
+          </button>
+        </li>
+      </ul>
+    </div>
+
+    <div class="dropdown me-2" data-bs-auto-close="outside">
+      <button
+        class="btn bg-transparent text-white position-relative"
         type="button"
         data-bs-toggle="dropdown"
+        data-bs-flip="false"
+        data-bs-boundary="viewport"
         aria-expanded="false"
         aria-label="Powiadomienia"
         aria-haspopup="menu"
         aria-controls="notificationMenu"
+        data-bs-display="static"
+        data-bs-reference="parent"
         id="notificationDropdown"
       >
         <i class="fa fa-bell" aria-hidden="true"></i>
+        <span
+          *ngIf="(notifications$ | async)?.length as count"
+          class="position-absolute top-0 start-80 translate-middle badge rounded-pill"
+          >{{ count }}</span
+        >
       </button>
       <div
         id="notificationMenu"
-        class="dropdown-menu dropdown-menu-end"
+        class="dropdown-menu dropdown-menu-end notif-menu p-0"
         aria-labelledby="notificationDropdown"
         role="menu"
       >
-        <span class="dropdown-item-text text-white text-center">{{
-          moduleStrings.notifications.empty
-        }}</span>
+        <div
+          class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom"
+        >
+          <span class="fw-semibold text-white d-none d-md-inline-flex">{{
+            moduleStrings.notifications.header
+          }}</span>
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-danger d-inline-flex align-items-center"
+            (click)="clearNotifications()"
+            [disabled]="!(notifications$ | async)?.length"
+          >
+            <i class="fa-solid fa-trash-can me-2"></i>
+            {{ moduleStrings.notifications.clearNotifications }}
+          </button>
+        </div>
+        <ng-container
+          *ngIf="notifications$ | async as notifs; else emptyNotifs"
+        >
+          <ul class="list-group list-group-flush notif-list">
+            <li
+              *ngFor="let n of notifs | slice : 0 : 15; trackBy: trackById"
+              class="list-group-item d-flex gap-3 align-items-start bg-transparent text-white"
+            >
+              <span
+                class="badge rounded-pill mt-1 notif-icon"
+                [ngClass]="{
+                  'bg-success': n.type === 'success',
+                  'bg-warning': n.type === 'warning',
+                  'bg-info': n.type === 'info'
+                }"
+                >&nbsp;</span
+              >
+              <div class="flex-grow-1">
+                <div class="fw-normal">{{ n.message }}</div>
+                <div class="small text-white">
+                  {{ n.createdAt | date : "short" }}
+                </div>
+              </div>
+            </li>
+          </ul>
+
+          <div *ngIf="!notifs.length" class="text-center text-secondary py-3">
+            {{ moduleStrings.notifications.empty }}
+          </div>
+        </ng-container>
+
+        <ng-template #emptyNotifs>
+          <div class="text-center text-secondary py-3">
+            {{ moduleStrings.notifications.empty }}
+          </div>
+        </ng-template>
       </div>
     </div>
 
@@ -40,7 +141,7 @@
         aria-label="Menu użytkownika"
       >
         <div class="avatar">
-          <ng-container *ngIf="avatar; else defaultAvatar">
+          <ng-container *ngIf="avatar$ | async as avatar; else defaultAvatar">
             <img [src]="avatar" alt="User Avatar" />
           </ng-container>
           <ng-template #defaultAvatar>
@@ -56,13 +157,15 @@
         role="menu"
       >
         <button
+          *ngIf="currentTid$ | async as tid"
           class="dropdown-item bg-transparent"
-          routerLink="/profile"
+          [routerLink]="['/', tid, 'profile']"
           role="menuitem"
         >
           <i class="fa fa-user me-2" aria-hidden="true"></i>
           {{ moduleStrings.user.profile }}
         </button>
+
         <button
           class="dropdown-item bg-transparent"
           (click)="onLogout()"

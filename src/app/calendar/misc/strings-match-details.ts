@@ -24,4 +24,6 @@ export const stringsMatchDetails = {
   closed: 'Zamknięte:',
   winner: 'Zwycięzca',
   endVoting: ' Koniec głosowania za:',
+  editMatch: 'Edytuj mecz',
+  deleteMatch: 'Usuń mecz',
 };

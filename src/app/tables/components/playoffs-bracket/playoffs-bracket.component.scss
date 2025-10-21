@@ -1,0 +1,94 @@
+@use "../../../../styles.scss" as *;
+
+.bracket-grid {
+  --card-h: 150px;
+  --v-gap: 30px;
+}
+
+.bracket-grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr minmax(300px, auto) 1fr;
+  column-gap: 60px;
+  align-items: start;
+  overflow-x: auto;
+}
+
+.side {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: max-content;
+  column-gap: 60px;
+  min-width: max-content;
+}
+
+.side.left {
+  justify-self: end;
+}
+
+.side.right {
+  justify-self: start;
+}
+
+.round {
+  display: flex;
+  flex-direction: column;
+  padding-top: calc(
+    var(--offset-mult, 0) * (var(--card-h, 150px) + var(--v-gap, 30px)) / 2
+  );
+}
+
+.round-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--v-gap, 30px);
+}
+
+.center-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 30px;
+  min-width: 300px;
+}
+
+.center-final,
+.center-third {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.match-card-compact {
+  display: block;
+  width: 300px;
+  max-width: 100%;
+}
+
+.card [header-action].btn {
+  background-color: $table-highlight-2;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: $button-hover;
+  }
+
+  &:focus-visible {
+    box-shadow: 0 0 0 4px $primary-dark;
+    border-color: transparent;
+  }
+}
+
+@media (max-width: 767.98px) {
+  // Padding (p-3 to 1rem lub 16px)
+  h6.card-title {
+    padding: 0.8rem !important;
+  }
+
+  // Tytuł (fs-5 to 1.25rem lub 20px)
+  .card-title span {
+    font-size: 1rem;
+  }
+}

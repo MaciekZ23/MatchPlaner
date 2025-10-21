@@ -3,9 +3,14 @@ import { getScore } from './score';
 
 // Punkty i staty head-to-head
 export function matchesBetween(groupMatches: Match[], teams: Set<string>) {
-  return groupMatches.filter(
-    (m) => teams.has(m.homeTeamId) && teams.has(m.awayTeamId)
-  );
+  return groupMatches.filter((m) => {
+    return (
+      !!m.homeTeamId &&
+      !!m.awayTeamId &&
+      teams.has(m.homeTeamId) &&
+      teams.has(m.awayTeamId)
+    );
+  });
 }
 
 export function headToHeadPoints(

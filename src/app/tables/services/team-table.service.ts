@@ -23,24 +23,25 @@ export class TeamTableService {
       map(([tournament, matchesByStage, teamMap]) => {
         const mode = tournament.mode as TablesVM['mode'];
 
-        // Zbuduj wszystkie potencjalne tabele (po grupach), na bazie meczów etapu GROUP
         const allGroups = this.buildAllGroupsTables(
           tournament,
           matchesByStage,
           teamMap
         );
 
-        // Przytnij ekspozycję wg trybu
+        const playoffStageId: string | null =
+          tournament.stages?.find((s: any) => s.kind === 'PLAYOFF')?.id ?? null;
+
         let groups: PointsTableGroup[] = [];
         if (mode === 'LEAGUE') {
           groups = allGroups.length ? [allGroups[0]] : [];
         } else if (mode === 'LEAGUE_PLAYOFFS') {
           groups = allGroups;
         } else if (mode === 'KNOCKOUT') {
-          groups = []; // w pucharze nie pokazujemy tabel ligowych
+          groups = [];
         }
 
-        return { mode, groups };
+        return { mode, groups, playoffStageId };
       })
     );
   }
@@ -50,31 +51,29 @@ export class TeamTableService {
     matchesByStage: Map<string, CoreMatch[]>,
     teamMap: Map<string, CoreTeam>
   ): PointsTableGroup[] {
-    // Znajdź etap ligowy (GROUP)
     const groupStage = tournament.stages?.find((s: any) => s.kind === 'GROUP');
     if (!groupStage) {
-      // Brak etapu grupowego (np. czysty KNOCKOUT) → nie ma tabel do policzenia
       return [];
     }
 
-    // Mecze tego etapu
     const all = (matchesByStage.get(groupStage.id) ?? []).slice();
 
-    // Mapowanie id -> nazwa grupy
     const groupNameById = new Map<string, string>();
     for (const g of tournament.groups ?? []) {
-      if (g?.id) groupNameById.set(g.id, g.name ?? `Grupa ${g.id}`);
+      if (g?.id) {
+        groupNameById.set(g.id, g.name ?? `Grupa ${g.id}`);
+      }
     }
 
-    // Grupowanie meczów po groupId
     const byGroup = new Map<string, CoreMatch[]>();
     for (const m of all) {
       const key = m.groupId ?? 'UNGROUPED';
-      if (!byGroup.has(key)) byGroup.set(key, []);
+      if (!byGroup.has(key)) {
+        byGroup.set(key, []);
+      }
       byGroup.get(key)!.push(m);
     }
 
-    // Kolejność grup po nazwie (Grupa A, Grupa B, ... / „Tabela” dla UNGROUPED)
     const sortedIds = Array.from(byGroup.keys()).sort((a, b) => {
       const nameA =
         a === 'UNGROUPED' ? 'Tabela' : groupNameById.get(a) ?? `Grupa ${a}`;
@@ -83,7 +82,6 @@ export class TeamTableService {
       return nameA.localeCompare(nameB, 'pl', { numeric: true });
     });
 
-    // Zbuduj tabelę dla każdej grupy
     const groups: PointsTableGroup[] = [];
     for (const groupId of sortedIds) {
       const matches = byGroup.get(groupId)!;
@@ -98,21 +96,25 @@ export class TeamTableService {
     return groups;
   }
 
-  /** Liczenie surowych statystyk i sortowanie pełnymi tie-breakerami */
+  private hasTeams(
+    m: CoreMatch
+  ): m is CoreMatch & { homeTeamId: string; awayTeamId: string } {
+    return !!m.homeTeamId && !!m.awayTeamId;
+  }
+
   private buildAndSortGroupTable(
     matches: CoreMatch[],
     teamMap: Map<string, CoreTeam>
   ): TeamStats[] {
     const finished = matches.filter((m) => m.status === 'FINISHED');
+    const withTeams = finished.filter((m) => this.hasTeams(m));
 
-    // Zespoły obecne w zakończonych meczach
     const teamIds = new Set<string>();
-    for (const m of finished) {
+    for (const m of withTeams) {
       teamIds.add(m.homeTeamId);
       teamIds.add(m.awayTeamId);
     }
 
-    // Baza wierszy
     const base = new Map<string, TeamStats>();
     for (const id of teamIds) {
       const t = teamMap.get(id);
@@ -131,16 +133,13 @@ export class TeamTableService {
       });
     }
 
-    // Zliczanie meczów
-    for (const m of finished) {
+    for (const m of withTeams) {
       const { home, away } = getScore(m);
-
       const homeRow = base.get(m.homeTeamId)!;
       const awayRow = base.get(m.awayTeamId)!;
 
       homeRow.rm++;
       awayRow.rm++;
-
       homeRow.bz += home;
       homeRow.bs += away;
       awayRow.bz += away;
@@ -162,26 +161,153 @@ export class TeamTableService {
       }
     }
 
-    for (const row of base.values()) {
-      row.diff = row.bz - row.bs;
-    }
+    for (const row of base.values()) row.diff = row.bz - row.bs;
 
-    // Sortowanie z pełnym łańcuchem tie-breakerów (zgodnie z przepisami)
-    const cardsPointsByTeam = buildDisciplineIndex(finished);
-    const awayWinsIndex = buildAwayWinsIndex(finished);
-    const comparator = makeStandingsComparator(
-      finished,
-      cardsPointsByTeam,
-      awayWinsIndex
-    );
-
-    const rows = Array.from(base.entries()).map(([teamId, row]) => ({
+    // --- sortowanie: klastry remisu
+    const table = Array.from(base.entries()).map(([teamId, row]) => ({
       teamId,
       row,
     }));
-    rows.sort((a, b) => comparator(a.teamId, b.teamId, a.row, b.row));
-    rows.forEach((it, idx) => (it.row.id = idx + 1));
+    table.sort((a, b) => b.row.pkt - a.row.pkt);
 
-    return rows.map((it) => it.row);
+    const resolved: { teamId: string; row: TeamStats }[] = [];
+    let i = 0;
+    while (i < table.length) {
+      let j = i + 1;
+      while (j < table.length && table[j].row.pkt === table[i].row.pkt) j++;
+
+      const cluster = table.slice(i, j);
+      if (cluster.length === 1) {
+        resolved.push(cluster[0]);
+      } else if (cluster.length === 2) {
+        cluster.sort((A, B) =>
+          this.compareTwo(A.teamId, B.teamId, A.row, B.row, withTeams)
+        );
+        resolved.push(...cluster);
+      } else {
+        const ids = new Set(cluster.map((x) => x.teamId));
+        const mini = this.buildMiniTable(ids, withTeams);
+
+        cluster.sort((A, B) => {
+          if (mini.get(B.teamId)!.pts !== mini.get(A.teamId)!.pts)
+            return mini.get(B.teamId)!.pts - mini.get(A.teamId)!.pts;
+          if (mini.get(B.teamId)!.gd !== mini.get(A.teamId)!.gd)
+            return mini.get(B.teamId)!.gd - mini.get(A.teamId)!.gd;
+          if (B.row.diff !== A.row.diff) return B.row.diff - A.row.diff;
+          if (B.row.bz !== A.row.bz) return B.row.bz - A.row.bz;
+          if (B.row.w !== A.row.w) return B.row.w - A.row.w;
+          // proxy na away-wins: policz z meczów
+          const awA = this.countAwayWins(A.teamId, withTeams);
+          const awB = this.countAwayWins(B.teamId, withTeams);
+          if (awB !== awA) return awB - awA;
+          return A.teamId.localeCompare(B.teamId);
+        });
+
+        resolved.push(...cluster);
+      }
+      i = j;
+    }
+
+    resolved.forEach((it, idx) => {
+      it.row.id = idx + 1;
+    });
+    return resolved.map((it) => it.row);
+  }
+
+  private compareTwo(
+    aId: string,
+    bId: string,
+    a: TeamStats,
+    b: TeamStats,
+    matches: CoreMatch[]
+  ): number {
+    if (a.pkt !== b.pkt) return b.pkt - a.pkt;
+
+    // H2H między a-b
+    let aPts = 0,
+      bPts = 0,
+      aGD = 0,
+      bGD = 0;
+    for (const m of matches) {
+      const isAB = m.homeTeamId === aId && m.awayTeamId === bId;
+      const isBA = m.homeTeamId === bId && m.awayTeamId === aId;
+      if (!isAB && !isBA) continue;
+
+      const { home, away } = getScore(m);
+      if (isAB) {
+        if (home > away) aPts += 3;
+        else if (home < away) bPts += 3;
+        else {
+          aPts++;
+          bPts++;
+        }
+        aGD += home - away;
+        bGD += away - home;
+      } else {
+        if (home > away) bPts += 3;
+        else if (home < away) aPts += 3;
+        else {
+          aPts++;
+          bPts++;
+        }
+        bGD += home - away;
+        aGD += away - home;
+      }
+    }
+
+    if (aPts !== bPts) return bPts - aPts;
+    if (aGD !== bGD) return bGD - aGD;
+    if (a.diff !== b.diff) return b.diff - a.diff;
+    if (a.bz !== b.bz) return b.bz - a.bz;
+    if (a.w !== b.w) return b.w - a.w;
+    const awA = this.countAwayWins(aId, matches);
+    const awB = this.countAwayWins(bId, matches);
+    if (awB !== awA) return awB - awA;
+    return a.name.localeCompare(b.name, 'pl');
+  }
+
+  private buildMiniTable(teams: Set<string>, matches: CoreMatch[]) {
+    const res = new Map<
+      string,
+      { pts: number; gd: number; gf: number; ga: number }
+    >();
+    for (const id of teams) res.set(id, { pts: 0, gd: 0, gf: 0, ga: 0 });
+
+    for (const m of matches) {
+      if (!m.homeTeamId || !m.awayTeamId) continue;
+      if (!teams.has(m.homeTeamId) || !teams.has(m.awayTeamId)) continue;
+
+      const { home, away } = getScore(m);
+      const A = res.get(m.homeTeamId)!;
+      const B = res.get(m.awayTeamId)!;
+
+      A.gf += home;
+      A.ga += away;
+      B.gf += away;
+      B.ga += home;
+      A.gd = A.gf - A.ga;
+      B.gd = B.gf - B.ga;
+
+      if (home > away) A.pts += 3;
+      else if (home < away) B.pts += 3;
+      else {
+        A.pts++;
+        B.pts++;
+      }
+    }
+
+    const out = new Map<string, { pts: number; gd: number; gf: number }>();
+    for (const [id, v] of res) out.set(id, { pts: v.pts, gd: v.gd, gf: v.gf });
+    return out;
+  }
+
+  private countAwayWins(teamId: string, matches: CoreMatch[]) {
+    let w = 0;
+    for (const m of matches) {
+      if (m.awayTeamId !== teamId) continue;
+      const { home, away } = getScore(m);
+      if (away > home) w++;
+    }
+    return w;
   }
 }

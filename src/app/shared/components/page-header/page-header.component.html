@@ -1,5 +1,8 @@
 <div class="card bg-dark mb-2 shadow-sm border-0">
-  <div class="card-header border-0 py-2">
+  <div
+    class="card-header d-flex align-items-center justify-content-between border-0 py-2"
+  >
     <h1 class="m-0 responsive-title">{{ title }}</h1>
+    <ng-content select="[header-action]"></ng-content>
   </div>
 </div>

@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.10.0
+
+### (FEATURE) Łączenie z backendem
+
+- Dodano łączenie z backendem
+
+## 1.9.0
+
+### (FEATURE) Drabinka play-off
+
+- Dodano drabinkę play-off (pucharową)
+
 ## 1.8.0
 
 ### (FEATURE) ŁĄCZENIE Z BACKENDEM

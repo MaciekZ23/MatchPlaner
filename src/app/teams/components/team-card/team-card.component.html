@@ -1,16 +1,47 @@
 <div class="card bg-dark text-white" (click)="onClick()">
-  <div class="card-body d-flex flex-md-row align-items-center">
-    <div class="team-logo-container">
-      <img
-        *ngIf="team.logo; else defaultLogo"
-        [src]="team.logo"
-        alt="{{ team.name }}"
-        class="team-logo"
-      />
-      <ng-template #defaultLogo>
-        <i class="fas fa-tshirt team-logo"></i>
-      </ng-template>
+  <div
+    class="card-body d-flex flex-md-row align-items-center justify-content-between"
+  >
+    <div class="d-flex align-items-center">
+      <div class="team-logo-container">
+        <img
+          *ngIf="team.logo; else defaultLogo"
+          [src]="team.logo"
+          alt="{{ team.name }}"
+          class="team-logo"
+        />
+        <ng-template #defaultLogo>
+          <i class="fas fa-tshirt team-logo"></i>
+        </ng-template>
+      </div>
+      <span class="ms-md-3 mt-md-0">{{ team.name }}</span>
     </div>
-    <span class="ms-md-3 mt-md-0">{{ team.name }}</span>
+
+    <div class="actions d-flex align-items-center" *ngIf="canManage">
+      <button
+        type="button"
+        class="icon-btn me-2 bg-transparent"
+        (click)="onEdit($event); hideTooltip($event)"
+        data-bs-toggle="tooltip"
+        data-bs-placement="top"
+        data-bs-trigger="hover"
+        [attr.data-bs-title]="'Edytuj drużynę'"
+        aria-label="Edytuj drużynę"
+      >
+        <i class="fa fa-edit" aria-hidden="true"></i>
+      </button>
+      <button
+        type="button"
+        class="icon-btn bg-transparent"
+        (click)="onDelete($event); hideTooltip($event)"
+        data-bs-toggle="tooltip"
+        data-bs-placement="top"
+        data-bs-trigger="hover"
+        [attr.data-bs-title]="'Usuń drużynę'"
+        aria-label="Usuń drużynę"
+      >
+        <i class="fa fa-trash" aria-hidden="true"></i>
+      </button>
+    </div>
   </div>
 </div>
