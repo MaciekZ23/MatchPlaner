@@ -6,10 +6,12 @@ import {
   OnDestroy,
   ElementRef,
   ViewChild,
+  ChangeDetectorRef,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LokalizacjaService } from '../../services/lokalizacja.service';
 import { stringsLokalizacja } from '../../misc';
+import { distinctUntilChanged, map, tap } from 'rxjs';
 
 @Component({
   selector: 'app-lokalizacja',
@@ -24,10 +26,20 @@ export class LokalizacjaComponent implements AfterViewInit, OnDestroy {
   isLocationOpen = false;
 
   private service = inject(LokalizacjaService);
+  private cdr = inject(ChangeDetectorRef);
+
+  imgError = false;
 
   name$ = this.service.name$;
   address$ = this.service.address$;
-  imageUrl$ = this.service.imageUrl$;
+  imageUrl$ = this.service.imageUrl$.pipe(
+    map((u) => (u ?? '').trim()),
+    distinctUntilChanged(),
+    tap(() => {
+      this.imgError = false;
+      this.cdr.markForCheck();
+    })
+  );
   imageAlt$ = this.service.imageAlt$;
 
   @ViewChild('locToggleBtn', { static: false })
@@ -77,5 +89,15 @@ export class LokalizacjaComponent implements AfterViewInit, OnDestroy {
     const inst = bs?.Tooltip?.getInstance?.(el);
     inst?.hide();
     el.blur();
+  }
+
+  onImgLoad() {
+    this.imgError = false;
+    this.cdr.markForCheck();
+  }
+
+  onImgError() {
+    this.imgError = true;
+    this.cdr.markForCheck();
   }
 }

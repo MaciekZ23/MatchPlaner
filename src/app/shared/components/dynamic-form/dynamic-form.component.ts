@@ -211,28 +211,27 @@ export class DynamicFormComponent implements OnInit, OnChanges, OnDestroy {
     return new FormGroup(inner);
   }
 
-  addRepeaterItem(fieldName: string) {
-    const f = this.fields.find((x) => x.name === fieldName) as
-      | RepeaterFormField
-      | undefined;
-    if (!f) return;
-
-    const fa = this.form.get(fieldName) as FormArray | null;
-    if (!fa) return;
-
-    if (typeof f.max === 'number' && fa.length >= f.max) return;
-
-    // domyślne puste wartości wg definicji pól
-    const blank: Record<string, any> = {};
-    for (const inner of f.fields) {
-      if (inner.type === 'checkbox') blank[inner.name] = false;
-      else if (inner.type === 'number') blank[inner.name] = null;
-      else if (inner.type === 'select' && (inner as SelectFormField).multiple)
-        blank[inner.name] = [];
-      else blank[inner.name] = '';
+  addRepeaterItem(fieldName: string): void {
+    const rep = this.fields.find(
+      (f) => f.name === fieldName && f.type === 'repeater'
+    ) as RepeaterFormField | undefined;
+    if (!rep) {
+      return;
     }
 
-    fa.push(this.buildInnerGroup(f, blank));
+    const fa = this.form.get(fieldName) as FormArray | null;
+    if (!fa) {
+      return;
+    }
+
+    if (typeof rep.max === 'number' && fa.length >= rep.max) {
+      return;
+    }
+
+    fa.push(this.buildInnerGroup(rep, {}));
+
+    fa.markAsDirty();
+    fa.markAsTouched();
   }
 
   removeRepeaterItem(fieldName: string, index: number) {
@@ -291,11 +290,12 @@ export class DynamicFormComponent implements OnInit, OnChanges, OnDestroy {
       const mult = (field as SelectFormField).multiple;
       if (mult) {
         const v = field.value;
-        if (Array.isArray(v)) return v;
+        if (Array.isArray(v)) {return v;}
         return v != null && v !== '' ? [v] : [];
       }
-      return field.value ?? '';
+      return field.value ?? null;
     }
+
     if (field.type === 'checkbox') {
       return !!field.value;
     }

@@ -211,9 +211,8 @@ export class LoginComponent implements OnInit, AfterViewInit {
   }
 
   private navigateAfterLogin() {
-    const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/';
     this.loading = false;
-    this.router.navigateByUrl(returnUrl);
+    this.router.navigateByUrl('/tournaments');
   }
 
   private ensureDeviceId(): string {

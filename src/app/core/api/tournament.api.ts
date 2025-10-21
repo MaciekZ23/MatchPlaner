@@ -20,6 +20,7 @@ import {
 
 export interface ITournamentApi {
   getTournament(tournamentId: string): Observable<Tournament>;
+  getTournaments(): Observable<Tournament[]>;
   createTournament(payload: CreateTournamentPayload): Observable<Tournament>;
   updateTournament(
     id: string,

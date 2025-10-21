@@ -9,4 +9,5 @@ export const stringsTopbar = {
     login: 'Zaloguj się',
     logout: 'Wyloguj się',
   },
+  changeTournament: 'Wybierz inny turniej',
 };

@@ -40,13 +40,17 @@
         <p class="mb-1">{{ name$ | async }}</p>
         <small>{{ address$ | async }}</small>
       </div>
-      <div class="image-container ms-md-5">
-        <img
-          [src]="imageUrl$ | async"
-          [alt]="(imageAlt$ | async)!"
-          class="image"
-        />
-      </div>
+      <ng-container *ngIf="imageUrl$ | async as imgUrl">
+        <div class="image-container ms-md-5" *ngIf="imgUrl && !imgError">
+          <img
+            [src]="imageUrl$ | async"
+            [alt]="(imageAlt$ | async)!"
+            class="image"
+            (load)="onImgLoad()"
+            (error)="onImgError()"
+          />
+        </div>
+      </ng-container>
     </div>
   </div>
 </div>

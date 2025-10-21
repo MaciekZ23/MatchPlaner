@@ -14,17 +14,6 @@
   color: $cards-text-information;
 }
 
-.home-actions-desktop [header-action].btn {
-  background-color: $table-highlight-2;
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-
-  &:hover {
-    background-color: $button-hover;
-  }
-}
-
 @media (max-width: 767.98px) {
   .card {
     border-radius: 8px;
@@ -38,17 +27,5 @@
   .card-text {
     font-size: 0.8rem;
     color: $cards-text-information;
-  }
-
-  .home-actions-desktop [header-action].btn {
-    background-color: $table-highlight-2;
-    border: none;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    font-size: 0.8rem;
-
-    &:hover {
-      background-color: $button-hover;
-    }
   }
 }

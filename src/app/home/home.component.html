@@ -1,9 +1,5 @@
 <div class="container-fluid p-0 px-sm-1 py-sm-1">
-  <app-tournament-title
-    (addTournament)="onAddTournamentClick()"
-    (editTournament)="onEditTournamentClick()"
-    (deleteTournament)="onDeleteTournamentClick()"
-  ></app-tournament-title>
+  <app-tournament-title></app-tournament-title>
   <div class="row g-0 mt-3">
     <div class="col-12">
       <app-league-description></app-league-description>
@@ -20,21 +16,3 @@
     </div>
   </div>
 </div>
-
-<app-dynamic-form
-  [formTitle]="formTitleAddTournament"
-  [fields]="addTournamentFormFields"
-  [isOpen]="openAddTournamentFormModal"
-  (formSubmitted)="onAddTournamentFormSubmitted($event)"
-  (close)="openAddTournamentFormModal = false"
-></app-dynamic-form>
-
-<app-dynamic-form
-  [formTitle]="formTitleEditTournament"
-  [fields]="editTournamentFormFields"
-  [isOpen]="openEditTournamentFormModal"
-  (formSubmitted)="onEditTournamentFormSubmitted($event)"
-  (close)="openEditTournamentFormModal = false"
-></app-dynamic-form>
-
-<app-confirm-modal #deleteConfirm></app-confirm-modal>

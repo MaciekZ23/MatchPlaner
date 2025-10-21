@@ -5,10 +5,12 @@ import {
   Output,
   HostListener,
   OnInit,
+  inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { stringsNavbar } from './misc';
+import { TournamentStore } from '../core/services/tournament-store.service';
 
 @Component({
   selector: 'app-navbar',
@@ -21,6 +23,12 @@ export class NavbarComponent implements OnInit {
   moduleStrings = stringsNavbar;
   @Input() isOpen: boolean = true;
   @Output() toggleSidebar = new EventEmitter<void>();
+
+  private store = inject(TournamentStore);
+  private router = inject(Router);
+
+  tid$ = this.store.selectedId$;
+  hasTid$ = this.store.hasTournament$;
 
   ngOnInit() {
     this.setInitialSidebarState();
@@ -37,11 +45,20 @@ export class NavbarComponent implements OnInit {
 
   onToggleSidebar() {
     this.isOpen = !this.isOpen;
-    this.toggleSidebar.emit(); // emitujesz do rodzica jeśli trzeba
+    this.toggleSidebar.emit(); 
   }
 
   isMobile(): boolean {
     return window.innerWidth < 768;
+  }
+
+  goOrPick(tid: string | null, segments: string[]) {
+    if (!tid) {
+      this.router.navigate(['/tournaments']);
+      return;
+    }
+    this.router.navigate(['/', tid, ...segments]);
+    if (this.isMobile()) this.isOpen = false;
   }
 
   onNavClick(event: Event) {

@@ -30,6 +30,10 @@ export class HttpTournamentApi implements ITournamentApi {
     return this.http.get<Tournament>(`/api/v1/tournaments/${id}`);
   }
 
+  getTournaments() {
+    return this.http.get<Tournament[]>('/api/v1/tournaments');
+  }
+
   createTournament(payload: CreateTournamentPayload): Observable<Tournament> {
     return this.http.post<Tournament>(
       `/api/v1/tournaments/create-tournament`,

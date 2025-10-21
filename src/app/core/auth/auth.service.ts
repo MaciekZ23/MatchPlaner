@@ -1,12 +1,14 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, map, Observable } from 'rxjs';
+import { TournamentStore } from '../services/tournament-store.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
   private http = inject(HttpClient);
+  private store = inject(TournamentStore);
   private readonly backendUrl = '/api/v1/admin/auth';
 
   private avatarSubject = new BehaviorSubject<string | null>(
@@ -43,6 +45,7 @@ export class AuthService {
     localStorage.removeItem('avatar');
     this.avatarSubject.next(null);
     this.roleSubject.next('NONE');
+    this.store.clearTournament();
   }
 
   setAvatar(avatar: string | null) {

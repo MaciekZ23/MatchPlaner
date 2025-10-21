@@ -16,11 +16,17 @@ import { Team, Player, Match, Group } from '../models';
 
 @Injectable({ providedIn: 'root' })
 export class TournamentStore {
-  // Który turniej oglądamy (na razie 't1')
-  private tournamentId$ = new BehaviorSubject<string>('t1');
+  private readonly KEY = 'selectedTournamentId';
 
-  // Podstawowe strumienie
+  private tournamentId$ = new BehaviorSubject<string | null>(
+    localStorage.getItem(this.KEY)
+  );
+
+  hasTournament$ = this.tournamentId$.pipe(map(Boolean));
+  selectedId$ = this.tournamentId$.asObservable();
+
   tournament$ = this.tournamentId$.pipe(
+    filter((id): id is string => !!id),
     switchMap((id) => this.api.getTournament(id)),
     shareReplay({ bufferSize: 1, refCount: true })
   );
@@ -36,6 +42,7 @@ export class TournamentStore {
   );
 
   teams$ = this.tournamentId$.pipe(
+    filter((id): id is string => !!id),
     switchMap((id) => this.api.getTeams(id)),
     shareReplay({ bufferSize: 1, refCount: true })
   );
@@ -56,6 +63,7 @@ export class TournamentStore {
   }
 
   players$ = this.tournamentId$.pipe(
+    filter((id): id is string => !!id),
     switchMap((id) => this.api.getPlayers(id)),
     shareReplay({ bufferSize: 1, refCount: true })
   );
@@ -135,8 +143,21 @@ export class TournamentStore {
     );
   }
 
-  setTournament(id: string) {
+  getSelectedIdSync(): string | null {
+    return this['tournamentId$'].getValue();
+  }
+
+  setTournament(id: string | null) {
     this.tournamentId$.next(id);
+    if (id) {
+      localStorage.setItem(this.KEY, id);
+    } else {
+      localStorage.removeItem(this.KEY);
+    }
+  }
+
+  clearTournament() {
+    this.setTournament(null);
   }
 
   constructor(@Inject(TOURNAMENT_API) private api: ITournamentApi) {}

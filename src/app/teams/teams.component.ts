@@ -83,9 +83,13 @@ export class TeamsComponent implements OnInit {
   ngOnInit(): void {
     this.teams$ = this.teamService.getTeams$().pipe(shareReplay(1));
 
-    this.selectedTeam$ = combineLatest([this.route.paramMap, this.teams$]).pipe(
-      map(([pm, teams]) => {
-        const idStr = pm.get('id');
+    this.selectedTeam$ = combineLatest([
+      this.route.paramMap,
+      this.route.firstChild?.paramMap ?? this.route.paramMap,
+      this.teams$,
+    ]).pipe(
+      map(([parentParams, childParams, teams]) => {
+        const idStr = childParams.get('id') ?? parentParams.get('id');
         const id = idStr ? Number(idStr) : NaN;
         return teams.find((t) => t.id === id) ?? null;
       }),
@@ -96,12 +100,15 @@ export class TeamsComponent implements OnInit {
 
   onTeamClick(team: Team): void {
     this.isLoading = true;
-    this.router.navigate(['/teams', team.id]);
+    const tid = this.route.snapshot.paramMap.get('tid');
+    this.router.navigate(['/', tid, 'teams', team.id]);
   }
 
   onBackClick(): void {
     this.isLoading = true;
-    this.router.navigate(['/teams']).then(() => {
+    const tid = this.route.snapshot.paramMap.get('tid');
+
+    this.router.navigate(['/', tid, 'teams']).then(() => {
       this.teams$ = this.teamService.getTeams$().pipe(
         tap({
           next: () => (this.isLoading = false),

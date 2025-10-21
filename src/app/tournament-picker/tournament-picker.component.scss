@@ -1,0 +1,61 @@
+@use "../../styles.scss" as *;
+
+.tournament-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.tournament-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.tournament-page [header-action].btn {
+  background-color: $table-highlight-2;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: $button-hover;
+  }
+
+  &:focus-visible {
+    box-shadow: 0 0 0 4px $primary-dark;
+    border-color: transparent;
+  }
+}
+
+.custom-text {
+  color: $match-card-text-group;
+}
+
+.badge-custom {
+  background-color: $primary-dark;
+}
+
+@media (max-width: 767.98px) {
+  .custom-name {
+    font-size: 1rem !important;
+  }
+
+  .tournament-page .card .custom-text {
+    font-size: 0.8rem;
+  }
+
+  .tournament-page .card .btn {
+    font-size: 0.75em;
+  }
+
+  .tournament-page .card .badge {
+    font-size: 0.65em;
+  }
+
+  .tournament-page .card .btn span {
+    font-size: 0.85em;
+  }
+}
