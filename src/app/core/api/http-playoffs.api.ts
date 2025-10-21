@@ -4,10 +4,11 @@ import { map, Observable } from 'rxjs';
 import { IPlayoffsApi } from './playoffs.api';
 import { Match } from '../models';
 import { GeneratePlayoffsPayload } from '../models/playoffs.models';
+import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class HttpPlayoffsApi implements IPlayoffsApi {
-  private readonly base = '/api/v1';
+  private readonly base = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
 

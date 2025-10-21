@@ -4,10 +4,11 @@ import { Observable } from 'rxjs';
 import { IVotingApi } from './voting.api';
 import { MatchId, PlayerId, VotingStatus } from '../types';
 import { VotingState, VoteResponse } from '../models';
+import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class HttpVotingApi implements IVotingApi {
-  private readonly base = '/api/v1/voting';
+  private readonly base = `${environment.apiUrl}/voting`;
 
   constructor(private http: HttpClient) {}
 
