@@ -20,7 +20,7 @@
     <div class="actions d-flex align-items-center" *ngIf="canManage">
       <button
         type="button"
-        class="icon-btn me-2 bg-transparent"
+        class="icon-btn me-2"
         (click)="onEdit($event); hideTooltip($event)"
         data-bs-toggle="tooltip"
         data-bs-placement="top"
@@ -32,7 +32,7 @@
       </button>
       <button
         type="button"
-        class="icon-btn bg-transparent"
+        class="icon-btn"
         (click)="onDelete($event); hideTooltip($event)"
         data-bs-toggle="tooltip"
         data-bs-placement="top"

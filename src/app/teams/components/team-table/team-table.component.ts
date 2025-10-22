@@ -7,6 +7,7 @@ import {
   OnDestroy,
   OnChanges,
   ElementRef,
+  AfterViewInit,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { stringsTeamTable } from '../../misc';
@@ -19,7 +20,7 @@ import { HealthStatus } from '../../types/health-status.type';
   styleUrls: ['./team-table.component.scss'],
   standalone: true,
 })
-export class TeamTableComponent implements OnDestroy, OnChanges {
+export class TeamTableComponent implements OnDestroy, OnChanges, AfterViewInit {
   moduleStrings = stringsTeamTable;
   @Input() players: any[] = [];
   @Input() teamName: string = '';
@@ -72,12 +73,12 @@ export class TeamTableComponent implements OnDestroy, OnChanges {
     this.initTooltips();
   }
 
-  hideTooltip(ev: Event) {
+  hideTooltip(ev: Event, blur = true) {
     const el = ev.currentTarget as HTMLElement;
     const bs = (window as any).bootstrap;
     const inst = bs?.Tooltip?.getInstance?.(el);
     inst?.hide();
-    el.blur();
+    if (blur) el.blur();
   }
 
   isCollapsed: boolean = true;

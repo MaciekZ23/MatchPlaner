@@ -35,16 +35,52 @@
       <thead>
         <tr>
           <th>{{ moduleStrings.columns.pos }}</th>
-          <th class="sortable" (click)="sortData('name')">
-            {{ moduleStrings.columns.name }}
-            <i
-              [class]="
+          <th
+            scope="col"
+            class="sortable"
+            [attr.aria-sort]="
+              sortColumn === 'name'
+                ? sortDirection === 'asc'
+                  ? 'ascending'
+                  : 'descending'
+                : 'none'
+            "
+          >
+            <button
+              type="button"
+              class="th-btn"
+              (click)="sortData('name'); hideTooltip($event, false)"
+              data-bs-toggle="tooltip"
+              data-bs-placement="top"
+              data-bs-trigger="hover"
+              [attr.aria-label]="
                 sortColumn === 'name'
-                  ? 'fa fa-sort-' + sortDirection
-                  : 'fa fa-sort'
+                  ? sortDirection === 'asc'
+                    ? 'Sortuj malejąco'
+                    : 'Sortuj rosnąco'
+                  : 'Sortuj po nazwisku'
               "
-            ></i>
+              [attr.data-bs-title]="
+                sortColumn === 'name'
+                  ? sortDirection === 'asc'
+                    ? 'Sortuj malejąco'
+                    : 'Sortuj
+              rosnąco'
+                  : 'Sortuj po nazwisku'
+              "
+            >
+              {{ moduleStrings.columns.name }}
+              <i
+                aria-hidden="true"
+                [class]="
+                  sortColumn === 'name'
+                    ? 'fa fa-sort-' + sortDirection
+                    : 'fa fa-sort'
+                "
+              ></i>
+            </button>
           </th>
+
           <th>{{ moduleStrings.columns.position }}</th>
           <th class="d-none d-md-table-cell">
             {{ moduleStrings.columns.number }}
@@ -52,7 +88,9 @@
           <th class="d-none d-md-table-cell">
             {{ moduleStrings.columns.health }}
           </th>
-          <th *ngIf="canManage" class="text-end"></th>
+          <th *ngIf="canManage" class="text-end">
+            <span class="visually-hidden">Akcje</span>
+          </th>
         </tr>
       </thead>
       <tbody>
@@ -69,7 +107,7 @@
           <td *ngIf="canManage" class="text-end text-nowrap">
             <button
               type="button"
-              class="icon-btn me-2 bg-transparent"
+              class="icon-btn me-2"
               (click)="onEditPlayer(player, $event); hideTooltip($event)"
               data-bs-toggle="tooltip"
               data-bs-placement="top"
@@ -82,7 +120,7 @@
 
             <button
               type="button"
-              class="icon-btn bg-transparent"
+              class="icon-btn"
               (click)="onDeletePlayer(player, $event); hideTooltip($event)"
               data-bs-toggle="tooltip"
               data-bs-placement="top"

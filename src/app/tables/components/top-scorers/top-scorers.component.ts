@@ -1,4 +1,10 @@
-import { AfterViewInit, Component, ElementRef, OnDestroy } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  OnDestroy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TopScorerService } from '../../services/top-scorer.service';
 import { TopScorersSortKey } from '../../types';
@@ -31,7 +37,8 @@ export class TopScorersComponent implements AfterViewInit, OnDestroy {
 
   constructor(
     private topScorerService: TopScorerService,
-    private host: ElementRef<HTMLElement>
+    private host: ElementRef<HTMLElement>,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngAfterViewInit(): void {
@@ -48,6 +55,9 @@ export class TopScorersComponent implements AfterViewInit, OnDestroy {
     if (this.sortColumn === column) {
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
       this.sortDir$.next(this.sortDirection);
+
+      this.cdr.detectChanges();
+      queueMicrotask(() => this.refreshSortTooltips());
       return;
     }
 
@@ -56,6 +66,7 @@ export class TopScorersComponent implements AfterViewInit, OnDestroy {
     this.sortKey$.next(column);
     this.sortDir$.next('desc');
 
+    this.cdr.detectChanges();
     queueMicrotask(() => this.refreshSortTooltips());
   }
 
@@ -84,16 +95,14 @@ export class TopScorersComponent implements AfterViewInit, OnDestroy {
 
   private initSortTooltips(): void {
     const bs = (window as any)?.bootstrap;
-    if (!bs?.Tooltip) {
-      return;
-    }
+    if (!bs?.Tooltip) return;
 
     this.disposeSortTooltips();
 
-    const ths = this.host.nativeElement.querySelectorAll<HTMLElement>(
-      'th.sortable[data-bs-toggle="tooltip"]'
+    const btns = this.host.nativeElement.querySelectorAll<HTMLElement>(
+      'th.sortable button[data-bs-toggle="tooltip"]'
     );
-    ths.forEach((el) => {
+    btns.forEach((el) => {
       const inst =
         bs.Tooltip.getInstance?.(el) ??
         new bs.Tooltip(el, { placement: 'top' });
@@ -103,19 +112,23 @@ export class TopScorersComponent implements AfterViewInit, OnDestroy {
 
   private refreshSortTooltips(): void {
     const bs = (window as any)?.bootstrap;
-    if (!bs?.Tooltip) {
-      return;
-    }
+    if (!bs?.Tooltip) return;
 
-    const ths = this.host.nativeElement.querySelectorAll<HTMLElement>(
-      'th.sortable[data-bs-toggle="tooltip"]'
+    const btns = this.host.nativeElement.querySelectorAll<HTMLElement>(
+      'th.sortable button[data-bs-toggle="tooltip"]'
     );
-    ths.forEach((el) => {
+
+    btns.forEach((el) => {
       const inst = bs.Tooltip.getInstance?.(el);
+      const title =
+        el.getAttribute('data-bs-title') || el.getAttribute('title') || '';
+
+      el.setAttribute('data-bs-title', title);
+      el.setAttribute('title', title);
+      el.setAttribute('data-bs-original-title', title);
+
       if (inst?.setContent) {
-        inst.setContent({
-          '.tooltip-inner': el.getAttribute('data-bs-title') || '',
-        });
+        inst.setContent({ '.tooltip-inner': title });
       } else {
         inst?.dispose?.();
         this.sortTooltips.push(new bs.Tooltip(el, { placement: 'top' }));
@@ -149,11 +162,12 @@ export class TopScorersComponent implements AfterViewInit, OnDestroy {
     this.collapseTooltip = null;
   }
 
-  hideTooltip(ev: Event) {
+  hideTooltip(ev: Event, blur = true) {
     const el = ev.currentTarget as HTMLElement;
     const bs = (window as any).bootstrap;
-    const inst = bs?.Tooltip?.getInstance?.(el);
-    inst?.hide();
-    el.blur();
+    bs?.Tooltip?.getInstance?.(el)?.hide();
+    if (blur) {
+      el.blur();
+    }
   }
 }

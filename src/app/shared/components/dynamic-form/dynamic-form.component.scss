@@ -28,3 +28,9 @@ textarea {
 .text-danger {
   font-size: 0.875rem;
 }
+
+input[type="datetime-local"],
+input[type="date"],
+input[type="time"] {
+  color-scheme: dark;
+}

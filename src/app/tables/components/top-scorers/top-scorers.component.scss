@@ -46,6 +46,37 @@ table {
   font-size: 1rem;
 }
 
+.th-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  color: inherit;
+  font: inherit;
+  line-height: inherit;
+  text-align: inherit;
+  cursor: pointer;
+  outline: none;
+  box-shadow: none;
+
+  &:hover,
+  &:active {
+    color: inherit;
+    background: none;
+    box-shadow: none;
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 0.25rem $primary-dark;
+    border-radius: 0.375rem;
+  }
+
+  &:focus {
+    outline: none;
+  }
+}
+
 @media (max-width: 767.98px) {
   // Padding (p-3 to 1rem lub 16px)
   h6.card-title {

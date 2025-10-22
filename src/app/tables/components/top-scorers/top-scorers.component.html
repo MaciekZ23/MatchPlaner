@@ -48,11 +48,6 @@
             <th
               scope="col"
               class="sortable"
-              role="button"
-              tabindex="0"
-              (click)="sortData('goals'); hideTooltip($event)"
-              (keydown.enter)="sortData('goals')"
-              (keydown.space)="sortData('goals'); $event.preventDefault()"
               [attr.aria-sort]="
                 sortColumn === 'goals'
                   ? sortDirection === 'asc'
@@ -60,35 +55,44 @@
                     : 'descending'
                   : 'none'
               "
-              data-bs-toggle="tooltip"
-              data-bs-placement="top"
-              data-bs-trigger="hover"
-              [attr.data-bs-title]="
-                sortColumn === 'goals'
-                  ? sortDirection === 'asc'
-                    ? 'Sortuj malejąco'
-                    : 'Sortuj rosnąco'
-                  : 'Sortuj po golach'
-              "
             >
-              {{ moduleStrings.headers.goals }}
-              <i
-                aria-hidden="true"
-                [class]="
+              <button
+                type="button"
+                class="th-btn"
+                (click)="sortData('goals'); hideTooltip($event, false)"
+                data-bs-toggle="tooltip"
+                data-bs-placement="top"
+                data-bs-trigger="hover"
+                [attr.aria-label]="
                   sortColumn === 'goals'
-                    ? 'fa fa-sort-' + sortDirection
-                    : 'fa fa-sort'
+                    ? sortDirection === 'asc'
+                      ? 'Sortuj malejąco'
+                      : 'Sortuj rosnąco'
+                    : 'Sortuj po golach'
                 "
-              ></i>
+                [attr.data-bs-title]="
+                  sortColumn === 'goals'
+                    ? sortDirection === 'asc'
+                      ? 'Sortuj malejąco'
+                      : 'Sortuj rosnąco'
+                    : 'Sortuj po golach'
+                "
+              >
+                {{ moduleStrings.headers.goals }}
+                <i
+                  aria-hidden="true"
+                  [class]="
+                    sortColumn === 'goals'
+                      ? 'fa fa-sort-' + sortDirection
+                      : 'fa fa-sort'
+                  "
+                ></i>
+              </button>
             </th>
+
             <th
               scope="col"
               class="sortable d-none d-md-table-cell"
-              role="button"
-              tabindex="0"
-              (click)="sortData('assists'); hideTooltip($event)"
-              (keydown.enter)="sortData('assists')"
-              (keydown.space)="sortData('assists'); $event.preventDefault()"
               [attr.aria-sort]="
                 sortColumn === 'assists'
                   ? sortDirection === 'asc'
@@ -96,35 +100,44 @@
                     : 'descending'
                   : 'none'
               "
-              data-bs-toggle="tooltip"
-              data-bs-placement="top"
-              data-bs-trigger="hover"
-              [attr.data-bs-title]="
-                sortColumn === 'assists'
-                  ? sortDirection === 'asc'
-                    ? 'Sortuj malejąco'
-                    : 'Sortuj rosnąco'
-                  : 'Sortuj po asystach'
-              "
             >
-              {{ moduleStrings.headers.assists }}
-              <i
-                aria-hidden="true"
-                [class]="
+              <button
+                type="button"
+                class="th-btn"
+                (click)="sortData('assists'); hideTooltip($event, false)"
+                data-bs-toggle="tooltip"
+                data-bs-placement="top"
+                data-bs-trigger="hover"
+                [attr.aria-label]="
                   sortColumn === 'assists'
-                    ? 'fa fa-sort-' + sortDirection
-                    : 'fa fa-sort'
+                    ? sortDirection === 'asc'
+                      ? 'Sortuj malejąco'
+                      : 'Sortuj rosnąco'
+                    : 'Sortuj po asystach'
                 "
-              ></i>
+                [attr.data-bs-title]="
+                  sortColumn === 'assists'
+                    ? sortDirection === 'asc'
+                      ? 'Sortuj malejąco'
+                      : 'Sortuj rosnąco'
+                    : 'Sortuj po asystach'
+                "
+              >
+                {{ moduleStrings.headers.assists }}
+                <i
+                  aria-hidden="true"
+                  [class]="
+                    sortColumn === 'assists'
+                      ? 'fa fa-sort-' + sortDirection
+                      : 'fa fa-sort'
+                  "
+                ></i>
+              </button>
             </th>
+
             <th
               scope="col"
               class="sortable d-none d-md-table-cell"
-              role="button"
-              tabindex="0"
-              (click)="sortData('points'); hideTooltip($event)"
-              (keydown.enter)="sortData('points')"
-              (keydown.space)="sortData('points'); $event.preventDefault()"
               [attr.aria-sort]="
                 sortColumn === 'points'
                   ? sortDirection === 'asc'
@@ -132,26 +145,39 @@
                     : 'descending'
                   : 'none'
               "
-              data-bs-toggle="tooltip"
-              data-bs-placement="top"
-              data-bs-trigger="hover"
-              [attr.data-bs-title]="
-                sortColumn === 'points'
-                  ? sortDirection === 'asc'
-                    ? 'Sortuj malejąco'
-                    : 'Sortuj rosnąco'
-                  : 'Sortuj po punktach'
-              "
             >
-              {{ moduleStrings.headers.points }}
-              <i
-                aria-hidden="true"
-                [class]="
+              <button
+                type="button"
+                class="th-btn"
+                (click)="sortData('points'); hideTooltip($event, false)"
+                data-bs-toggle="tooltip"
+                data-bs-placement="top"
+                data-bs-trigger="hover"
+                [attr.aria-label]="
                   sortColumn === 'points'
-                    ? 'fa fa-sort-' + sortDirection
-                    : 'fa fa-sort'
+                    ? sortDirection === 'asc'
+                      ? 'Sortuj malejąco'
+                      : 'Sortuj rosnąco'
+                    : 'Sortuj po punktach'
                 "
-              ></i>
+                [attr.data-bs-title]="
+                  sortColumn === 'points'
+                    ? sortDirection === 'asc'
+                      ? 'Sortuj malejąco'
+                      : 'Sortuj rosnąco'
+                    : 'Sortuj po punktach'
+                "
+              >
+                {{ moduleStrings.headers.points }}
+                <i
+                  aria-hidden="true"
+                  [class]="
+                    sortColumn === 'points'
+                      ? 'fa fa-sort-' + sortDirection
+                      : 'fa fa-sort'
+                  "
+                ></i>
+              </button>
             </th>
           </tr>
         </thead>

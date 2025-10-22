@@ -1,5 +1,6 @@
 import {
   AfterViewInit,
+  ChangeDetectorRef,
   Component,
   ElementRef,
   OnDestroy,
@@ -39,7 +40,8 @@ export class GoalkeepersCleanSheetsComponent
 
   constructor(
     private cleanSheetsService: GoalkeepersCleanSheetsService,
-    private host: ElementRef<HTMLElement>
+    private host: ElementRef<HTMLElement>,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -66,6 +68,38 @@ export class GoalkeepersCleanSheetsComponent
     this.sortDir$.next(this.sortDirection);
     this.sortColumn = column;
     queueMicrotask(() => this.initOrUpdateTooltip());
+    this.cdr.detectChanges();
+    this.refreshSortTooltip();
+  }
+
+  private refreshSortTooltip(): void {
+    const bs = (window as any).bootstrap;
+    if (!bs?.Tooltip) {
+      return;
+    }
+
+    const btn = this.host.nativeElement.querySelector<HTMLElement>(
+      'th.sortable button[data-bs-toggle="tooltip"]'
+    );
+    if (!btn) {
+      return;
+    }
+
+    const title =
+      btn.getAttribute('data-bs-title') || btn.getAttribute('title') || '';
+
+    btn.setAttribute('data-bs-title', title);
+    btn.setAttribute('title', title);
+    btn.setAttribute('data-bs-original-title', title); // dla starszych wersji
+
+    const inst = bs.Tooltip.getInstance?.(btn);
+
+    if (inst?.setContent) {
+      inst.setContent({ '.tooltip-inner': title });
+    } else {
+      inst?.dispose?.();
+      this.tooltipInstance = new bs.Tooltip(btn, { placement: 'top' });
+    }
   }
 
   toggleCollapse(): void {
@@ -73,7 +107,6 @@ export class GoalkeepersCleanSheetsComponent
     const el = this.collapseBtn?.nativeElement;
     if (!el) return;
 
-    // zaktualizuj title tooltips
     el.setAttribute(
       'data-bs-title',
       this.isCollapsed ? 'Rozwiń sekcję' : 'Zwiń sekcję'
@@ -100,7 +133,7 @@ export class GoalkeepersCleanSheetsComponent
     }
 
     const th = this.host.nativeElement.querySelector<HTMLElement>(
-      'th.sortable[data-bs-toggle="tooltip"]'
+      'th.sortable button[data-bs-toggle="tooltip"]'
     );
     if (!th) {
       return;
@@ -145,11 +178,12 @@ export class GoalkeepersCleanSheetsComponent
     this.collapseTooltip = null;
   }
 
-  hideTooltip(ev: Event) {
+  hideTooltip(ev: Event, blur = true) {
     const el = ev.currentTarget as HTMLElement;
     const bs = (window as any).bootstrap;
-    const inst = bs?.Tooltip?.getInstance?.(el);
-    inst?.hide();
-    el.blur();
+    bs?.Tooltip?.getInstance?.(el)?.hide();
+    if (blur) {
+      el.blur();
+    }
   }
 }

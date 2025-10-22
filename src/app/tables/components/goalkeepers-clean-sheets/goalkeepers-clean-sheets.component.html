@@ -48,11 +48,6 @@
             <th
               scope="col"
               class="sortable"
-              role="button"
-              tabindex="0"
-              (click)="sortData('cleanSheets'); hideTooltip($event)"
-              (keydown.enter)="sortData('cleanSheets')"
-              (keydown.space)="sortData('cleanSheets'); $event.preventDefault()"
               [attr.aria-sort]="
                 sortColumn === 'cleanSheets'
                   ? sortDirection === 'asc'
@@ -60,26 +55,39 @@
                     : 'descending'
                   : 'none'
               "
-              data-bs-toggle="tooltip"
-              data-bs-placement="top"
-              data-bs-trigger="hover"
-              [attr.data-bs-title]="
-                sortColumn === 'cleanSheets'
-                  ? sortDirection === 'asc'
-                    ? 'Sortuj malejąco'
-                    : 'Sortuj rosnąco'
-                  : 'Sortuj'
-              "
             >
-              {{ moduleStrings.headers.cleanSheets }}
-              <i
-                aria-hidden="true"
-                [class]="
+              <button
+                type="button"
+                class="th-btn"
+                (click)="sortData('cleanSheets'); hideTooltip($event, false)"
+                data-bs-toggle="tooltip"
+                data-bs-placement="top"
+                data-bs-trigger="hover"
+                [attr.aria-label]="
                   sortColumn === 'cleanSheets'
-                    ? 'fa fa-sort-' + sortDirection
-                    : 'fa fa-sort'
+                    ? sortDirection === 'asc'
+                      ? 'Sortuj malejąco'
+                      : 'Sortuj rosnąco'
+                    : 'Sortuj'
                 "
-              ></i>
+                [attr.data-bs-title]="
+                  sortColumn === 'cleanSheets'
+                    ? sortDirection === 'asc'
+                      ? 'Sortuj malejąco'
+                      : 'Sortuj rosnąco'
+                    : 'Sortuj'
+                "
+              >
+                {{ moduleStrings.headers.cleanSheets }}
+                <i
+                  aria-hidden="true"
+                  [class]="
+                    sortColumn === 'cleanSheets'
+                      ? 'fa fa-sort-' + sortDirection
+                      : 'fa fa-sort'
+                  "
+                ></i>
+              </button>
             </th>
           </tr>
         </thead>

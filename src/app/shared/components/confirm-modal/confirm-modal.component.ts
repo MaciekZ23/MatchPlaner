@@ -16,6 +16,7 @@ import { ConfirmModalSize, ConfirmVariant } from './types';
 import { stringsConfirmModal } from './misc';
 
 declare const bootstrap: any;
+let uid = 0;
 
 @Component({
   selector: 'app-confirm-modal',
@@ -29,6 +30,7 @@ export class ConfirmModalComponent implements AfterViewInit, OnDestroy {
   @ViewChild('modalRef', { static: true })
   modalRef!: ElementRef<HTMLDivElement>;
 
+  @Input() idPrefix = `confirm-modal-${++uid}`;
   @Input() title?: string;
   @Input() message?: string;
   @Input() labels: ConfirmModalLabels = {};

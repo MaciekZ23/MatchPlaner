@@ -1,4 +1,10 @@
-<div class="card text-white m-1 match-card" (click)="onClick()">
+<div
+  class="card text-white m-1 match-card"
+  (click)="onClick()"
+  tabindex="0"
+  role="button"
+  [attr.aria-label]="'Mecz: ' + match.teamA + ' vs ' + match.teamB"
+>
   <div class="card-body p-2 p-md-3">
     <div class="d-flex justify-content-between align-items-center mb-1 mb-md-2">
       <div class="d-flex align-items-center justify-content-start">

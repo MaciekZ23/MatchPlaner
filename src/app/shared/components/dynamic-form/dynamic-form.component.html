@@ -1,6 +1,6 @@
 <div
   class="modal fade"
-  id="{{ idModal }}"
+  [id]="idModal"
   tabindex="-1"
   [attr.aria-labelledby]="this.idModal"
   data-bs-keyboard="false"
@@ -12,7 +12,9 @@
   >
     <div class="modal-content bg-dark text-light rounded-3">
       <div class="modal-header border-0">
-        <h5 class="modal-title" id="formModalLabel">{{ formTitle }}</h5>
+        <h2 class="modal-title h5" [id]="idModal + '-label'">
+          {{ formTitle }}
+        </h2>
         <button
           type="button"
           class="btn-close btn-close-white"
@@ -169,7 +171,7 @@
               }@case('repeater') {
               <div [formArrayName]="field.name" class="repeater">
                 <div class="d-flex justify-content-end align-items-center mb-2">
-                  <h6 class="mb-0 me-auto">{{ field.label }}</h6>
+                  <h3 class="mb-0 me-auto h6">{{ field.label }}</h3>
                   <button
                     type="button"
                     class="btn btn-sm btn-outline-light d-inline-flex align-items-center"
@@ -198,11 +200,12 @@
                       <div class="col-12">
                         @if(inner.displayLabel !== false && inner.type !==
                         'hidden') {
-                        <label class="form-label">
+                        <label class="form-label" [for]="inner.name + '-' + i">
                           {{ inner.label }}
                         </label>
                         } @switch (inner.type) { @case('text') {
                         <input
+                          [id]="inner.name + '-' + i"
                           type="text"
                           class="form-control"
                           [formControlName]="inner.name"
@@ -212,6 +215,7 @@
                         <input type="hidden" [formControlName]="inner.name" />
                         } @case('email') {
                         <input
+                          [id]="inner.name + '-' + i"
                           type="email"
                           class="form-control"
                           [formControlName]="inner.name"
@@ -219,6 +223,7 @@
                         />
                         } @case('number') {
                         <input
+                          [id]="inner.name + '-' + i"
                           type="number"
                           class="form-control"
                           [formControlName]="inner.name"
@@ -229,6 +234,7 @@
 
                         } @case('date') {
                         <input
+                          [id]="inner.name + '-' + i"
                           type="date"
                           class="form-control"
                           [formControlName]="inner.name"
@@ -237,12 +243,14 @@
                         />
                         } @case('time') {
                         <input
+                          [id]="inner.name + '-' + i"
                           type="time"
                           class="form-control"
                           [formControlName]="inner.name"
                         />
                         } @case('datetime') {
                         <input
+                          [id]="inner.name + '-' + i"
                           type="datetime-local"
                           class="form-control"
                           [formControlName]="inner.name"
@@ -251,16 +259,20 @@
                         } @case('checkbox') {
                         <div class="form-check">
                           <input
+                            [id]="inner.name + '-' + i"
                             type="checkbox"
                             class="form-check-input"
                             [formControlName]="inner.name"
                           />
-                          <label class="form-check-label">{{
-                            inner.label
-                          }}</label>
+                          <label
+                            class="form-check-label"
+                            [for]="inner.name + '-' + i"
+                            >{{ inner.label }}</label
+                          >
                         </div>
                         } @case('textarea') {
                         <textarea
+                          [id]="inner.name + '-' + i"
                           class="form-control"
                           [rows]="inner.rows || 3"
                           [placeholder]="inner.placeholder || ''"
@@ -268,6 +280,7 @@
                         ></textarea>
                         } @case('select') {
                         <select
+                          [id]="inner.name + '-' + i"
                           class="form-select"
                           [formControlName]="inner.name"
                           [multiple]="inner?.multiple || false"
@@ -302,7 +315,7 @@
                     >
                       <button
                         type="button"
-                        class="btn btn-sm btn-outline-danger d-inline-flex align-items-center"
+                        class="btn btn-sm btn-danger d-inline-flex align-items-center"
                         (click)="removeRepeaterItem(field.name, i)"
                       >
                         <i class="fa-solid fa-trash-can"></i>

@@ -9,6 +9,16 @@
     transform: scale(1.02);
     background-color: $match-card-hover;
   }
+
+  &:focus {
+    outline: none;
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 4px $white;
+    transform: scale(1.02);
+  }
 }
 
 .team-logo {

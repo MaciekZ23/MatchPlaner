@@ -2,6 +2,7 @@ import {
   ChangeDetectorRef,
   Component,
   EventEmitter,
+  HostListener,
   Input,
   OnDestroy,
   OnInit,
@@ -44,6 +45,22 @@ export class MatchCardComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.tickSub?.unsubscribe();
+  }
+
+  @HostListener('keydown', ['$event'])
+  onKeyDown(event: KeyboardEvent): void {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      this.onClick();
+    }
+  }
+
+  onCardClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    // jeśli kliknięto przycisk lub coś w środku przycisku — NIE otwieraj modala
+    if (target.closest('button')) return;
+
+    this.onClick();
   }
 
   onClick() {
