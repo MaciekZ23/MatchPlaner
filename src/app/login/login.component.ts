@@ -24,7 +24,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
 
   private router = inject(Router);
   private route = inject(ActivatedRoute);
-  private http = inject(HttpClient);
+  //private http = inject(HttpClient);
   private appAuth = inject(AuthService);
   private notificationService = inject(NotificationService);
 
@@ -137,11 +137,11 @@ export class LoginComponent implements OnInit, AfterViewInit {
     }
 
     this.appAuth.loginWithGoogle(idToken).subscribe({
-      next: ({ token, user }) => {
+      next: ({ accessToken, refreshToken, user }) => {
         const fallback = this.extractGooglePicture(idToken);
         const avatarUrl = user?.avatarUrl ?? fallback ?? undefined;
 
-        this.appAuth.saveSession(token, avatarUrl);
+        this.appAuth.saveSession(accessToken, avatarUrl, refreshToken);
         if (!user?.avatarUrl && fallback) {
           this.appAuth.setAvatar(fallback);
         }
@@ -183,8 +183,8 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this.errorMsg = '';
 
     this.appAuth.loginAsGuest().subscribe({
-      next: ({ token }) => {
-        this.appAuth.saveSession(token);
+      next: ({ accessToken, refreshToken }) => {
+        this.appAuth.saveSession(accessToken, undefined, refreshToken);
         this.notificationService.addWelcome('GUEST');
         this.navigateAfterLogin();
       },
