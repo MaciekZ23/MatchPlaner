@@ -154,10 +154,12 @@
                 [formControlName]="field.name"
                 class="form-select"
                 [multiple]="field?.multiple || false"
+                [disabled]="!!field.disabled"
                 [ngClass]="{
                   'is-invalid':
                     form.get(field.name)?.invalid &&
-                    form.get(field.name)?.touched
+                    form.get(field.name)?.touched,
+                  'bg-secondary text-light opacity-75': isDisabled(field.name)
                 }"
               >
                 <option
@@ -284,6 +286,11 @@
                           class="form-select"
                           [formControlName]="inner.name"
                           [multiple]="inner?.multiple || false"
+                          [disabled]="!!inner.disabled"
+                          [ngClass]="{
+                            'bg-secondary text-light opacity-75':
+                              isInnerDisabled(field.name, i, inner.name)
+                          }"
                         >
                           <ng-container
                             *ngIf="asRepeater(field).optionsByIndex?.[i]?.[inner.name] as perRowOpts; else defaultOpts"

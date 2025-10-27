@@ -136,10 +136,8 @@ export class TournamentStore {
   }
 
   getTeamsForGroup(groupId: string) {
-    return combineLatest([this.getGroupById(groupId), this.teamMap$]).pipe(
-      map(([g, tmap]) =>
-        g ? g.teamIds.map((id) => tmap.get(id)!).filter(Boolean) : []
-      )
+    return this.teams$.pipe(
+      map((teams) => teams.filter((t) => t.groupId === groupId))
     );
   }
 

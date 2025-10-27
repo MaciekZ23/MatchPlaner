@@ -2,6 +2,7 @@ export interface Team {
   id: number;
   name: string;
   logo?: string;
+  groupId?: string | null;
   players: Player[];
 }
 

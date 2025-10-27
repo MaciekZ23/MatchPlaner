@@ -128,6 +128,7 @@
 ></app-confirm-modal>
 
 <app-dynamic-form
+  #addMatchFormRef
   [formTitle]="formTitleAddMatch"
   [fields]="addMatchFormFields"
   [isOpen]="openAddMatchFormModal"
@@ -137,6 +138,7 @@
 ></app-dynamic-form>
 
 <app-dynamic-form
+  #editMatchFormRef
   [formTitle]="formTitleEditMatch"
   [fields]="editMatchFormFields"
   [isOpen]="openEditMatchFormModal"

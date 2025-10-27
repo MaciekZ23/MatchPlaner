@@ -40,7 +40,6 @@ export class DynamicFormComponent implements OnInit, OnChanges, OnDestroy {
   @Output() formSubmitted = new EventEmitter<FormField[]>();
   @Output() close = new EventEmitter<void>();
   @Output() valueChanges = new EventEmitter<Record<string, any>>();
-
   private valueSub?: any;
 
   NumMin: number = Number.MIN_SAFE_INTEGER; // Minimalna wartość dla pól liczbowych
@@ -181,12 +180,66 @@ export class DynamicFormComponent implements OnInit, OnChanges, OnDestroy {
     return arr;
   }
 
-  private syncRepeaterArray(ctrl: FormArray, f: RepeaterFormField) {
-    while (ctrl.length) ctrl.removeAt(0);
-    const items = Array.isArray(f.value) ? f.value : [];
-    for (const item of items) {
-      ctrl.push(this.buildInnerGroup(f, item));
+  public setRepeaterFieldDisabled(
+    repeaterName: string,
+    subFieldName: string,
+    index: number,
+    disabled: boolean
+  ) {
+    const fa = this.form.get(repeaterName) as FormArray | null;
+    if (!fa) return;
+    const group = fa.at(index) as FormGroup | null;
+    if (!group) return;
+    const control = group.get(subFieldName);
+    if (!control) return;
+
+    if (disabled) {
+      control.disable({ emitEvent: false });
+    } else {
+      control.enable({ emitEvent: false });
     }
+  }
+
+  private syncRepeaterArray(ctrl: FormArray, f: RepeaterFormField) {
+    const items = Array.isArray(f.value) ? f.value : [];
+
+    // Jeśli liczba elementów się różni — przebuduj
+    if (ctrl.length !== items.length) {
+      while (ctrl.length) ctrl.removeAt(0);
+      for (const item of items) {
+        ctrl.push(this.buildInnerGroup(f, item));
+      }
+      return;
+    }
+
+    // Jeśli liczba się zgadza — zaktualizuj istniejące kontrolki
+    items.forEach((item, index) => {
+      const group = ctrl.at(index) as FormGroup;
+      for (const innerField of f.fields) {
+        const c = group.get(innerField.name);
+        if (!c) continue;
+
+        // aktualizacja enable/disable
+        const shouldBeDisabled = !!innerField.disabled;
+        if (shouldBeDisabled && !c.disabled) {
+          c.disable({ emitEvent: false });
+        } else if (!shouldBeDisabled && c.disabled) {
+          c.enable({ emitEvent: false });
+        }
+
+        // aktualizacja wartości (jeśli zmieniła się)
+        const val = this.coerceValue({
+          ...innerField,
+          value: item?.[innerField.name],
+        } as FormField);
+        const same =
+          JSON.stringify(c.value) === JSON.stringify(val) ||
+          (c.value == null && val === '');
+        if (!same) {
+          c.setValue(val, { emitEvent: false });
+        }
+      }
+    });
   }
 
   private buildInnerGroup(
@@ -290,7 +343,9 @@ export class DynamicFormComponent implements OnInit, OnChanges, OnDestroy {
       const mult = (field as SelectFormField).multiple;
       if (mult) {
         const v = field.value;
-        if (Array.isArray(v)) {return v;}
+        if (Array.isArray(v)) {
+          return v;
+        }
         return v != null && v !== '' ? [v] : [];
       }
       return field.value ?? null;
@@ -364,6 +419,20 @@ export class DynamicFormComponent implements OnInit, OnChanges, OnDestroy {
       modal?.hide();
     }
     this.close.emit();
+  }
+
+  isDisabled(name: string): boolean {
+    return !!this.form.get(name)?.disabled;
+  }
+
+  isInnerDisabled(
+    repeaterName: string,
+    index: number,
+    innerName: string
+  ): boolean {
+    const fa = this.form.get(repeaterName) as FormArray | null;
+    const g = fa?.at(index) as FormGroup | null;
+    return !!g?.get(innerName)?.disabled;
   }
 
   calcTotalSpan(field: FormField): string {

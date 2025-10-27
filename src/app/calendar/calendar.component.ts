@@ -39,6 +39,7 @@ import {
   SelectOption,
 } from '../shared/components/dynamic-form/models/form-field';
 import { isoToLocalInput, localInputToIso } from '../core/utils';
+import { FormArray, FormGroup } from '@angular/forms';
 
 @Component({
   selector: 'app-calendar',
@@ -62,6 +63,9 @@ export class CalendarComponent {
   deleteAllMatchesConfirm!: ConfirmModalComponent;
 
   @ViewChild('deleteMatchConfirm') deleteMatchConfirm!: ConfirmModalComponent;
+
+  @ViewChild('addMatchFormRef') addMatchFormRef!: DynamicFormComponent;
+  @ViewChild('editMatchFormRef') editMatchFormRef!: DynamicFormComponent;
 
   moduleStrings = stringsCalendar;
   confirmStrings = stringsConfirmModal;
@@ -139,9 +143,16 @@ export class CalendarComponent {
   generateFormFields: FormField[] = [];
 
   private gkOptionsForTeam(teamId?: string | null) {
-    if (!teamId) return [];
+    if (!teamId) {
+      return [];
+    }
     return Array.from(this.latestPlayerMap.values())
-      .filter((p) => p.teamId === teamId && p.position === 'GK')
+      .filter(
+        (p) =>
+          p.teamId === teamId &&
+          p.position === 'GK' &&
+          p.healthStatus === 'HEALTHY'
+      )
       .map((p) => ({ label: p.name, value: String(p.id) }));
   }
 
@@ -154,11 +165,8 @@ export class CalendarComponent {
 
   private teamOptionsForGroup(groupId?: string | null): SelectOption[] {
     if (!groupId) return this.teamOptionsAll();
-    const g = this.latestGroupMap.get(groupId);
-    if (!g) return this.teamOptionsAll();
-    return g.teamIds
-      .map((id) => this.latestTeamMap.get(id))
-      .filter((t): t is CoreTeam => !!t)
+    return Array.from(this.latestTeamMap.values())
+      .filter((t) => t.groupId === groupId)
       .map((t) => ({ label: t.name, value: String(t.id) }));
   }
 
@@ -398,12 +406,26 @@ export class CalendarComponent {
     ]);
 
     const eventsVal = Array.isArray(val['events']) ? val['events'] : [];
+
+    eventsVal.forEach((ev: any, i: number) => {
+      const type = String(ev?.type ?? '').toUpperCase();
+      const shouldEnableCard = type === 'CARD';
+      // użyj referencji do DynamicFormComponent:
+      this.addMatchFormRef?.setRepeaterFieldDisabled(
+        'events',
+        'card',
+        i,
+        !shouldEnableCard
+      );
+    });
+
     this.setRepeaterPlayersOptionsByIndex(
       fields,
       'events',
       eventsVal,
       homeTeamId,
-      awayTeamId
+      awayTeamId,
+      val
     );
   }
 
@@ -482,12 +504,25 @@ export class CalendarComponent {
     ]);
 
     const eventsVal = Array.isArray(val['events']) ? val['events'] : [];
+
+    eventsVal.forEach((ev: any, i: number) => {
+      const type = String(ev?.type ?? '').toUpperCase();
+      const shouldEnableCard = type === 'CARD';
+      this.editMatchFormRef?.setRepeaterFieldDisabled(
+        'events',
+        'card',
+        i,
+        !shouldEnableCard
+      );
+    });
+
     this.setRepeaterPlayersOptionsByIndex(
       fields,
       'events',
       eventsVal,
       homeTeamId,
-      awayTeamId
+      awayTeamId,
+      val
     );
   }
 
@@ -634,7 +669,29 @@ export class CalendarComponent {
   private playersOptionsForTeams(teamIds: string[]): SelectOption[] {
     const wanted = new Set(teamIds.filter(Boolean));
     return Array.from(this.latestPlayerMap.values())
-      .filter((p) => (wanted.size ? wanted.has(p.teamId) : false))
+      .filter((p) => wanted.has(p.teamId) && p.healthStatus === 'HEALTHY')
+      .map((p) => ({ label: p.name, value: String(p.id) }));
+  }
+
+  private playersOptionsForTeamsFiltered(
+    teamIds: string[],
+    homeGKIds: string[],
+    awayGKIds: string[]
+  ): SelectOption[] {
+    const wanted = new Set(teamIds.filter(Boolean));
+
+    const allowedGKIds = new Set([...homeGKIds, ...awayGKIds].filter(Boolean));
+
+    return Array.from(this.latestPlayerMap.values())
+      .filter((p) => {
+        if (!wanted.has(p.teamId) || p.healthStatus !== 'HEALTHY') return false;
+
+        // jeśli bramkarz, to tylko jeśli grał
+        if (p.position === 'GK') {
+          return allowedGKIds.has(p.id);
+        }
+        return true;
+      })
       .map((p) => ({ label: p.name, value: String(p.id) }));
   }
 
@@ -655,7 +712,8 @@ export class CalendarComponent {
     repeaterName: string,
     eventsVal: any[],
     homeTeamId: string | null,
-    awayTeamId: string | null
+    awayTeamId: string | null,
+    val: Record<string, any> = {}
   ) {
     const i = arr.findIndex(
       (f) => f.name === repeaterName && f.type === 'repeater'
@@ -663,15 +721,111 @@ export class CalendarComponent {
     if (i < 0) return;
     const rep = arr[i] as RepeaterFormField;
 
+    const homeGKIds: string[] = Array.isArray(val['homeGKIds'])
+      ? val['homeGKIds']
+      : this.fieldValue(arr, 'homeGKIds') ?? [];
+
+    const awayGKIds: string[] = Array.isArray(val['awayGKIds'])
+      ? val['awayGKIds']
+      : this.fieldValue(arr, 'awayGKIds') ?? [];
+
     const byIndex: Record<number, Record<string, SelectOption[]>> = {};
+
     (eventsVal ?? []).forEach((ev, idx) => {
       const tid = String(ev?.teamId ?? '').trim() || null;
       byIndex[idx] = {
-        playerId: this.playersOptionsForEventTeam(tid, homeTeamId, awayTeamId),
+        playerId: this.playersOptionsForTeamsFiltered(
+          tid ? [tid] : [homeTeamId ?? '', awayTeamId ?? ''],
+          homeGKIds,
+          awayGKIds
+        ),
       };
     });
+
     rep.optionsByIndex = byIndex;
   }
+
+  // private diffEvents(baseEvents: any[], editedEvents: any[]) {
+  //   const baseById = new Map<string, any>();
+  //   baseEvents.forEach((e, i) => baseById.set(String(e.id ?? i), e));
+
+  //   const seen = new Set<string>();
+  //   const append: MatchEventInput[] = [];
+  //   const update: Array<{
+  //     id: string;
+  //     minute?: number;
+  //     type?: string;
+  //     playerId?: string;
+  //     teamId?: string;
+  //     card?: string | null;
+  //   }> = [];
+
+  //   const num = (v: any) => {
+  //     const n = Number(v);
+  //     return Number.isFinite(n) ? n : undefined;
+  //   };
+  //   const up = (s: any) =>
+  //     String(s ?? '')
+  //       .trim()
+  //       .toUpperCase();
+
+  //   for (const e of editedEvents) {
+  //     const idRaw = String(e['id'] ?? '').trim();
+  //     const minute = num(e['minute']) ?? 0;
+  //     const type = up(e['type']);
+  //     const playerId = String(e['playerId'] ?? '').trim();
+  //     const teamId = String(e['teamId'] ?? '').trim();
+  //     const card = up(e['card']);
+
+  //     if (!idRaw || !baseById.has(idRaw)) {
+  //       const ev: any = { minute, type, playerId, teamId };
+  //       if (type === 'CARD') ev.card = card || 'YELLOW';
+  //       append.push(ev as MatchEventInput);
+  //     } else {
+  //       seen.add(idRaw);
+  //       const old = baseById.get(idRaw) ?? {};
+  //       const out: any = { id: idRaw };
+  //       let changed = false;
+
+  //       if ((old.minute ?? 0) !== minute) {
+  //         out.minute = minute;
+  //         changed = true;
+  //       }
+  //       if (up(old.type) !== type) {
+  //         out.type = type;
+  //         changed = true;
+  //       }
+  //       if ((old.playerId ?? '') !== playerId) {
+  //         out.playerId = playerId;
+  //         changed = true;
+  //       }
+  //       if ((old.teamId ?? '') !== teamId) {
+  //         out.teamId = teamId;
+  //         changed = true;
+  //       }
+
+  //       const oldCard = up(old.card);
+  //       if (type === 'CARD') {
+  //         if (oldCard !== (card || 'YELLOW')) {
+  //           out.card = card || 'YELLOW';
+  //           changed = true;
+  //         }
+  //       } else if (oldCard) {
+  //         out.card = null;
+  //         changed = true;
+  //       }
+
+  //       if (changed) update.push(out);
+  //     }
+  //   }
+
+  //   const del: string[] = [];
+  //   for (const id of baseById.keys()) {
+  //     if (!seen.has(id)) del.push(id);
+  //   }
+
+  //   return { append, update, del };
+  // }
 
   private diffEvents(baseEvents: any[], editedEvents: any[]) {
     const baseById = new Map<string, any>();
@@ -681,16 +835,16 @@ export class CalendarComponent {
     const append: MatchEventInput[] = [];
     const update: Array<{
       id: string;
-      minute?: number;
-      type?: string;
-      playerId?: string;
-      teamId?: string;
+      minute: number;
+      type: string;
+      playerId: string;
+      teamId: string;
       card?: string | null;
     }> = [];
 
     const num = (v: any) => {
       const n = Number(v);
-      return Number.isFinite(n) ? n : undefined;
+      return Number.isFinite(n) ? n : 0;
     };
     const up = (s: any) =>
       String(s ?? '')
@@ -699,7 +853,7 @@ export class CalendarComponent {
 
     for (const e of editedEvents) {
       const idRaw = String(e['id'] ?? '').trim();
-      const minute = num(e['minute']) ?? 0;
+      const minute = num(e['minute']);
       const type = up(e['type']);
       const playerId = String(e['playerId'] ?? '').trim();
       const teamId = String(e['teamId'] ?? '').trim();
@@ -712,38 +866,27 @@ export class CalendarComponent {
       } else {
         seen.add(idRaw);
         const old = baseById.get(idRaw) ?? {};
-        const out: any = { id: idRaw };
         let changed = false;
 
-        if ((old.minute ?? 0) !== minute) {
-          out.minute = minute;
-          changed = true;
-        }
-        if (up(old.type) !== type) {
-          out.type = type;
-          changed = true;
-        }
-        if ((old.playerId ?? '') !== playerId) {
-          out.playerId = playerId;
-          changed = true;
-        }
-        if ((old.teamId ?? '') !== teamId) {
-          out.teamId = teamId;
-          changed = true;
-        }
-
+        if ((old.minute ?? 0) !== minute) changed = true;
+        if (up(old.type) !== type) changed = true;
+        if ((old.playerId ?? '') !== playerId) changed = true;
+        if ((old.teamId ?? '') !== teamId) changed = true;
         const oldCard = up(old.card);
         if (type === 'CARD') {
-          if (oldCard !== (card || 'YELLOW')) {
-            out.card = card || 'YELLOW';
-            changed = true;
-          }
-        } else if (oldCard) {
-          out.card = null;
-          changed = true;
-        }
+          if (oldCard !== (card || 'YELLOW')) changed = true;
+        } else if (oldCard) changed = true;
 
-        if (changed) update.push(out);
+        if (changed) {
+          update.push({
+            id: idRaw,
+            minute,
+            type,
+            playerId,
+            teamId,
+            card: type === 'CARD' ? card || 'YELLOW' : null,
+          });
+        }
       }
     }
 
@@ -1404,6 +1547,7 @@ export class CalendarComponent {
         name: 'card',
         label: this.moduleStrings.matchEventsFormLabels.card,
         type: 'select',
+        disabled: true,
         options: [
           {
             label: this.moduleStrings.matchEventsFormLabels.cardOptions.YELLOW,

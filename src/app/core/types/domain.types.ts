@@ -10,6 +10,7 @@ export type CardKind = 'YELLOW' | 'RED' | 'SECOND_YELLOW';
 export type CreateTeamPayload = {
   name: string;
   logo?: string | null;
+  groupId?: string | null;
 };
 export interface CreatePlayerPayload {
   name: string;

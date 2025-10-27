@@ -29,7 +29,6 @@ export interface Tournament {
 export interface Group {
   id: string;
   name: string;
-  teamIds: string[];
 }
 
 export interface Stage {
@@ -43,6 +42,7 @@ export interface Team {
   id: string;
   name: string;
   logo?: string;
+  groupId?: string | null;
   playerIds: string[];
 }
 
@@ -87,7 +87,6 @@ export interface Match {
 
 export interface CreateGroupPayload {
   name: string;
-  teamIds: string[];
 }
 
 export interface CreateStagePayload {
@@ -126,7 +125,7 @@ export interface UpdateTournamentPayload {
   venueImageUrl?: string | null;
   groupsAppend?: CreateGroupPayload[];
   groupsDelete?: string[];
-  groupsUpdate?: Array<{ id: string; name?: string; teamIds?: string[] }>;
+  groupsUpdate?: Array<{ id: string; name?: string }>;
   stagesAppend?: CreateStagePayload[];
   stagesDelete?: string[];
   stagesUpdate?: Array<{ id: string; name?: string; order?: number }>;

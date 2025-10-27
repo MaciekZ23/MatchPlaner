@@ -182,7 +182,7 @@ export class TournamentPickerComponent {
         const groups: FormField = this.groupsRepeaterFields(
           'groups',
           (tt.groups || []).map((g) => {
-            return { id: g.id, name: g.name, teamIds: g.teamIds };
+            return { id: g.id, name: g.name };
           }),
           teamOptions
         );
@@ -310,7 +310,6 @@ export class TournamentPickerComponent {
       (payload as any).groups = groups.map((g) => {
         return {
           name: String(g?.name || '').trim(),
-          teamIds: Array.isArray(g?.teamIds) ? g.teamIds : [],
         };
       });
     }
@@ -401,7 +400,6 @@ export class TournamentPickerComponent {
         return {
           id: String(g.id),
           name: String(g.name || '').trim(),
-          teamIds: Array.isArray(g.teamIds) ? g.teamIds : [],
         };
       });
 
@@ -410,7 +408,6 @@ export class TournamentPickerComponent {
       .map((g) => {
         return {
           name: String(g?.name || '').trim(),
-          teamIds: Array.isArray(g?.teamIds) ? g.teamIds : [],
         };
       });
 
@@ -613,14 +610,6 @@ export class TournamentPickerComponent {
         required: true,
         value: '',
         placeholder: 'Grupa A',
-      },
-      {
-        name: 'teamIds',
-        label: 'Drużyny w grupie',
-        type: 'select',
-        multiple: true,
-        options: teamOptions,
-        value: [],
       },
     ];
 

@@ -1,8 +1,8 @@
 export const stringsLogin = {
-  appName: 'MatchPLANER',
+  appName: 'MatchPLANNER',
   logoPath: 'assets/MatchPlaner2.png',
   login: {
-    welcome: 'Witamy w MatchPLANER!',
+    welcome: 'Witamy w MatchPLANNER!',
     googleButtonText: 'Zaloguj się przez Google',
     questLogin: ' Kontynuuj jako gość',
   },

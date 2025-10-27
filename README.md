@@ -1,6 +1,6 @@
-# MatchPlaner
+# MatchPlanner
 
-**MatchPlaner** to webowa aplikacja służąca do przeglądania i śledzenia lokalnych turniejów piłki nożnej.
+**MatchPlanner** to webowa aplikacja służąca do przeglądania i śledzenia lokalnych turniejów piłki nożnej.
 
 Projekt umożliwia przeglądanie terminarza rozgrywek, śledzenie wyników meczów, statystyk zawodników, składu drużyn. Aplikacja pozwala także wyróżniać najlepszych zawodników poprzez głosowanie na MVP meczu.
 
@@ -15,7 +15,7 @@ Projekt umożliwia przeglądanie terminarza rozgrywek, śledzenie wyników mecz�
 
 ## Technologie
 
-- [Angular](https://angular.io/) 
+- [Angular](https://angular.io/)
 - [Bootstrap](https://getbootstrap.com/)
 - [TypeScript](https://www.typescriptlang.org/)
 - [HTML / SCSS]
@@ -31,5 +31,3 @@ Projekt umożliwia przeglądanie terminarza rozgrywek, śledzenie wyników mecz�
 - `src/app/topbar` – panel logowania / pasek użytkownika
 - `src/app/core` – store turnieju, modele domenowe, mock-API
 - `src/app/shared` – współdzielone komponenty
-
-

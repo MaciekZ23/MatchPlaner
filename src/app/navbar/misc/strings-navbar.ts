@@ -1,6 +1,6 @@
 export const stringsNavbar = {
   logoAlt: 'Logo',
-  logoTitle: 'MatchPLANER',
+  logoTitle: 'MatchPLANNER',
   menu: 'Menu',
   links: {
     tournament: 'Turniej',

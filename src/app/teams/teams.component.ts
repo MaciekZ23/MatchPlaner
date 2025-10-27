@@ -28,6 +28,7 @@ import { FormField } from '../shared/components/dynamic-form/models/form-field';
 import { DynamicFormComponent } from '../shared/components/dynamic-form/dynamic-form.component';
 import { ConfirmModalComponent } from '../shared/components/confirm-modal/confirm-modal.component';
 import { AuthService } from '../core/auth/auth.service';
+import { TournamentStore } from '../core/services/tournament-store.service';
 
 @Component({
   selector: 'app-teams',
@@ -52,6 +53,7 @@ export class TeamsComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly auth = inject(AuthService);
+  private readonly store = inject(TournamentStore);
 
   moduleStrings = stringsTeams;
 
@@ -121,11 +123,30 @@ export class TeamsComponent implements OnInit {
 
   onAddTeam() {
     this.resetAddTeamFormFields();
-    this.openAddTeamFormModal = true;
+    this.store.groups$.pipe(take(1)).subscribe((groups) => {
+      const groupField = this.addTeamFormFields.find(
+        (f) => f.name === 'groupId'
+      );
+      if (groupField && groupField.type === 'select') {
+        (groupField as any).options = [
+          { label: '— brak —', value: '' },
+          ...groups.map((g) => ({
+            label: g.name,
+            value: g.id,
+          })),
+        ];
+      }
+
+      this.openAddTeamFormModal = true;
+    });
   }
 
   onAddTeamFormSubmitted(fields: FormField[]): void {
-    const f = this.reduceFields<{ name: unknown; logo?: unknown }>(fields);
+    const f = this.reduceFields<{
+      name: unknown;
+      logo?: unknown;
+      groupId?: unknown;
+    }>(fields);
     const name = String(f.name ?? '')
       .trim()
       .replace(/\s+/g, ' ');
@@ -134,9 +155,13 @@ export class TeamsComponent implements OnInit {
       return;
     }
 
-    const payload: CreateTeamPayload = logoStr
-      ? { name, logo: logoStr }
-      : { name };
+    const groupId = f.groupId ? String(f.groupId).trim() : null;
+
+    const payload: CreateTeamPayload = {
+      name,
+      ...(logoStr ? { logo: logoStr } : {}),
+      ...(groupId ? { groupId } : {}),
+    };
 
     this.isLoading = true;
 
@@ -254,6 +279,17 @@ export class TeamsComponent implements OnInit {
             fLogo.value = team.logo ?? '';
           }
 
+          const fGroup = fields.find((f) => f.name === 'groupId');
+          if (fGroup && fGroup.type === 'select') {
+            this.store.groups$.pipe(take(1)).subscribe((groups) => {
+              fGroup.options = [
+                { label: '— brak —', value: '' },
+                ...groups.map((g) => ({ label: g.name, value: g.id })),
+              ];
+              fGroup.value = team.groupId ?? '';
+            });
+          }
+
           this.editTeamFormFields = [...fields];
           this.openEditTeamFormModal = true;
         },
@@ -267,21 +303,25 @@ export class TeamsComponent implements OnInit {
       return;
     }
 
-    const f = this.reduceFields<{ name?: unknown; logo?: unknown }>(fields);
+    const f = this.reduceFields<{
+      name?: unknown;
+      logo?: unknown;
+      groupId?: unknown;
+    }>(fields);
     const name = String(f.name ?? '')
       .trim()
       .replace(/\s+/g, ' ');
     const logoStr = f.logo != null ? String(f.logo).trim() : '';
+    const groupId = f.groupId ? String(f.groupId).trim() : null;
     if (!name) {
       return;
     }
 
-    const payload: UpdateTeamPayload =
-      logoStr === undefined
-        ? { name }
-        : logoStr
-        ? { name, logo: logoStr }
-        : { name, logo: null };
+    const payload: UpdateTeamPayload = {
+      name,
+      ...(logoStr !== '' ? { logo: logoStr } : { logo: null }),
+      ...(groupId ? { groupId } : { groupId: null }),
+    };
 
     this.isLoading = true;
     this.teamService
@@ -593,6 +633,14 @@ export class TeamsComponent implements OnInit {
         required: false,
         value: '',
         placeholder: 'Logo druzyny',
+      },
+      {
+        name: 'groupId',
+        label: 'Grupa',
+        type: 'select',
+        required: false,
+        value: '',
+        options: [{ label: '— brak —', value: '' }],
       },
     ];
   }
