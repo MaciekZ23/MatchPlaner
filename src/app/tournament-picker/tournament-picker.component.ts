@@ -19,6 +19,7 @@ import { PageHeaderComponent } from '../shared/components/page-header/page-heade
 import { DynamicFormComponent } from '../shared/components/dynamic-form/dynamic-form.component';
 import { ConfirmModalComponent } from '../shared/components/confirm-modal/confirm-modal.component';
 import { FormField } from '../shared/components/dynamic-form/models/form-field';
+import { SpinnerComponent } from '../shared/components/spinner/spinner.component';
 import {
   CreateTournamentPayload,
   UpdateTournamentPayload,
@@ -34,6 +35,7 @@ import { capitalizeFirst, formatFullDate } from '../core/utils';
     PageHeaderComponent,
     DynamicFormComponent,
     ConfirmModalComponent,
+    SpinnerComponent,
   ],
   templateUrl: './tournament-picker.component.html',
   styleUrl: './tournament-picker.component.scss',

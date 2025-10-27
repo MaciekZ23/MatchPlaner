@@ -18,6 +18,7 @@ import { MatchDetailsModalComponent } from './components/match-details-modal/mat
 import { PageHeaderComponent } from '../shared/components/page-header/page-header.component';
 import { DynamicFormComponent } from '../shared/components/dynamic-form/dynamic-form.component';
 import { ConfirmModalComponent } from '../shared/components/confirm-modal/confirm-modal.component';
+import { SpinnerComponent } from '../shared/components/spinner/spinner.component';
 import {
   Team as CoreTeam,
   Player as CorePlayer,
@@ -39,7 +40,6 @@ import {
   SelectOption,
 } from '../shared/components/dynamic-form/models/form-field';
 import { isoToLocalInput, localInputToIso } from '../core/utils';
-import { FormArray, FormGroup } from '@angular/forms';
 
 @Component({
   selector: 'app-calendar',
@@ -50,6 +50,7 @@ import { FormArray, FormGroup } from '@angular/forms';
     PageHeaderComponent,
     DynamicFormComponent,
     ConfirmModalComponent,
+    SpinnerComponent,
   ],
   templateUrl: './calendar.component.html',
   styleUrl: './calendar.component.scss',

@@ -1,7 +1,7 @@
 <div class="container tables-page p-0 px-sm-1 py-sm-1">
   <app-page-header [title]="moduleStrings.headerTitle"></app-page-header>
 
-  <ng-container *ngIf="viewmodel$ | async as viewmmodel">
+  <ng-container *ngIf="viewmodel$ | async as viewmmodel; else loadingTables">
     <div class="tables-list d-flex flex-column gap-1 gap-md-2">
       <ng-container *ngIf="viewmmodel.mode === 'LEAGUE'">
         <app-points-table
@@ -52,6 +52,9 @@
       <app-goalkeepers-clean-sheets></app-goalkeepers-clean-sheets>
     </div>
   </ng-container>
+  <ng-template #loadingTables>
+    <app-spinner></app-spinner>
+  </ng-template>
 </div>
 
 <app-match-details-modal
@@ -86,3 +89,5 @@
   (close)="openGeneratePlayoffsFormModal = false"
 >
 </app-dynamic-form>
+
+<app-spinner *ngIf="isLoading"></app-spinner>

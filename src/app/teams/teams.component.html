@@ -79,46 +79,49 @@
     </div>
   </app-page-header>
 
-  <div
-    *ngIf="!(selectedTeam$ | async)"
-    class="teams-list"
-    tabindex="0"
-    role="region"
-    aria-label="Lista drużyn — przewijany obszar"
-  >
-    <div class="row g-1 g-md-3">
-      <div *ngFor="let team of (teams$ | async) ?? []" class="col-12 col-md-4">
-        <app-team-card
-          [team]="team"
-          (teamClick)="onTeamClick(team)"
-          [canManage]="(isAdmin$ | async) ?? false"
-          (editTeam)="onEditTeam(team)"
-          (deleteTeam)="onDeleteTeam(team)"
-        ></app-team-card>
+  <ng-container *ngIf="teams$ | async as teams; else loadingTeams">
+    <div
+      *ngIf="!(selectedTeam$ | async)"
+      class="teams-list"
+      tabindex="0"
+      role="region"
+      aria-label="Lista drużyn — przewijany obszar"
+    >
+      <div class="row g-1 g-md-3">
+        <div *ngFor="let team of teams" class="col-12 col-md-4">
+          <app-team-card
+            [team]="team"
+            (teamClick)="onTeamClick(team)"
+            [canManage]="(isAdmin$ | async) ?? false"
+            (editTeam)="onEditTeam(team)"
+            (deleteTeam)="onDeleteTeam(team)"
+          ></app-team-card>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div
-    *ngIf="selectedTeam$ | async as selectedTeam"
-    class="teams-list mt-1"
-    tabindex="0"
-    role="region"
-    aria-label="Tabela składu drużyny — przewijany obszar"
-  >
-    <app-team-table
-      [teamName]="selectedTeam.name"
-      [players]="selectedTeam.players"
-      [teamLogo]="selectedTeam.logo"
-      (backClick)="onBackClick()"
-      [canManage]="(isAdmin$ | async) ?? false"
-      (editPlayer)="onEditPlayer($event)"
-      (deletePlayer)="onDeletePlayer($event)"
-    ></app-team-table>
-  </div>
+    <div
+      *ngIf="selectedTeam$ | async as selectedTeam"
+      class="teams-list mt-1"
+      tabindex="0"
+      role="region"
+      aria-label="Tabela składu drużyny — przewijany obszar"
+    >
+      <app-team-table
+        [teamName]="selectedTeam.name"
+        [players]="selectedTeam.players"
+        [teamLogo]="selectedTeam.logo"
+        (backClick)="onBackClick()"
+        [canManage]="(isAdmin$ | async) ?? false"
+        (editPlayer)="onEditPlayer($event)"
+        (deletePlayer)="onDeletePlayer($event)"
+      ></app-team-table>
+    </div>
+  </ng-container>
+  <ng-template #loadingTeams>
+    <app-spinner></app-spinner>
+  </ng-template>
 </div>
-
-<app-spinner *ngIf="isLoading"></app-spinner>
 
 <!-- Formularz do dodawania drużyny -->
 <app-dynamic-form
@@ -162,3 +165,5 @@
 
 <!-- Modal potwierdzający kasowanie zawodnika -->
 <app-confirm-modal #playerConfirm idPrefix="player-confirm"></app-confirm-modal>
+
+<app-spinner *ngIf="isLoading"></app-spinner>

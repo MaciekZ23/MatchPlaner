@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.11.0
+
+### (FEATURE) Wskaźniki ładowania (spinnery) w modułach
+
+- Dodano komponenty `spinner` do modułów **Tabele**, **Drużyny** oraz **Kalendarz**
+- Ujednolicono sposób obsługi stanu ładowania w komponentach
+
 ## 1.10.0
 
 ### (FEATURE) Łączenie z backendem
@@ -11,10 +18,6 @@
 ### (FEATURE) Drabinka play-off
 
 - Dodano drabinkę play-off (pucharową)
-
-## 1.8.0
-
-### (FEATURE) ŁĄCZENIE Z BACKENDEM
 
 ## 1.8.0
 

@@ -24,6 +24,7 @@ import { PointsTableGroup, TablesVM } from './models';
 import { stringsPlayoffsBracket, stringsTables } from './misc';
 import { PlayoffsBracketComponent } from './components/playoffs-bracket/playoffs-bracket.component';
 import { ConfirmModalComponent } from '../shared/components/confirm-modal/confirm-modal.component';
+import { SpinnerComponent } from '../shared/components/spinner/spinner.component';
 import { VoteFacade } from '../calendar/services/vote.facade';
 import { MatchService } from '../calendar/services/match.service';
 import { TournamentStore } from '../core/services/tournament-store.service';
@@ -59,6 +60,7 @@ import { isoToLocalInput, localInputToIso } from '../core/utils';
     ConfirmModalComponent,
     DynamicFormComponent,
     MatchDetailsModalComponent,
+    SpinnerComponent,
   ],
   templateUrl: './tables.component.html',
   styleUrls: ['./tables.component.scss'],

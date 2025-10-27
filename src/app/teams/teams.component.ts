@@ -83,7 +83,14 @@ export class TeamsComponent implements OnInit {
   private editingPlayerId?: string;
 
   ngOnInit(): void {
-    this.teams$ = this.teamService.getTeams$().pipe(shareReplay(1));
+    this.isLoading = true;
+    this.teams$ = this.teamService.getTeams$().pipe(
+      tap({
+        next: () => (this.isLoading = false),
+        error: () => (this.isLoading = false),
+      }),
+      shareReplay(1)
+    );
 
     this.selectedTeam$ = combineLatest([
       this.route.paramMap,

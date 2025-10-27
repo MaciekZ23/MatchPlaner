@@ -1,3 +1,5 @@
+<app-spinner *ngIf="isLoading"></app-spinner>
+
 <div class="container tournament-page p-0 px-sm-1 py-sm-1">
   <app-page-header [title]="moduleStrings.header">
     <div
@@ -126,7 +128,7 @@
     </ng-container>
 
     <ng-template #loading>
-      <div class="custom-text">{{ moduleStrings.loading }}</div>
+      <app-spinner></app-spinner>
     </ng-template>
   </div>
 </div>
