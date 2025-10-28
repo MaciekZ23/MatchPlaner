@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.12.0
+
+## (FEATURE) Wgrywanie zdjęcia do formularzy + obsługa polskich znaków
+
+- Dodano możliwość wgrywania pliku graficznego (logo / zdjęcie) w formularzach drużyn i turnieju
+- Formularz umożliwia jednoczesne podanie adresu URL logo/zdjęcia lub wgranie nowego pliku
+- Cała aplikacja frontendowa poprawnie obsługuje polskie znaki diakrytyczne (np. ą, ę, ś, ć, ż, ź, ó, ł)
+
 ## 1.11.0
 
 ### (FEATURE) Wskaźniki ładowania (spinnery) w modułach

@@ -1,0 +1,24 @@
+<div class="file-upload text-center">
+  <label
+    class="upload-btn d-inline-flex justify-content-center align-items-center w-100"
+    tabindex="0"
+  >
+    <i class="fa-solid fa-upload me-2"></i>
+    {{ textToDisplay }}
+
+    <input
+      type="file"
+      accept="image/*"
+      hidden
+      (change)="onFileSelected($event)"
+    />
+  </label>
+
+  <div *ngIf="previewUrl" class="mt-3">
+    <img
+      [src]="previewUrl"
+      class="file-preview img-thumbnail rounded border"
+      alt="Podgląd pliku"
+    />
+  </div>
+</div>

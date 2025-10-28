@@ -121,6 +121,15 @@ export class TeamService {
     );
   }
 
+  uploadLogo$(teamId: string, file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    return this.api
+      .uploadTeamLogo(teamId, formData)
+      .pipe(tap(() => this.store.refreshTeams?.()));
+  }
+
   private mapToUiTeams(
     coreTeams: CoreTeam[],
     corePlayers: CorePlayer[]

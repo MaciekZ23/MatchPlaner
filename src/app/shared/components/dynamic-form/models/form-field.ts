@@ -78,6 +78,11 @@ export interface HiddenFormField extends BaseFormField {
   type: 'hidden';
 }
 
+export interface FileFormField extends BaseFormField {
+  type: 'file';
+  buttonText?: string;
+}
+
 export type FormField =
   | TextFormField
   | EmailFormField
@@ -89,4 +94,5 @@ export type FormField =
   | TimeFormField
   | DateTimeFormField
   | RepeaterFormField
-  | HiddenFormField;
+  | HiddenFormField
+  | FileFormField;

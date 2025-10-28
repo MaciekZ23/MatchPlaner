@@ -24,12 +24,13 @@ import { CommonModule } from '@angular/common';
 import { SimpleChanges } from '@angular/core';
 import { distinctUntilChanged } from 'rxjs';
 import { isoToLocalInput } from '../../../core/utils';
+import { FileUploadComponent } from '../file-upload/file-upload.component';
 
 declare const bootstrap: any;
 
 @Component({
   selector: 'app-dynamic-form',
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FileUploadComponent],
   templateUrl: './dynamic-form.component.html',
   styleUrl: './dynamic-form.component.scss',
 })
@@ -357,6 +358,11 @@ export class DynamicFormComponent implements OnInit, OnChanges, OnDestroy {
     if (field.type === 'repeater') {
       return Array.isArray(field.value) ? field.value : [];
     }
+
+    if (field.type === 'file') {
+      return field.value ?? null;
+    }
+
     // text/textarea/date/time/email/hidden
     return field.value ?? '';
   }

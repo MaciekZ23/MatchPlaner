@@ -4,6 +4,7 @@ import { BehaviorSubject, map, Observable, tap } from 'rxjs';
 import { TournamentStore } from '../services/tournament-store.service';
 import { environment } from '../../../environments/environment';
 import { LoginResp } from './types';
+import { NotificationService } from '../notifications/notification.service';
 
 @Injectable({
   providedIn: 'root',
@@ -11,6 +12,7 @@ import { LoginResp } from './types';
 export class AuthService {
   private http = inject(HttpClient);
   private store = inject(TournamentStore);
+  private notifications = inject(NotificationService);
   private readonly adminBase = `${environment.apiUrl}/admin/auth`;
   private readonly authBase = `${environment.apiUrl}/auth`;
 
@@ -111,6 +113,8 @@ export class AuthService {
     sessionStorage.removeItem('at');
     sessionStorage.removeItem('rt');
     sessionStorage.removeItem('avatar');
+    sessionStorage.removeItem('welcome_shown');
+    this.notifications.clear();
     this.avatarSubject.next(null);
     this.roleSubject.next('NONE');
     this.store.clearTournament();

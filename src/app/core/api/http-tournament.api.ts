@@ -163,4 +163,21 @@ export class HttpTournamentApi implements ITournamentApi {
       payload
     );
   }
+
+  uploadTeamLogo(teamId: string, formData: FormData): Observable<Team> {
+    return this.http.post<Team>(
+      `${this.base}/teams/tournament/${teamId}/upload-logo`,
+      formData
+    );
+  }
+
+  uploadTournamentVenueImage(id: string, file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    return this.http.post(
+      `${this.base}/tournaments/${id}/upload-venue`,
+      formData
+    );
+  }
 }

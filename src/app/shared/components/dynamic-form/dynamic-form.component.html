@@ -170,7 +170,13 @@
                 </option>
               </select>
 
-              }@case('repeater') {
+              }@case('file') {
+              <app-file-upload
+                [label]="field.label"
+                [buttonText]="field.buttonText"
+                (fileSelected)="form.get(field.name)?.setValue($event)"
+              ></app-file-upload>
+              } @case('repeater') {
               <div [formArrayName]="field.name" class="repeater">
                 <div class="d-flex justify-content-end align-items-center mb-2">
                   <h3 class="mb-0 me-auto h6">{{ field.label }}</h3>

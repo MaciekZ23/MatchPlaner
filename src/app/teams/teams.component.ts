@@ -10,6 +10,7 @@ import {
   switchMap,
   take,
   combineLatest,
+  of,
 } from 'rxjs';
 import { TeamCardComponent } from './components/team-card/team-card.component';
 import { TeamTableComponent } from './components/team-table/team-table.component';
@@ -62,6 +63,7 @@ export class TeamsComponent implements OnInit {
   isAdmin$ = this.auth.isAdmin$;
 
   isLoading = false;
+  selectedLogoFile?: File;
 
   formTitleAddTeam = this.moduleStrings.formTitleAddTeam;
   openAddTeamFormModal = false;
@@ -128,6 +130,10 @@ export class TeamsComponent implements OnInit {
     });
   }
 
+  onLogoSelected(file: File) {
+    this.selectedLogoFile = file;
+  }
+
   onAddTeam() {
     this.resetAddTeamFormFields();
     this.store.groups$.pipe(take(1)).subscribe((groups) => {
@@ -151,18 +157,20 @@ export class TeamsComponent implements OnInit {
   onAddTeamFormSubmitted(fields: FormField[]): void {
     const f = this.reduceFields<{
       name: unknown;
-      logo?: unknown;
+      logoText?: unknown;
       groupId?: unknown;
+      logoFile?: File;
     }>(fields);
     const name = String(f.name ?? '')
       .trim()
       .replace(/\s+/g, ' ');
-    const logoStr = f.logo != null ? String(f.logo).trim() : '';
+    const logoStr = f.logoText != null ? String(f.logoText).trim() : '';
     if (!name) {
       return;
     }
 
     const groupId = f.groupId ? String(f.groupId).trim() : null;
+    const logoFile = f.logoFile as File | undefined;
 
     const payload: CreateTeamPayload = {
       name,
@@ -175,6 +183,12 @@ export class TeamsComponent implements OnInit {
     this.teamService
       .createTeam$(payload)
       .pipe(
+        switchMap((team) => {
+          if (logoFile) {
+            return this.teamService.uploadLogo$(team.id, logoFile);
+          }
+          return of(team);
+        }),
         tap(() => {
           this.openAddTeamFormModal = false;
           this.resetAddTeamFormFields();
@@ -281,9 +295,9 @@ export class TeamsComponent implements OnInit {
           if (fName) {
             fName.value = team.name ?? '';
           }
-          const fLogo = fields.find((f) => f.name === 'logo');
-          if (fLogo) {
-            fLogo.value = team.logo ?? '';
+          const fLogoText = fields.find((f) => f.name === 'logoText');
+          if (fLogoText) {
+            fLogoText.value = team.logo ?? '';
           }
 
           const fGroup = fields.find((f) => f.name === 'groupId');
@@ -312,14 +326,16 @@ export class TeamsComponent implements OnInit {
 
     const f = this.reduceFields<{
       name?: unknown;
-      logo?: unknown;
+      logoText?: unknown;
       groupId?: unknown;
+      logoFile?: File;
     }>(fields);
     const name = String(f.name ?? '')
       .trim()
       .replace(/\s+/g, ' ');
-    const logoStr = f.logo != null ? String(f.logo).trim() : '';
+    const logoStr = f.logoText != null ? String(f.logoText).trim() : '';
     const groupId = f.groupId ? String(f.groupId).trim() : null;
+    const logoFile = f.logoFile as File | undefined;
     if (!name) {
       return;
     }
@@ -334,6 +350,12 @@ export class TeamsComponent implements OnInit {
     this.teamService
       .updateTeam$(this.editingTeamCoreId, payload)
       .pipe(
+        switchMap((team) => {
+          if (logoFile) {
+            return this.teamService.uploadLogo$(team.id, logoFile);
+          }
+          return of(team);
+        }),
         tap(() => {
           this.openEditTeamFormModal = false;
           this.editTeamFormFields = this.getEmptyTeamFields();
@@ -634,12 +656,18 @@ export class TeamsComponent implements OnInit {
         placeholder: 'Nazwa drużyny',
       },
       {
-        name: 'logo',
-        label: 'Logo',
+        name: 'logoText',
+        label: 'Adres logo drużyny',
         type: 'text',
         required: false,
         value: '',
-        placeholder: 'Logo druzyny',
+        placeholder: 'Logo drużyny',
+      },
+      {
+        name: 'logoFile',
+        label: 'Wgraj logo drużyny (opcjonalnie)',
+        type: 'file',
+        required: false,
       },
       {
         name: 'groupId',

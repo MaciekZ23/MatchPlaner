@@ -9,6 +9,7 @@ import {
   finalize,
   forkJoin,
   map,
+  of,
   shareReplay,
   switchMap,
   take,
@@ -180,6 +181,10 @@ export class TournamentPickerComponent {
         set('venue', tt.venue ?? '');
         set('venueAddress', tt.venueAddress ?? '');
         set('venueImageUrl', tt.venueImageUrl ?? '');
+        const fImgFile = fields.find((x) => x.name === 'venueImageFile');
+        if (fImgFile) {
+          fImgFile.value = undefined;
+        }
 
         const groups: FormField = this.groupsRepeaterFields(
           'groups',
@@ -327,10 +332,18 @@ export class TournamentPickerComponent {
       });
     }
 
+    const imgFile = f['venueImageFile'] as File | undefined;
+
     this.isLoading = true;
     this.api
       .createTournament(payload)
       .pipe(
+        switchMap((t) => {
+          if (imgFile) {
+            return this.api.uploadTournamentVenueImage(t.id, imgFile);
+          }
+          return of(t);
+        }),
         tap(() => {
           this.openAddTournamentFormModal = false;
           this.addTournamentFormFields = this.getTournamentFields();
@@ -384,6 +397,7 @@ export class TournamentPickerComponent {
     nullOr('venue', f['venue']);
     nullOr('venueAddress', f['venueAddress']);
     nullOr('venueImageUrl', f['venueImageUrl']);
+    const imgFile = f['venueImageFile'] as File | undefined;
 
     const groups: any[] = (f['groups'] as any[]) || [];
     const currentGroupIds: Set<string> = new Set<string>(
@@ -469,6 +483,12 @@ export class TournamentPickerComponent {
     this.api
       .updateTournament(this.editingId, patch)
       .pipe(
+        switchMap((t) => {
+          if (imgFile) {
+            return this.api.uploadTournamentVenueImage(t.id, imgFile);
+          }
+          return of(t);
+        }),
         tap(() => {
           this.openEditTournamentFormModal = false;
           this.editTournamentFormFields = this.getTournamentFields();
@@ -592,8 +612,15 @@ export class TournamentPickerComponent {
         name: 'venueImageUrl',
         label: 'Zdjęcie obiektu turnieju',
         type: 'text',
+        required: false,
         value: '',
         placeholder: 'Scieżka zdjęcia obiektu turnieju',
+      },
+      {
+        name: 'venueImageFile',
+        label: 'Wgraj zdjęcie obiektu turnieju',
+        type: 'file',
+        required: false,
       },
     ];
   }
