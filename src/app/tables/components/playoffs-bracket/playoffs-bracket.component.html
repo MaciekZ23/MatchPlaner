@@ -29,7 +29,7 @@
         {{ moduleStrings.deleteAllMatches }}
       </button>
 
-      <div class="dropdown d-inline-block d-md-none">
+      <div *ngIf="isAdmin$ | async" class="dropdown d-inline-block d-md-none">
         <button
           type="button"
           class="btn text-white btn-sm action-btn px-2"
@@ -40,7 +40,7 @@
           <i class="fa-solid fa-ellipsis-vertical"></i>
         </button>
         <ul class="dropdown-menu dropdown-menu-end shadow">
-          <li *ngIf="isAdmin$ | async" class="d-md-none">
+          <li class="d-md-none">
             <button
               class="dropdown-item d-flex align-items-center"
               (click)="onGenerateRequested()"
@@ -50,7 +50,7 @@
             </button>
           </li>
           <li><hr class="dropdown-divider" /></li>
-          <li *ngIf="isAdmin$ | async" class="d-md-none">
+          <li class="d-md-none">
             <button
               class="dropdown-item d-flex align-items-center text-danger"
               (click)="onDeleteAllPlayoffMatches()"
