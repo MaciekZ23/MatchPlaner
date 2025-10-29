@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.12.1
+
+### (FIX) Sidebar / nawigacja — zachowanie na tabletach i desktopie
+
+- Naprawiono samoczynne otwieranie sidebaru przy scrollu lub kliknięciu poza nawigacją
+- Uporządkowano przepływ stanu sidebaru — sterowanie stanem wyłącznie z `AppComponent`
+- Wyeliminowano problem rozjeżdżających się marginesów widoku treści
+
 ## 1.12.0
 
 ## (FEATURE) Wgrywanie zdjęcia do formularzy + obsługa polskich znaków

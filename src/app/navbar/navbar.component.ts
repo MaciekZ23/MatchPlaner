@@ -4,7 +4,6 @@ import {
   Input,
   Output,
   HostListener,
-  OnInit,
   inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -19,10 +18,10 @@ import { TournamentStore } from '../core/services/tournament-store.service';
   templateUrl: './navbar.component.html',
   styleUrls: ['./navbar.component.scss'],
 })
-export class NavbarComponent implements OnInit {
+export class NavbarComponent {
   moduleStrings = stringsNavbar;
   @Input() isOpen: boolean = true;
-  @Output() toggleSidebar = new EventEmitter<void>();
+  @Output() toggleSidebar = new EventEmitter<'manual' | 'resize'>();
 
   private store = inject(TournamentStore);
   private router = inject(Router);
@@ -30,13 +29,12 @@ export class NavbarComponent implements OnInit {
   tid$ = this.store.selectedId$;
   hasTid$ = this.store.hasTournament$;
 
-  ngOnInit() {
-    this.setInitialSidebarState();
-  }
-
   @HostListener('window:resize')
   onWindowResize() {
-    this.setInitialSidebarState();
+    const shouldBeOpen = window.innerWidth >= 768;
+    if (shouldBeOpen !== this.isOpen) {
+      this.toggleSidebar.emit('resize');
+    }
   }
 
   setInitialSidebarState() {
@@ -44,8 +42,7 @@ export class NavbarComponent implements OnInit {
   }
 
   onToggleSidebar() {
-    this.isOpen = !this.isOpen;
-    this.toggleSidebar.emit(); 
+    this.toggleSidebar.emit('manual');
   }
 
   isMobile(): boolean {
@@ -58,13 +55,15 @@ export class NavbarComponent implements OnInit {
       return;
     }
     this.router.navigate(['/', tid, ...segments]);
-    if (this.isMobile()) this.isOpen = false;
+    if (this.isMobile()) {
+      this.toggleSidebar.emit('manual');
+    }
   }
 
   onNavClick(event: Event) {
     const el = event.target as HTMLElement;
     if (this.isMobile() && el.closest('a.nav-link')) {
-      this.isOpen = false;
+      this.toggleSidebar.emit('resize');
     }
   }
 }

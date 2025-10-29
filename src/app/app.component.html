@@ -8,7 +8,10 @@
     aria-label="Główna nawigacja"
     *ngIf="showSidebar$ | async"
   >
-    <app-navbar [isOpen]="isSidebarOpen" (toggleSidebar)="toggleSidebar()">
+    <app-navbar
+      [isOpen]="isSidebarOpen"
+      (toggleSidebar)="toggleSidebar($event)"
+    >
     </app-navbar>
   </nav>
 

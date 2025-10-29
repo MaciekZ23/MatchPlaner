@@ -33,7 +33,16 @@ export class AppComponent {
     map(([hasTournament, isNotTournament]) => hasTournament && isNotTournament)
   );
 
-  toggleSidebar() {
-    this.isSidebarOpen = !this.isSidebarOpen;
+  toggleSidebar(reason: 'manual' | 'resize') {
+    if (reason === 'manual') {
+      this.isSidebarOpen = !this.isSidebarOpen;
+    }
+    if (reason === 'resize') {
+      this.isSidebarOpen = window.innerWidth >= 768;
+    }
+  }
+
+  onResizeSidebarBehavior() {
+    this.isSidebarOpen = window.innerWidth >= 768;
   }
 }
