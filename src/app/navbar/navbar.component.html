@@ -41,7 +41,7 @@
   </div>
 
   <!--Nawigacja-->
-  <ul class="nav nav-pills flex-column" (click)="onNavClick($event)">
+  <ul class="nav nav-pills flex-column">
     <li class="nav-item" *ngIf="tid$ | async as tid; else noTidHome">
       <a
         [routerLink]="['/', tid, 'home']"
@@ -50,6 +50,7 @@
         class="nav-link my-2"
         [attr.aria-label]="moduleStrings.links.tournament"
         aria-current="page"
+        (click)="goOrPick(tid, ['home'])"
       >
         <i class="fa-solid fa-trophy me-4" aria-hidden="true"></i>
         <span *ngIf="isOpen">{{ moduleStrings.links.tournament }}</span>
@@ -75,6 +76,7 @@
         routerLinkActive="active"
         class="nav-link my-2"
         [attr.aria-label]="moduleStrings.links.teams"
+        (click)="goOrPick(tid, ['teams'])"
       >
         <i class="fa-solid fa-people-group me-4" aria-hidden="true"></i>
         <span *ngIf="isOpen">{{ moduleStrings.links.teams }}</span>
@@ -99,6 +101,7 @@
         routerLinkActive="active"
         class="nav-link my-2"
         [attr.aria-label]="moduleStrings.links.tables"
+        (click)="goOrPick(tid, ['tables'])"
       >
         <i class="fa-solid fa-table-list me-4" aria-hidden="true"></i>
         <span *ngIf="isOpen">{{ moduleStrings.links.tables }}</span>
@@ -123,6 +126,7 @@
         routerLinkActive="active"
         class="nav-link my-2"
         [attr.aria-label]="moduleStrings.links.calendar"
+        (click)="goOrPick(tid, ['calendar'])"
       >
         <i class="fa-solid fa-calendar-days me-4" aria-hidden="true"></i>
         <span *ngIf="isOpen">{{ moduleStrings.links.calendar }}</span>

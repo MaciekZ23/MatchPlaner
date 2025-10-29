@@ -117,23 +117,13 @@ export class TournamentPickerComponent {
 
   onAddTournamentClick(): void {
     this.isLoading = true;
-
-    const teamOptions: { label: string; value: string }[] = [];
-
     const base: FormField[] = this.getTournamentFields();
-    const groups: FormField = this.groupsRepeaterFields(
-      'groups',
-      [{ id: '', name: '', teamIds: [] }],
-      teamOptions
-    );
 
-    const stages: FormField = this.stagesRepeaterFields('stages', [
-      { id: '', name: '', kind: 'GROUP', order: 1 },
-    ]);
+    const groups: FormField = this.groupsRepeaterFields('groups', []);
+    const stages: FormField = this.stagesRepeaterFields('stages', []);
 
     this.addTournamentFormFields = [...base, groups, stages];
     this.openAddTournamentFormModal = true;
-
     this.isLoading = false;
   }
 
@@ -190,8 +180,7 @@ export class TournamentPickerComponent {
           'groups',
           (tt.groups || []).map((g) => {
             return { id: g.id, name: g.name };
-          }),
-          teamOptions
+          })
         );
 
         const stages: FormField = this.stagesRepeaterFields(
@@ -339,7 +328,7 @@ export class TournamentPickerComponent {
       .createTournament(payload)
       .pipe(
         switchMap((t) => {
-          if (imgFile) {
+          if (!img && imgFile) {
             return this.api.uploadTournamentVenueImage(t.id, imgFile);
           }
           return of(t);
@@ -484,7 +473,7 @@ export class TournamentPickerComponent {
       .updateTournament(this.editingId, patch)
       .pipe(
         switchMap((t) => {
-          if (imgFile) {
+          if (!patch.venueImageUrl && imgFile) {
             return this.api.uploadTournamentVenueImage(t.id, imgFile);
           }
           return of(t);
@@ -541,7 +530,7 @@ export class TournamentPickerComponent {
         type: 'text',
         required: true,
         value: '',
-        placeholder: 'Nazwa turnieju',
+        placeholder: 'Wpisz nazwę turnieju',
       },
       {
         name: 'mode',
@@ -557,86 +546,92 @@ export class TournamentPickerComponent {
       },
       {
         name: 'season',
-        label: 'Sezon/edycja turnieju',
+        label: 'Sezon/edycja turnieju (opcjonalnie)',
         type: 'text',
+        required: false,
         value: '',
         placeholder: '2025/26',
       },
       {
         name: 'startDate',
-        label: 'Data startu turnieju',
+        label: 'Data startu turnieju (opcjonalnie)',
         type: 'date',
+        required: false,
         value: '',
       },
       {
         name: 'endDate',
-        label: 'Data zakończenia turnieju',
+        label: 'Data zakończenia turnieju (opcjonalnie)',
         type: 'date',
+        required: false,
         value: '',
       },
       {
         name: 'timezone',
-        label: 'Strefa czasowa turnieju',
+        label: 'Strefa czasowa turnieju (opcjonalnie)',
         type: 'text',
+        required: false,
         value: 'Europe/Warsaw',
       },
       {
         name: 'description',
-        label: 'Opis turnieju',
+        label: 'Opis turnieju (opcjonalnie)',
         type: 'textarea',
+        required: false,
         value: '',
+        placeholder: 'Dodaj opis turnieju',
         rows: 4,
       },
       {
         name: 'additionalInfo',
-        label: 'Informacje dodatkowe o turnieju',
+        label: 'Informacje dodatkowe o turnieju (opcjonalnie)',
         type: 'textarea',
+        required: false,
         value: '',
+        placeholder: 'Dodaj dodatkowe informacje o turnieju',
         rows: 3,
       },
       {
         name: 'venue',
-        label: 'Nazwa obiektu turnieju',
+        label: 'Nazwa obiektu turnieju (opcjonalnie)',
         type: 'text',
+        required: false,
         value: '',
         placeholder: 'Nazwa obiektu turnieju',
       },
       {
         name: 'venueAddress',
-        label: 'Adres rozgrywania turnieju',
+        label: 'Adres rozgrywania turnieju (opcjonalnie)',
         type: 'text',
+        required: false,
         value: '',
         placeholder: 'Adres rozgrywania turnieju',
       },
       {
         name: 'venueImageUrl',
-        label: 'Zdjęcie obiektu turnieju',
+        label: 'Zdjęcie obiektu URL turnieju (opcjonalnie)',
         type: 'text',
         required: false,
         value: '',
-        placeholder: 'Scieżka zdjęcia obiektu turnieju',
+        placeholder: 'Adres URL zdjęcia obiektu turnieju',
       },
       {
         name: 'venueImageFile',
-        label: 'Wgraj zdjęcie obiektu turnieju',
+        label: 'Wgraj zdjęcie obiektu turnieju (opcjonalnie)',
         type: 'file',
         required: false,
       },
     ];
   }
 
-  private groupsRepeaterFields(
-    name: string,
-    value: any[],
-    teamOptions: { label: string; value: string }[]
-  ): FormField {
+  private groupsRepeaterFields(name: string, value: any[]): FormField {
     const fields: FormField[] = [
       { name: 'id', label: 'Id', type: 'hidden', value: '' },
       {
         name: 'name',
-        label: 'Nazwa grupy',
+        label: 'Nazwa grupy (opcjonalnie)',
         type: 'text',
-        required: true,
+        required: false,
         value: '',
         placeholder: 'Grupa A',
       },
@@ -644,7 +639,7 @@ export class TournamentPickerComponent {
 
     return {
       name,
-      label: 'Grupy turnieju',
+      label: 'Grupy turnieju (opcjonalnie)',
       type: 'repeater',
       itemLabel: 'Grupa',
       addLabel: 'Dodaj grupę',
@@ -665,9 +660,9 @@ export class TournamentPickerComponent {
       { name: 'id', label: 'Id', type: 'hidden', value: '' },
       {
         name: 'name',
-        label: 'Nazwa etapu',
+        label: 'Nazwa etapu (opcjonalnie)',
         type: 'text',
-        required: true,
+        required: false,
         value: '',
         placeholder: 'Faza grupowa',
       },
@@ -680,7 +675,6 @@ export class TournamentPickerComponent {
           { label: 'Play-off', value: 'PLAYOFF' },
         ],
         value: 'GROUP',
-        //disabled: existing,
       },
       {
         name: 'order',
@@ -693,7 +687,7 @@ export class TournamentPickerComponent {
     ];
     return {
       name,
-      label: 'Etapy turnieju',
+      label: 'Etapy turnieju (opcjonalnie)',
       type: 'repeater',
       itemLabel: 'Etap',
       addLabel: 'Dodaj etap',

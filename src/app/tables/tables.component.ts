@@ -77,6 +77,9 @@ export class TablesComponent implements OnInit {
   isLoading = false;
   selectedMatch: Match | null = null;
 
+  @ViewChild('dynamicForm')
+  dynamicFormComponent!: DynamicFormComponent;
+
   @ViewChild('deleteAllPlayoffMatches', { static: true })
   deleteAllPlayoffMatchesConfirm!: ConfirmModalComponent;
 
@@ -888,7 +891,9 @@ export class TablesComponent implements OnInit {
         name: 'stageName',
         label: this.playoffsStrings.form?.stageName,
         type: 'text',
-        value: 'Playoffs',
+        required: false,
+        placeholder: 'Wpisz nazwę etapu',
+        value: '',
       },
       {
         name: 'startDate',
@@ -898,9 +903,28 @@ export class TablesComponent implements OnInit {
         value: start,
       },
       {
+        name: 'firstMatchTime',
+        label: this.playoffsStrings.form?.firstMatchTime,
+        type: 'text',
+        required: false,
+        value: '',
+        placeholder: 'Wpisz godzinę w formacie HH:MM',
+      },
+      {
+        name: 'matchIntervalMinutes',
+        label: this.playoffsStrings.form?.matchIntervalMinutes,
+        type: 'number',
+        required: false,
+        min: 0,
+        step: 1,
+        value: '',
+        placeholder: 'Wpisz liczbę minut',
+      },
+      {
         name: 'matchTimes',
         label: this.playoffsStrings.form?.matchTimes.label,
         type: 'repeater',
+        required: false,
         itemLabel: this.playoffsStrings.form?.matchTimes.hour,
         addLabel: this.playoffsStrings.form?.matchTimes.addHour,
         removeLabel: this.playoffsStrings.form?.matchTimes.remove,
@@ -911,47 +935,37 @@ export class TablesComponent implements OnInit {
             name: 'time',
             label: this.playoffsStrings.form?.matchTimes.fieldTime,
             type: 'text',
-            value: '18:00',
+            required: false,
+            placeholder: 'Wpisz godzinę w formacie HH:MM',
+            value: '',
           },
         ],
-        value: [{ time: '14:00' }, { time: '16:00' }, { time: '18:00' }],
-      },
-      {
-        name: 'firstMatchTime',
-        label: this.playoffsStrings.form?.firstMatchTime,
-        type: 'text',
-        value: '',
-        placeholder: '09:00',
-      },
-      {
-        name: 'matchIntervalMinutes',
-        label: this.playoffsStrings.form?.matchIntervalMinutes,
-        type: 'number',
-        min: 0,
-        step: 1,
-        value: '',
-        placeholder: '50',
-      },
-      {
-        name: 'dayInterval',
-        label: this.playoffsStrings.form?.dayInterval,
-        type: 'number',
-        min: 0,
-        step: 1,
-        value: '',
-        placeholder: '0',
+        value: [],
       },
       {
         name: 'roundInSingleDay',
         label: this.playoffsStrings.form?.roundInSingleDay,
         type: 'select',
+        required: true,
         options: yesNoOptions,
-        value: 'false',
+        value: 'true',
+      },
+      {
+        name: 'dayInterval',
+        label: this.playoffsStrings.form?.dayInterval,
+        type: 'number',
+        required: false,
+        min: 1,
+        step: 1,
+        value: '',
+        disabled: true,
+        placeholder: '0',
       },
       {
         name: 'withThirdPlace',
         label: this.playoffsStrings.form?.withThirdPlace,
         type: 'select',
+        required: false,
         options: yesNoOptions,
         value: 'true',
       },
@@ -959,6 +973,7 @@ export class TablesComponent implements OnInit {
         name: 'clearExisting',
         label: this.playoffsStrings.form?.clearExisting,
         type: 'select',
+        required: false,
         options: yesNoOptions,
         value: 'true',
       },
@@ -968,17 +983,21 @@ export class TablesComponent implements OnInit {
   }
 
   onGeneratePlayoffsFormChanged(val: Record<string, any>) {
-    const set = (name: string, patch: Partial<FormField>) =>
-      this.setField(this.generatePlayoffsFields, name, patch);
+    const form = this.dynamicFormComponent?.form;
+    if (!form) return;
 
-    const di = Number(val['dayInterval']);
-    if (
-      val['dayInterval'] !== '' &&
-      Number.isFinite(di) &&
-      di >= 0 &&
-      !Number.isInteger(di)
-    ) {
-      set('dayInterval', { value: Math.floor(di) });
+    const dayControl = form.get('dayInterval');
+    const intervalControl = form.get('matchIntervalMinutes');
+
+    if (String(val['roundInSingleDay']) === 'true') {
+      dayControl?.disable({ emitEvent: false });
+      dayControl?.setValue(null, { emitEvent: false });
+    } else {
+      dayControl?.enable({ emitEvent: false });
+      const di = Number(val['dayInterval']);
+      if (Number.isFinite(di) && di < 1) {
+        dayControl?.setValue(1, { emitEvent: false });
+      }
     }
 
     const mim = Number(val['matchIntervalMinutes']);
@@ -988,7 +1007,7 @@ export class TablesComponent implements OnInit {
       mim >= 1 &&
       !Number.isInteger(mim)
     ) {
-      set('matchIntervalMinutes', { value: Math.floor(mim) });
+      intervalControl?.setValue(Math.floor(mim), { emitEvent: false });
     }
   }
 
@@ -1014,8 +1033,14 @@ export class TablesComponent implements OnInit {
           }
         : {}),
 
-      dayInterval: Number(f['dayInterval'] ?? 0),
       roundInSingleDay: String(f['roundInSingleDay'] ?? 'true') === 'true',
+
+      ...(String(f['roundInSingleDay']) === 'true'
+        ? {}
+        : {
+            dayInterval:
+              Number(f['dayInterval']) > 0 ? Number(f['dayInterval']) : 1,
+          }),
       withThirdPlace: String(f['withThirdPlace'] ?? 'true') === 'true',
       clearExisting: String(f['clearExisting'] ?? 'false') === 'true',
     };

@@ -130,7 +130,7 @@ export class TeamsComponent implements OnInit {
     });
   }
 
-  onLogoSelected(file: File) {
+  onLogoSelected(file?: File) {
     this.selectedLogoFile = file;
   }
 
@@ -184,10 +184,11 @@ export class TeamsComponent implements OnInit {
       .createTeam$(payload)
       .pipe(
         switchMap((team) => {
-          if (logoFile) {
+          if (!logoStr && logoFile) {
             return this.teamService.uploadLogo$(team.id, logoFile);
+          } else {
+            return of(team);
           }
-          return of(team);
         }),
         tap(() => {
           this.openAddTeamFormModal = false;
@@ -351,10 +352,11 @@ export class TeamsComponent implements OnInit {
       .updateTeam$(this.editingTeamCoreId, payload)
       .pipe(
         switchMap((team) => {
-          if (logoFile) {
+          if (!logoStr && logoFile) {
             return this.teamService.uploadLogo$(team.id, logoFile);
+          } else {
+            return of(team);
           }
-          return of(team);
         }),
         tap(() => {
           this.openEditTeamFormModal = false;
@@ -653,15 +655,15 @@ export class TeamsComponent implements OnInit {
         type: 'text',
         required: true,
         value: '',
-        placeholder: 'Nazwa drużyny',
+        placeholder: 'Wpisz nazwę drużyny',
       },
       {
         name: 'logoText',
-        label: 'Adres logo drużyny',
+        label: 'Adres logo drużyny (opcjonalnie)',
         type: 'text',
         required: false,
         value: '',
-        placeholder: 'Logo drużyny',
+        placeholder: 'Adres URL loga drużyny',
       },
       {
         name: 'logoFile',
@@ -671,7 +673,7 @@ export class TeamsComponent implements OnInit {
       },
       {
         name: 'groupId',
-        label: 'Grupa',
+        label: 'Grupa (opcjonalnie)',
         type: 'select',
         required: false,
         value: '',
@@ -688,7 +690,7 @@ export class TeamsComponent implements OnInit {
         type: 'text',
         required: true,
         value: '',
-        placeholder: 'Jan Kowalski',
+        placeholder: 'Wpisz imię i nazwisko',
       },
       {
         name: 'position',
@@ -705,7 +707,7 @@ export class TeamsComponent implements OnInit {
       },
       {
         name: 'number',
-        label: 'Numer na koszulce',
+        label: 'Numer na koszulce (opcjonalnie)',
         type: 'number',
         required: false,
         value: '',

@@ -35,11 +35,7 @@ import { AuthService } from '../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-playoffs-bracket',
-  imports: [
-    CommonModule,
-    BracketRoundPipe,
-    MatchCardComponent,
-  ],
+  imports: [CommonModule, BracketRoundPipe, MatchCardComponent],
   templateUrl: './playoffs-bracket.component.html',
   styleUrl: './playoffs-bracket.component.scss',
   standalone: true,
@@ -67,7 +63,6 @@ export class PlayoffsBracketComponent
   moduleStrings = stringsPlayoffsBracket;
 
   hasBracket$!: Observable<boolean>;
-  canGenerate$!: Observable<boolean>;
   matches$!: Observable<BracketMatch[]>;
   rounds$!: Observable<number[]>;
   uiMatchById$!: Observable<Map<string, Match>>;
@@ -107,14 +102,6 @@ export class PlayoffsBracketComponent
     this.roundSides$ = this.bracket.roundsForSides$(this.stageId);
     this.roundOffsetMult$ = this.bracket.offsetMultipliers$(this.stageId);
     this.hasBracket$ = this.bracket.hasBracketForStage$(this.stageId);
-
-    this.canGenerate$ = combineLatest([
-      this.isGenerating$,
-      this.hasBracket$,
-    ]).pipe(
-      map(([gen, has]) => !gen && !has),
-      shareReplay(1)
-    );
   }
 
   ngAfterViewInit(): void {

@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.12.2
+
+### (FIX) Generator drabinki play-off — ulepszenia formularza, Poprawki tabel grup (mobile)
+
+- Automatyczne dezaktywowanie pola „Odstęp dni między rundami” po wybraniu „Cała runda jednego dnia”
+- Ustawiono domyślne wartości i automatyczne czyszczenie pól zależnych
+- Przycisk generowania jest zawsze aktywny
+- Loga i nazwy drużyn wyrównane jak na desktopie
+
 ## 1.12.1
 
 ### (FIX) Sidebar / nawigacja — zachowanie na tabletach i desktopie

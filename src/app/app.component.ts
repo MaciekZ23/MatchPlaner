@@ -20,6 +20,10 @@ export class AppComponent {
   private store = inject(TournamentStore);
   hasTournament$ = this.store.hasTournament$;
 
+  ngOnInit() {
+    this.isSidebarOpen = window.innerWidth >= 768;
+  }
+
   isNotTournamentPage$ = this.router.events.pipe(
     filter((e): e is NavigationEnd => e instanceof NavigationEnd),
     map(() => !this.router.url.startsWith('/tournaments')),
@@ -33,12 +37,19 @@ export class AppComponent {
     map(([hasTournament, isNotTournament]) => hasTournament && isNotTournament)
   );
 
-  toggleSidebar(reason: 'manual' | 'resize') {
-    if (reason === 'manual') {
-      this.isSidebarOpen = !this.isSidebarOpen;
-    }
-    if (reason === 'resize') {
-      this.isSidebarOpen = window.innerWidth >= 768;
+  toggleSidebar(reason: 'manual' | 'resize' | 'close') {
+    switch (reason) {
+      case 'manual':
+        this.isSidebarOpen = !this.isSidebarOpen;
+        break;
+
+      case 'resize':
+        this.isSidebarOpen = window.innerWidth >= 768;
+        break;
+
+      case 'close':
+        this.isSidebarOpen = false;
+        break;
     }
   }
 

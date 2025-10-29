@@ -78,10 +78,12 @@
                 [min]="field.min !== undefined ? field.min : NumMin"
                 [max]="field.max ? field.max : NumMax"
                 [step]="field.step !== undefined ? field.step : 1"
+                [disabled]="!!field.disabled"
                 [ngClass]="{
                   'is-invalid':
                     form.get(field.name)?.invalid &&
-                    form.get(field.name)?.touched
+                    form.get(field.name)?.touched,
+                  'bg-secondary text-light opacity-75': isDisabled(field.name)
                 }"
               />
               } @case('date'){
@@ -238,6 +240,11 @@
                           [min]="inner.min ?? null"
                           [max]="inner.max ?? null"
                           [step]="inner.step ?? 1"
+                          [disabled]="!!inner.disabled"
+                          [ngClass]="{
+                            'bg-secondary text-light opacity-75':
+                              isInnerDisabled(field.name, i, inner.name)
+                          }"
                         />
 
                         } @case('date') {
@@ -346,17 +353,20 @@
               @if (form.get(field.name)?.invalid &&
               form.get(field.name)?.touched) {
               <div class="invalid-feedback">
-                @if (form.get(field.name)?.errors?.['required']) {
-                {{ field.label }} jest wymagane. } @if
-                (form.get(field.name)?.errors?.['email']) { Podaj poprawny
-                email. } @if (form.get(field.name)?.errors?.['min']) { Wartość
-                za mała. } @if (form.get(field.name)?.errors?.['max']) { Wartość
-                za duża. } @if (form.get(field.name)?.errors?.['pattern']) {
-                {{ field.label }} nie spełnia wymaganego wzorca. } @if
-                (form.get(field.name)?.errors?.['minlength']) {
-                {{ field.label }} jest za krótki. } @if
-                (form.get(field.name)?.errors?.['maxlength']) {
-                {{ field.label }} jest za długi. }
+                @if (form.get(field.name)?.errors?.['required']) { Pole "{{
+                  field.label
+                }}" jest wymagane } @if(form.get(field.name)?.errors?.['email'])
+                { Podaj poprawny adres e-mail } @if
+                (form.get(field.name)?.errors?.['min']) { Wartość jest zbyt mała
+                } @if (form.get(field.name)?.errors?.['max']) { Wartość jest
+                zbyt duża } @if (form.get(field.name)?.errors?.['pattern']) {
+                Pole "{{ field.label }}" ma nieprawidłowy format } @if
+                (form.get(field.name)?.errors?.['minlength']) { Pole "{{
+                  field.label
+                }}" jest za krótkie } @if
+                (form.get(field.name)?.errors?.['maxlength']) { Pole "{{
+                  field.label
+                }}" jest za długie }
               </div>
               }
             </div>

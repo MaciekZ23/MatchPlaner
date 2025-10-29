@@ -21,7 +21,7 @@ import { TournamentStore } from '../core/services/tournament-store.service';
 export class NavbarComponent {
   moduleStrings = stringsNavbar;
   @Input() isOpen: boolean = true;
-  @Output() toggleSidebar = new EventEmitter<'manual' | 'resize'>();
+  @Output() toggleSidebar = new EventEmitter<'manual' | 'resize' | 'close'>();
 
   private store = inject(TournamentStore);
   private router = inject(Router);
@@ -58,14 +58,7 @@ export class NavbarComponent {
     }
     this.router.navigate(['/', tid, ...segments]);
     if (this.isMobile()) {
-      this.toggleSidebar.emit('manual');
-    }
-  }
-
-  onNavClick(event: Event) {
-    const el = event.target as HTMLElement;
-    if (this.isMobile() && el.closest('a.nav-link')) {
-      this.toggleSidebar.emit('manual');
+      this.toggleSidebar.emit('close');
     }
   }
 }
