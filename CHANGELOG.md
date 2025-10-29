@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.12.3 — (FIX) Poprawki widoku rankingów i tabel (mobile)
+
+- Naprawiono zawijanie długich nazwisk w rankingach (Strzelcy / Czyste konta)
+- Ujednolicono szerokości kolumn na mobilkach
+- Wyrównanie nagłówków kolumn
+
 ## 1.12.2
 
 ### (FIX) Generator drabinki play-off — ulepszenia formularza, Poprawki tabel grup (mobile)

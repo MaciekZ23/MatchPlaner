@@ -108,6 +108,10 @@
       display: flex;
       justify-content: flex-start;
       align-items: center;
+
+      span {
+        font-size: 0.8rem !important;
+      }
     }
 
     .actions .icon-btn {

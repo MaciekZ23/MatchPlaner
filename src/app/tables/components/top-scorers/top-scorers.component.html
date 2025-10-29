@@ -41,7 +41,9 @@
         <thead>
           <tr>
             <th scope="col">{{ moduleStrings.headers.pos }}</th>
-            <th scope="col">{{ moduleStrings.headers.player }}</th>
+            <th scope="col" class="text-center">
+              {{ moduleStrings.headers.player }}
+            </th>
             <th scope="col" class="d-none d-md-table-cell">
               {{ moduleStrings.headers.team }}
             </th>
@@ -51,7 +53,7 @@
               [attr.aria-sort]="
                 sortColumn === 'goals'
                   ? sortDirection === 'asc'
-                    ? 'ascending'
+                    ? 'ascenACding'
                     : 'descending'
                   : 'none'
               "
