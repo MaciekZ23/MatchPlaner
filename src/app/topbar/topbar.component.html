@@ -12,7 +12,7 @@
       header-action
       *ngIf="(hasTournament$ | async) && (isNotTournamentPage$ | async)"
       type="button"
-      class="btn text-white btn-sm me-2 d-none d-md-inline-flex align-items-center gap-2"
+      class="btn text-white btn-sm me-3 d-none d-md-inline-flex align-items-center gap-2"
       (click)="changeTournament()"
       aria-label="Wróć do wyboru turnieju"
     >
@@ -22,7 +22,7 @@
 
     <div
       *ngIf="(hasTournament$ | async) && (isNotTournamentPage$ | async)"
-      class="dropdown d-inline-block d-md-none me-2"
+      class="dropdown d-inline-block d-md-none me-3"
     >
       <button
         type="button"
