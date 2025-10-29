@@ -29,16 +29,18 @@ export class NavbarComponent {
   tid$ = this.store.selectedId$;
   hasTid$ = this.store.hasTournament$;
 
+  private lastWidth = window.innerWidth;
+
   @HostListener('window:resize')
   onWindowResize() {
+    if (window.innerWidth === this.lastWidth) {
+      return;
+    }
     const shouldBeOpen = window.innerWidth >= 768;
     if (shouldBeOpen !== this.isOpen) {
       this.toggleSidebar.emit('resize');
     }
-  }
-
-  setInitialSidebarState() {
-    this.isOpen = window.innerWidth >= 768;
+    this.lastWidth = window.innerWidth;
   }
 
   onToggleSidebar() {
@@ -63,7 +65,7 @@ export class NavbarComponent {
   onNavClick(event: Event) {
     const el = event.target as HTMLElement;
     if (this.isMobile() && el.closest('a.nav-link')) {
-      this.toggleSidebar.emit('resize');
+      this.toggleSidebar.emit('manual');
     }
   }
 }
