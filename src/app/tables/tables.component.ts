@@ -608,12 +608,14 @@ export class TablesComponent implements OnInit {
         name: 'id',
         label: this.calendarStrings.matchEventsFormLabels.id,
         type: 'hidden',
+        required: false,
         value: '',
       },
       {
         name: 'minute',
         label: this.calendarStrings.matchEventsFormLabels.minute,
         type: 'number',
+        required: false,
         min: 0,
         step: 1,
         value: 0,
@@ -665,6 +667,7 @@ export class TablesComponent implements OnInit {
         name: 'card',
         label: this.calendarStrings.matchEventsFormLabels.card,
         type: 'select',
+        required: false,
         options: [
           {
             label:
@@ -748,6 +751,7 @@ export class TablesComponent implements OnInit {
         name: 'stageId',
         label: this.calendarStrings.createeditMatchFieldsLabels.stage,
         type: 'select',
+        required: true,
         options: stageOptions,
         value: String(m.stageId ?? ''),
       },
@@ -755,6 +759,7 @@ export class TablesComponent implements OnInit {
         name: 'groupId',
         label: this.calendarStrings.createeditMatchFieldsLabels.group,
         type: 'select',
+        required: false,
         options: [
           { label: this.calendarStrings.common.noneOption, value: '' },
           ...groupOptions,
@@ -765,6 +770,7 @@ export class TablesComponent implements OnInit {
         name: 'round',
         label: this.calendarStrings.createeditMatchFieldsLabels.round,
         type: 'number',
+        required: false,
         min: 1,
         step: 1,
         value: m.round ?? '',
@@ -773,6 +779,7 @@ export class TablesComponent implements OnInit {
         name: 'index',
         label: this.calendarStrings.createeditMatchFieldsLabels.index,
         type: 'number',
+        required: false,
         min: 1,
         step: 1,
         value: m.index ?? '',
@@ -781,12 +788,14 @@ export class TablesComponent implements OnInit {
         name: 'date',
         label: this.calendarStrings.createeditMatchFieldsLabels.date,
         type: 'datetime',
+        required: true,
         value: isoToLocalInput(m.date),
       },
       {
         name: 'status',
         label: this.calendarStrings.createeditMatchFieldsLabels.status,
         type: 'select',
+        required: false,
         options: [
           {
             label:
@@ -813,6 +822,7 @@ export class TablesComponent implements OnInit {
         name: 'homeTeamId',
         label: this.calendarStrings.createeditMatchFieldsLabels.homeTeam,
         type: 'select',
+        required: false,
         options: [
           { label: this.calendarStrings.common.noneOption, value: '' },
           ...teamOptions,
@@ -823,6 +833,7 @@ export class TablesComponent implements OnInit {
         name: 'awayTeamId',
         label: this.calendarStrings.createeditMatchFieldsLabels.awayTeam,
         type: 'select',
+        required: false,
         options: [
           { label: this.calendarStrings.common.noneOption, value: '' },
           ...teamOptions,
@@ -833,6 +844,7 @@ export class TablesComponent implements OnInit {
         name: 'scoreHome',
         label: this.calendarStrings.createeditMatchFieldsLabels.scoreHome,
         type: 'number',
+        required: false,
         min: 0,
         step: 1,
         value: m.score?.home ?? '',
@@ -841,6 +853,7 @@ export class TablesComponent implements OnInit {
         name: 'scoreAway',
         label: this.calendarStrings.createeditMatchFieldsLabels.scoreAway,
         type: 'number',
+        required: false,
         min: 0,
         step: 1,
         value: m.score?.away ?? '',
@@ -849,6 +862,7 @@ export class TablesComponent implements OnInit {
         name: 'homeGKIds',
         label: this.calendarStrings.createeditMatchFieldsLabels.homeGKIds,
         type: 'select',
+        required: false,
         multiple: true,
         options: this.gkOptionsForTeam(homeId),
         value: (m.lineups?.homeGKIds ?? []).map(String),
@@ -857,6 +871,7 @@ export class TablesComponent implements OnInit {
         name: 'awayGKIds',
         label: this.calendarStrings.createeditMatchFieldsLabels.awayGKIds,
         type: 'select',
+        required: false,
         multiple: true,
         options: this.gkOptionsForTeam(awayId),
         value: (m.lineups?.awayGKIds ?? []).map(String),

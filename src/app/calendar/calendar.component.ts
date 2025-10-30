@@ -68,6 +68,9 @@ export class CalendarComponent {
   @ViewChild('addMatchFormRef') addMatchFormRef!: DynamicFormComponent;
   @ViewChild('editMatchFormRef') editMatchFormRef!: DynamicFormComponent;
 
+  @ViewChild('generateMatches')
+  dynamicFormComponent!: DynamicFormComponent;
+
   moduleStrings = stringsCalendar;
   confirmStrings = stringsConfirmModal;
   selectedMatch: Match | null = null;
@@ -242,12 +245,10 @@ export class CalendarComponent {
     }
 
     const round = this.numOrUndefined(f['round']);
-    if (round !== undefined) {
-      payload.round = round;
-    }
+    payload.round = round ?? 1;
 
     const index = this.numOrUndefined(f['index']);
-    if (!groupId && index !== undefined && index >= 1) {
+    if (index !== undefined && index >= 1) {
       payload.index = index;
     }
 
@@ -358,7 +359,9 @@ export class CalendarComponent {
     const roundRaw = Number(val['round'] ?? this.fieldValue(fields, 'round'));
     const roundValid = Number.isFinite(roundRaw) && roundRaw >= 1;
 
-    this.setField(fields, 'round', { required: !!groupId, min: 1 });
+    if (groupId && !roundValid) {
+      this.setField(fields, 'round', { value: null });
+    }
 
     if (groupId) {
       if (!roundValid) this.setField(fields, 'round', { value: 1 });
@@ -580,12 +583,14 @@ export class CalendarComponent {
 
     const groupIdRaw = String(f['groupId'] ?? '').trim();
     const newGroupId = groupIdRaw === '' ? null : groupIdRaw;
-
+    if (newGroupId !== base.groupId) {
+      patch.groupId = newGroupId;
+    }
     const index = this.numOrUndefined(f['index']);
-    if (!newGroupId && index !== undefined && index >= 1) {
+    if (index !== undefined) {
       patch.index = index;
-    } else if (newGroupId) {
-      patch.index = null;
+    } else {
+      patch.index = base.index ?? undefined;
     }
 
     const editedEvents = Array.isArray(f['events'])
@@ -1009,18 +1014,27 @@ export class CalendarComponent {
     const payload = {
       startDate,
       groupIds: groupIds.length ? groupIds : undefined,
-      dayInterval,
+      roundInSingleDay,
+
+      ...(roundInSingleDay
+        ? {}
+        : {
+            dayInterval: dayInterval > 0 ? dayInterval : 1,
+          }),
+
+      ...(matchTimes.length > 0
+        ? { matchTimes }
+        : {
+            firstMatchTime: firstMatchTime || '10:00',
+            matchIntervalMinutes:
+              matchIntervalMinutes && matchIntervalMinutes > 0
+                ? matchIntervalMinutes
+                : 120,
+          }),
       doubleRound,
       shuffleTeams,
       clearExisting,
-      roundInSingleDay,
-      matchTimes: matchTimes.length ? matchTimes : undefined,
-      matchIntervalMinutes: matchTimes.length
-        ? undefined
-        : matchIntervalMinutes,
-      firstMatchTime: matchTimes.length ? undefined : firstMatchTime,
     };
-
     this.openGenerateFormModal = false;
     this.isLoading = true;
 
@@ -1065,6 +1079,26 @@ export class CalendarComponent {
   onGenerateFormChanged(val: Record<string, any>) {
     const HHMM = /^([01]\d|2[0-3]):[0-5]\d$/;
 
+    const form = this.dynamicFormComponent?.form;
+    if (!form) return;
+
+    const dayControl = form.get('dayInterval');
+    const intervalControl = form.get('matchIntervalMinutes');
+
+    if (String(val['roundInSingleDay']) === 'true') {
+      dayControl?.disable({ emitEvent: false });
+      dayControl?.setValue(null, { emitEvent: false });
+    } else {
+      dayControl?.enable({ emitEvent: false });
+
+      const di = Number(val['dayInterval']);
+      if (!Number.isFinite(di) || di < 1) {
+        dayControl?.setValue('', { emitEvent: false });
+      } else if (!Number.isInteger(di)) {
+        dayControl?.setValue(Math.floor(di), { emitEvent: false });
+      }
+    }
+
     const fields = this.generateFormFields;
     const get = (name: string) => fields.find((f) => f.name === name);
     const set = (name: string, patch: Partial<FormField>) =>
@@ -1073,6 +1107,7 @@ export class CalendarComponent {
     const timesRaw: Array<{ time?: string }> = Array.isArray(val['matchTimes'])
       ? val['matchTimes']
       : [];
+
     const cleanedTimes = Array.from(
       new Set(
         timesRaw
@@ -1098,24 +1133,72 @@ export class CalendarComponent {
     } else {
       const first = String(val['firstMatchTime'] ?? '').trim();
       if (!first || !HHMM.test(first)) {
-        set('firstMatchTime', { value: '10:00' });
+        set('firstMatchTime', { value: '' });
       }
 
       const mim = Number(val['matchIntervalMinutes']);
       if (!Number.isFinite(mim) || mim < 1) {
-        set('matchIntervalMinutes', { value: 120 });
+        intervalControl?.setValue('', { emitEvent: false });
       } else {
-        set('matchIntervalMinutes', { value: Math.floor(mim) });
+        intervalControl?.setValue(Math.floor(mim), { emitEvent: false });
       }
     }
-
-    const dayIntRaw = Number(val['dayInterval']);
-    if (!Number.isFinite(dayIntRaw) || dayIntRaw < 1) {
-      set('dayInterval', { value: 1 });
-    } else if (!Number.isInteger(dayIntRaw)) {
-      set('dayInterval', { value: Math.floor(dayIntRaw) });
-    }
   }
+
+  // onGenerateFormChanged(val: Record<string, any>) {
+  //   const HHMM = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+  //   const fields = this.generateFormFields;
+  //   const get = (name: string) => fields.find((f) => f.name === name);
+  //   const set = (name: string, patch: Partial<FormField>) =>
+  //     this.setField(fields, name, patch);
+
+  //   const timesRaw: Array<{ time?: string }> = Array.isArray(val['matchTimes'])
+  //     ? val['matchTimes']
+  //     : [];
+  //   const cleanedTimes = Array.from(
+  //     new Set(
+  //       timesRaw
+  //         .map((r) => String(r?.time ?? '').trim())
+  //         .filter((t) => t.length > 0 && HHMM.test(t))
+  //     )
+  //   ).sort((a, b) => a.localeCompare(b));
+
+  //   const mt = get('matchTimes');
+  //   if (
+  //     mt &&
+  //     JSON.stringify(mt.value?.map((x: any) => x.time)) !==
+  //       JSON.stringify(cleanedTimes)
+  //   ) {
+  //     set('matchTimes', { value: cleanedTimes.map((t) => ({ time: t })) });
+  //   }
+
+  //   const hasTimes = cleanedTimes.length > 0;
+
+  //   if (hasTimes) {
+  //     set('matchIntervalMinutes', { value: '' });
+  //     set('firstMatchTime', { value: '' });
+  //   } else {
+  //     const first = String(val['firstMatchTime'] ?? '').trim();
+  //     if (!first || !HHMM.test(first)) {
+  //       set('firstMatchTime', { value: '10:00' });
+  //     }
+
+  //     const mim = Number(val['matchIntervalMinutes']);
+  //     if (!Number.isFinite(mim) || mim < 1) {
+  //       set('matchIntervalMinutes', { value: 120 });
+  //     } else {
+  //       set('matchIntervalMinutes', { value: Math.floor(mim) });
+  //     }
+  //   }
+
+  //   const dayIntRaw = Number(val['dayInterval']);
+  //   if (!Number.isFinite(dayIntRaw) || dayIntRaw < 1) {
+  //     set('dayInterval', { value: 1 });
+  //   } else if (!Number.isInteger(dayIntRaw)) {
+  //     set('dayInterval', { value: Math.floor(dayIntRaw) });
+  //   }
+  // }
 
   private reduceFields<
     T extends Record<string, unknown> = Record<string, unknown>
@@ -1127,6 +1210,7 @@ export class CalendarComponent {
   }
 
   private numOrUndefined(v: any): number | undefined {
+    if (v === '' || v === null || v === undefined) return undefined;
     const n = Number(v);
     return Number.isFinite(n) ? n : undefined;
   }
@@ -1149,11 +1233,6 @@ export class CalendarComponent {
     if (i < 0) return;
     const sf = arr[i] as SelectFormField;
     sf.options = options;
-  }
-
-  private toYyyyMmDd(d: Date): string {
-    const pad = (n: number) => String(n).padStart(2, '0');
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
   }
 
   private yesNoOptions = [
@@ -1193,6 +1272,7 @@ export class CalendarComponent {
         name: 'groupId',
         label: this.moduleStrings.createeditMatchFieldsLabels.group,
         type: 'select',
+        required: false,
         options: [
           { label: this.moduleStrings.common.noneOption, value: '' },
           ...groupOptions,
@@ -1203,7 +1283,7 @@ export class CalendarComponent {
         name: 'round',
         label: this.moduleStrings.createeditMatchFieldsLabels.round,
         type: 'number',
-        required: true,
+        required: false,
         min: 1,
         step: 1,
         value: '',
@@ -1212,6 +1292,7 @@ export class CalendarComponent {
         name: 'index',
         label: this.moduleStrings.createeditMatchFieldsLabels.index,
         type: 'number',
+        required: false,
         min: 1,
         step: 1,
         value: '',
@@ -1227,6 +1308,7 @@ export class CalendarComponent {
         name: 'status',
         label: this.moduleStrings.createeditMatchFieldsLabels.status,
         type: 'select',
+        required: false,
         options: [
           {
             label:
@@ -1252,6 +1334,7 @@ export class CalendarComponent {
         name: 'homeTeamId',
         label: this.moduleStrings.createeditMatchFieldsLabels.homeTeam,
         type: 'select',
+        required: false,
         options: [
           { label: this.moduleStrings.common.noneOption, value: '' },
           ...teamOptions,
@@ -1262,6 +1345,7 @@ export class CalendarComponent {
         name: 'awayTeamId',
         label: this.moduleStrings.createeditMatchFieldsLabels.awayTeam,
         type: 'select',
+        required: false,
         options: [
           { label: this.moduleStrings.common.noneOption, value: '' },
           ...teamOptions,
@@ -1272,6 +1356,7 @@ export class CalendarComponent {
         name: 'scoreHome',
         label: this.moduleStrings.createeditMatchFieldsLabels.scoreHome,
         type: 'number',
+        required: false,
         min: 0,
         step: 1,
         value: '',
@@ -1280,6 +1365,7 @@ export class CalendarComponent {
         name: 'scoreAway',
         label: this.moduleStrings.createeditMatchFieldsLabels.scoreAway,
         type: 'number',
+        required: false,
         min: 0,
         step: 1,
         value: '',
@@ -1288,6 +1374,7 @@ export class CalendarComponent {
         name: 'homeGKIds',
         label: this.moduleStrings.createeditMatchFieldsLabels.homeGKIds,
         type: 'select',
+        required: false,
         multiple: true,
         options: [],
         value: [],
@@ -1296,6 +1383,7 @@ export class CalendarComponent {
         name: 'awayGKIds',
         label: this.moduleStrings.createeditMatchFieldsLabels.awayGKIds,
         type: 'select',
+        required: false,
         multiple: true,
         options: [],
         value: [],
@@ -1358,6 +1446,7 @@ export class CalendarComponent {
         name: 'stageId',
         label: this.moduleStrings.createeditMatchFieldsLabels.stage,
         type: 'select',
+        required: true,
         options: stageOptions,
         value: String(m.stageId ?? ''),
       },
@@ -1365,6 +1454,7 @@ export class CalendarComponent {
         name: 'groupId',
         label: this.moduleStrings.createeditMatchFieldsLabels.group,
         type: 'select',
+        required: false,
         options: [{ label: '— brak —', value: '' }, ...groupOptions],
         value: String(m.groupId ?? ''),
       },
@@ -1372,7 +1462,7 @@ export class CalendarComponent {
         name: 'round',
         label: this.moduleStrings.createeditMatchFieldsLabels.round,
         type: 'number',
-        required: true,
+        required: false,
         min: 1,
         step: 1,
         value: m.round ?? '',
@@ -1381,6 +1471,7 @@ export class CalendarComponent {
         name: 'index',
         label: this.moduleStrings.createeditMatchFieldsLabels.index,
         type: 'number',
+        required: false,
         min: 1,
         step: 1,
         value: m.index ?? '',
@@ -1389,12 +1480,14 @@ export class CalendarComponent {
         name: 'date',
         label: this.moduleStrings.createeditMatchFieldsLabels.date,
         type: 'datetime',
+        required: true,
         value: isoToLocalInput(m.date),
       },
       {
         name: 'status',
         label: this.moduleStrings.createeditMatchFieldsLabels.status,
         type: 'select',
+        required: false,
         options: [
           {
             label:
@@ -1420,6 +1513,7 @@ export class CalendarComponent {
         name: 'homeTeamId',
         label: this.moduleStrings.createeditMatchFieldsLabels.homeTeam,
         type: 'select',
+        required: false,
         options: [
           { label: this.moduleStrings.common.noneOption, value: '' },
           ...teamOptions,
@@ -1430,6 +1524,7 @@ export class CalendarComponent {
         name: 'awayTeamId',
         label: this.moduleStrings.createeditMatchFieldsLabels.awayTeam,
         type: 'select',
+        required: false,
         options: [
           { label: this.moduleStrings.common.noneOption, value: '' },
           ...teamOptions,
@@ -1441,6 +1536,7 @@ export class CalendarComponent {
         name: 'scoreHome',
         label: this.moduleStrings.createeditMatchFieldsLabels.scoreHome,
         type: 'number',
+        required: false,
         min: 0,
         step: 1,
         value: m.score?.home ?? '',
@@ -1449,15 +1545,16 @@ export class CalendarComponent {
         name: 'scoreAway',
         label: this.moduleStrings.createeditMatchFieldsLabels.scoreAway,
         type: 'number',
+        required: false,
         min: 0,
         step: 1,
         value: m.score?.away ?? '',
       },
-
       {
         name: 'homeGKIds',
         label: this.moduleStrings.createeditMatchFieldsLabels.homeGKIds,
         type: 'select',
+        required: false,
         multiple: true,
         options: this.gkOptionsForTeam(homeId),
         value: (m.lineups?.homeGKIds ?? []).map(String),
@@ -1466,6 +1563,7 @@ export class CalendarComponent {
         name: 'awayGKIds',
         label: this.moduleStrings.createeditMatchFieldsLabels.awayGKIds,
         type: 'select',
+        required: false,
         multiple: true,
         options: this.gkOptionsForTeam(awayId),
         value: (m.lineups?.awayGKIds ?? []).map(String),
@@ -1492,12 +1590,14 @@ export class CalendarComponent {
         name: 'id',
         label: this.moduleStrings.matchEventsFormLabels.id,
         type: 'hidden',
+        required: false,
         value: '',
       },
       {
         name: 'minute',
         label: this.moduleStrings.matchEventsFormLabels.minute,
         type: 'number',
+        required: false,
         min: 0,
         step: 1,
         value: 0,
@@ -1548,6 +1648,7 @@ export class CalendarComponent {
         name: 'card',
         label: this.moduleStrings.matchEventsFormLabels.card,
         type: 'select',
+        required: false,
         disabled: true,
         options: [
           {
@@ -1587,8 +1688,11 @@ export class CalendarComponent {
     t: Tournament | null | undefined,
     groupOptions: { label: string; value: string }[]
   ): FormField[] {
-    const start =
-      (t?.startDate && t.startDate.slice(0, 10)) || this.toYyyyMmDd(new Date());
+    const toYyyyMmDd = (d: Date) => {
+      const pad = (n: number) => String(n).padStart(2, '0');
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    };
+    const start = toYyyyMmDd(new Date());
 
     return [
       {
@@ -1605,6 +1709,27 @@ export class CalendarComponent {
         type: 'date',
         required: true,
         value: start,
+      },
+      {
+        name: 'firstMatchTime',
+        label:
+          this.moduleStrings.generateRoundRobinFieldsFormLabels.firstMatchTime,
+        type: 'text',
+        required: false,
+        value: '',
+        placeholder: 'Wpisz godzinę w formacie HH:MM',
+      },
+      {
+        name: 'matchIntervalMinutes',
+        label:
+          this.moduleStrings.generateRoundRobinFieldsFormLabels
+            .matchIntervalMinutes,
+        type: 'number',
+        required: false,
+        min: 0,
+        step: 1,
+        value: '',
+        placeholder: 'Wpisz liczbę minut',
       },
       {
         name: 'matchTimes',
@@ -1629,37 +1754,12 @@ export class CalendarComponent {
               this.moduleStrings.generateRoundRobinFieldsFormLabels.matchTimes
                 .fieldTime,
             type: 'text',
-            value: '18:00',
+            required: false,
+            placeholder: 'Wpisz godzinę w formacie HH:MM',
+            value: '',
           },
         ],
-        value: [{ time: '14:00' }, { time: '16:00' }, { time: '18:00' }],
-      },
-      {
-        name: 'matchIntervalMinutes',
-        label:
-          this.moduleStrings.generateRoundRobinFieldsFormLabels
-            .matchIntervalMinutes,
-        type: 'number',
-        min: 0,
-        step: 1,
-        value: '',
-      },
-      {
-        name: 'firstMatchTime',
-        label:
-          this.moduleStrings.generateRoundRobinFieldsFormLabels.firstMatchTime,
-        type: 'text',
-        value: '10:00',
-      },
-
-      {
-        name: 'dayInterval',
-        label:
-          this.moduleStrings.generateRoundRobinFieldsFormLabels.dayInterval,
-        type: 'number',
-        min: 0,
-        step: 1,
-        value: 0,
+        value: [],
       },
       {
         name: 'roundInSingleDay',
@@ -1667,14 +1767,27 @@ export class CalendarComponent {
           this.moduleStrings.generateRoundRobinFieldsFormLabels
             .roundInSingleDay,
         type: 'select',
+        required: true,
         options: this.yesNoOptions,
-        value: 'false',
+        value: 'true',
+      },
+      {
+        name: 'dayInterval',
+        label:
+          this.moduleStrings.generateRoundRobinFieldsFormLabels.dayInterval,
+        type: 'number',
+        min: 1,
+        step: 1,
+        value: '',
+        disabled: true,
+        placeholder: '0',
       },
       {
         name: 'doubleRound',
         label:
           this.moduleStrings.generateRoundRobinFieldsFormLabels.doubleRound,
         type: 'select',
+        required: false,
         options: this.yesNoOptions,
         value: 'false',
       },
@@ -1683,6 +1796,7 @@ export class CalendarComponent {
         label:
           this.moduleStrings.generateRoundRobinFieldsFormLabels.shuffleTeams,
         type: 'select',
+        required: false,
         options: this.yesNoOptions,
         value: 'true',
       },
@@ -1691,6 +1805,7 @@ export class CalendarComponent {
         label:
           this.moduleStrings.generateRoundRobinFieldsFormLabels.clearExisting,
         type: 'select',
+        required: false,
         options: this.yesNoOptions,
         value: 'true',
       },
