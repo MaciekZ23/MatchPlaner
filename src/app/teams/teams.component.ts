@@ -302,18 +302,26 @@ export class TeamsComponent implements OnInit {
           }
 
           const fGroup = fields.find((f) => f.name === 'groupId');
+
           if (fGroup && fGroup.type === 'select') {
             this.store.groups$.pipe(take(1)).subscribe((groups) => {
               fGroup.options = [
                 { label: '— brak —', value: '' },
                 ...groups.map((g) => ({ label: g.name, value: g.id })),
               ];
-              fGroup.value = team.groupId ?? '';
-            });
-          }
 
-          this.editTeamFormFields = [...fields];
-          this.openEditTeamFormModal = true;
+              /** 🔥 TU ustawiamy wartość dopiero gdy options istnieją */
+              fGroup.value = team.groupId ?? '';
+
+              /** 🔥 dopiero teraz przekazujemy fields do dynamic-form */
+              this.editTeamFormFields = [...fields];
+              this.openEditTeamFormModal = true;
+            });
+          } else {
+            /** select nie istnieje → normalnie otwieramy */
+            this.editTeamFormFields = [...fields];
+            this.openEditTeamFormModal = true;
+          }
         },
         error: (err) =>
           console.error('Nie udało się pobrać coreId drużyny:', err),

@@ -197,8 +197,8 @@ export class CalendarComponent {
       labels: this.confirmStrings.labels,
     });
 
-    if (ok) {
-      this.voteFacade.voteFor(e.matchId as any, e.playerId);
+    if (ok && this.selectedMatch) {
+      this.voteFacade.voteFor(this.selectedMatch, e.playerId);
     }
   }
 

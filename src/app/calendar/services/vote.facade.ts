@@ -9,6 +9,8 @@ import {
 } from '../../core/models';
 import { VotingState } from '../../core/models';
 import { VoteService } from './vote.service';
+import { NotificationService } from '../../core/notifications/notification.service';
+import { AuthService } from '../../core/auth/auth.service';
 import { statusFromMatch, positionPl, healthPl } from './helpers';
 import { UiCandidate } from '../models/candidate.model';
 import { UiVoteSummary } from '../models/vote-summary.model';
@@ -24,7 +26,11 @@ type MinimalMatch = {
 
 @Injectable({ providedIn: 'root' })
 export class VoteFacade {
-  constructor(private vote: VoteService) {}
+  constructor(
+    private vote: VoteService,
+    private notifications: NotificationService,
+    private auth: AuthService
+  ) {}
 
   load(matchId: MatchId): void {
     this.vote.fetchState(matchId);
@@ -122,8 +128,22 @@ export class VoteFacade {
   }
 
   // Oddanie głosu na wskazanego zawodnika
-  voteFor(matchId: MatchId, playerId: string): void {
-    this.vote.vote(matchId, playerId as any);
+  voteFor(match: CalendarMatch, playerId: string): void {
+    this.vote.vote(match.id, playerId as any);
+
+    const sub = this.vote.selectState$(match.id).subscribe((s) => {
+      if (!s.hasVoted) return;
+
+      const player = s.candidates.find((c) => c.playerId === playerId);
+      const playerName = player?.name ?? 'zawodnika';
+
+      this.notifications.add(
+        `Zagłosowałeś na ${playerName} w meczu ${match.teamA} – ${match.teamB}`,
+        'success'
+      );
+
+      sub.unsubscribe();
+    });
   }
 }
 

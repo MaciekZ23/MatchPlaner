@@ -166,7 +166,7 @@
               >
                 <option
                   *ngFor="let option of field.options"
-                  [value]="option.value"
+                  [ngValue]="option.value"
                 >
                   {{ option.label }}
                 </option>
@@ -310,7 +310,7 @@
                           >
                             <option
                               *ngFor="let option of perRowOpts"
-                              [value]="option.value"
+                              [ngValue]="option.value"
                             >
                               {{ option.label }}
                             </option>
@@ -318,7 +318,7 @@
                           <ng-template #defaultOpts>
                             <option
                               *ngFor="let option of inner.options"
-                              [value]="option.value"
+                              [ngValue]="option.value"
                             >
                               {{ option.label }}
                             </option>
