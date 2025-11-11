@@ -146,12 +146,22 @@ export class TablesComponent implements OnInit {
     this.playerMap$.subscribe((m) => (this.latestPlayerMap = m));
   }
 
+  /**
+   * Inicjuje widok — pobiera dane tabel, strzelców, bramkarzy
+   */
   ngOnInit(): void {
     this.viewmodel$ = this.teamTable.getTablesVM$();
   }
 
+  /**
+   * Pomaga Angularowi śledzić listę grup w *ngFor
+   */
   trackGroup = (_: number, g: PointsTableGroup) => g.groupId;
 
+  /**
+   * Wyświetla modal z potwierdzeniem oddania głosu na zawodnika
+   * Jeśli użytkownik potwierdzi to wysyła głos przez VoteFacade
+   */
   async onRequestVoteConfirm(e: {
     matchId: string;
     playerId: string;
@@ -170,6 +180,10 @@ export class TablesComponent implements OnInit {
     this.voteFacade.voteFor(e.matchId as any, e.playerId);
   }
 
+  /**
+   * Usuwa wskazany mecz po potwierdzeniu w modalu
+   * Odświeża dane dla drabinki i listy meczów
+   */
   async onDeleteMatch(match: Match): Promise<void> {
     const ok = await this.deleteMatchConfirm.open({
       title: this.calendarStrings.deleteMatch,
@@ -199,6 +213,10 @@ export class TablesComponent implements OnInit {
       });
   }
 
+  /**
+   * Usuwa wszystkie mecze PLAYOFF danego etapu, stageId
+   * Pokazuje modal z potwierdzeniem i odświeża stan aplikacji
+   */
   async onDeleteAllPlayoffMatches(stageId: string): Promise<void> {
     const ok = await this.deleteAllPlayoffMatchesConfirm.open({
       title: this.playoffsStrings.deleteAllMatchesTitle,
@@ -226,6 +244,10 @@ export class TablesComponent implements OnInit {
       });
   }
 
+  /**
+   * Otwiera modal edycji meczu.
+   * Pobiera dane pomocnicze, etapy, grupy, drużyny, zawodników
+   */
   onEditMatch(match: Match): void {
     this.isLoading = true;
     forkJoin({
@@ -262,6 +284,10 @@ export class TablesComponent implements OnInit {
       });
   }
 
+  /**
+   * Reaguje na zmianę formularza edycji meczu
+   * Uaktualnia listy zawodników i drużyn w dynamicznych polach formularza
+   */
   onEditMatchFormChanged(val: Record<string, any>) {
     if (!this.editingMatch) return;
     const fields = this.editMatchFormFields;
@@ -316,6 +342,10 @@ export class TablesComponent implements OnInit {
     );
   }
 
+  /**
+   * Wysyła zmiany meczu na backend (diff eventów, wynik itp.)
+   * Aktualizuje drabinkę playoff / listę meczów
+   */
   onEditMatchFormSubmitted(fields: FormField[]): void {
     if (!this.editingMatch) {
       this.openEditMatchFormModal = false;
@@ -413,6 +443,10 @@ export class TablesComponent implements OnInit {
       });
   }
 
+  /**
+   * Zwraca listę bramkarzy dla wskazanej drużyny (home/away)
+   * Używane jako opcje select podczas edycji meczu
+   */
   private gkOptionsForTeam(teamId?: string | null) {
     if (!teamId) return [];
     return Array.from(this.latestPlayerMap.values())
@@ -420,6 +454,10 @@ export class TablesComponent implements OnInit {
       .map((p) => ({ label: p.name, value: String(p.id) }));
   }
 
+  /**
+   * Zwraca opcje zawodników dla podanych drużyn
+   * Używane w repeaterze eventów meczu
+   */
   private playersOptionsForTeams(teamIds: string[]): SelectOption[] {
     const wanted = new Set(teamIds.filter(Boolean));
     return Array.from(this.latestPlayerMap.values())
@@ -427,6 +465,10 @@ export class TablesComponent implements OnInit {
       .map((p) => ({ label: p.name, value: String(p.id) }));
   }
 
+  /**
+   * Zwraca opcje zawodników tylko dla drużyny, która dotyczy eventu
+   * Jeśli teamId brak to łączy listy z obu drużyn
+   */
   private playersOptionsForEventTeam(
     teamId: string | null,
     homeTeamId: string | null,
@@ -439,6 +481,10 @@ export class TablesComponent implements OnInit {
     return this.playersOptionsForTeams(tids);
   }
 
+  /**
+   * Dla repeatera eventów — ustawia dynamiczne opcje zawodników
+   * zależnie od indexu w tablicy i wybranej drużyny
+   */
   private setRepeaterPlayersOptionsByIndex(
     arr: FormField[],
     repeaterName: string,
@@ -462,6 +508,9 @@ export class TablesComponent implements OnInit {
     rep.optionsByIndex = byIndex;
   }
 
+  /**
+   * Podmienia opcje selecta w repeaterze eventów
+   */
   private setRepeaterSelectOptions(
     arr: FormField[],
     repeaterName: string,
@@ -480,16 +529,25 @@ export class TablesComponent implements OnInit {
     );
   }
 
+  /**
+   * Parsuje wartość na liczbę lub zwraca undefined
+   */
   private numOrUndefined(v: any): number | undefined {
     if (v === '' || v === null || v === undefined) return undefined;
     const n = Number(v);
     return Number.isFinite(n) ? n : undefined;
   }
 
+  /**
+   * Zwraca wartość pola formularza po nazwie
+   */
   private fieldValue(fields: FormField[], name: string): any {
     return fields.find((f) => f.name === name)?.value;
   }
 
+  /**
+   * Podmienia opcje selecta w formularzu
+   */
   private setSelectOptions(
     arr: FormField[],
     fieldName: string,
@@ -501,11 +559,17 @@ export class TablesComponent implements OnInit {
     sf.options = options;
   }
 
+  /**
+   * Nadpisuje właściwości pola formularza po nazwie
+   */
   private setField(arr: FormField[], name: string, patch: Partial<FormField>) {
     const i = arr.findIndex((f) => f.name === name);
     if (i >= 0) arr[i] = { ...(arr[i] as any), ...(patch as any) } as FormField;
   }
 
+  /**
+   * Konwertuje tablicę pól DynamicForm na obiekt { name: value }
+   */
   private reduceFields<
     T extends Record<string, unknown> = Record<string, unknown>
   >(fields: FormField[]): T {
@@ -515,6 +579,10 @@ export class TablesComponent implements OnInit {
     }, {} as T);
   }
 
+  /**
+   * Porównuje eventy meczu oryginalne vs zmienione
+   * i zwraca 3 listy: append, update, delete
+   */
   private diffEvents(baseEvents: any[], editedEvents: any[]) {
     const baseById = new Map<string, any>();
     baseEvents.forEach((e, i) => baseById.set(String(e.id ?? i), e));
@@ -596,6 +664,9 @@ export class TablesComponent implements OnInit {
     return { append, update, del };
   }
 
+  /**
+   * Tworzy repeater, dynamiczną sekcję eventów meczu dla formularza
+   */
   private eventsRepeater(
     name: string,
     value: any[],
@@ -703,6 +774,9 @@ export class TablesComponent implements OnInit {
     } as FormField;
   }
 
+  /**
+   * Buduje wszystkie pola formularza edycji meczu
+   */
   private getEditMatchFields(
     t: Tournament | null | undefined,
     m: Match,
@@ -886,6 +960,10 @@ export class TablesComponent implements OnInit {
     ];
   }
 
+  /**
+   * Otwiera modal generowania drabinki playoff
+   * Buduje formularz CreatePlayoffs
+   */
   onOpenGeneratePlayoffs(): void {
     const toYyyyMmDd = (d: Date) => {
       const pad = (n: number) => String(n).padStart(2, '0');
@@ -997,6 +1075,10 @@ export class TablesComponent implements OnInit {
     this.openGeneratePlayoffsFormModal = true;
   }
 
+  /**
+   * Reaguje na zmianę formularza drabinki
+   * Blokuje lub odblokowuje pola
+   */
   onGeneratePlayoffsFormChanged(val: Record<string, any>) {
     const form = this.dynamicFormComponent?.form;
     if (!form) return;
@@ -1026,6 +1108,9 @@ export class TablesComponent implements OnInit {
     }
   }
 
+  /**
+   * Wysyła dane formularza generowania drabinki na backend
+   */
   onGeneratePlayoffsFormSubmitted(fields: FormField[]): void {
     const f = this.reduceFields<Record<string, any>>(fields);
 
@@ -1069,14 +1154,23 @@ export class TablesComponent implements OnInit {
     });
   }
 
+  /**
+   * Otwiera formularz generowania playoff
+   */
   onGeneratePlayoffsRequested() {
     this.onOpenGeneratePlayoffs();
   }
 
+  /**
+   * Otwiera modal szczegółów meczu
+   */
   openDetails(match: Match) {
     this.selectedMatch = match;
   }
 
+  /**
+   * Zamyka modal szczegółów meczu
+   */
   closeDetails() {
     this.selectedMatch = null;
   }

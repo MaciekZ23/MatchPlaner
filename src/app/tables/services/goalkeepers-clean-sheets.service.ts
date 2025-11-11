@@ -12,6 +12,11 @@ import { GoalkeepersCleanSheets } from '../models';
 export class GoalkeepersCleanSheetsService {
   private readonly store = inject(TournamentStore);
 
+  /**
+   * Tworzy strumień danych clean sheets, mecze bez straty gola
+   * Pobiera mecze, mapę zawodników, mapę drużyn z TournamentStore, liczy "zero z tyłu"
+   * dla każdego bramkarza, wykrywa z lineup lub z listy zawodników
+   */
   getCleanSheets$(): Observable<GoalkeepersCleanSheets[]> {
     return combineLatest([
       this.store.matchesByStage$,
@@ -67,6 +72,10 @@ export class GoalkeepersCleanSheetsService {
     );
   }
 
+  /**
+   * Oblicza liczbę bramek straconych przez wybraną stronę meczu
+   * Priorytet: jeśli `score` dostępny to używamy wyniku. W przeciwnym razie liczymy eventy
+   */
   private concededForSide(m: CoreMatch, side: 'HOME' | 'AWAY'): number {
     if (m.score) {
       return side === 'HOME' ? m.score.away : m.score.home;
@@ -85,6 +94,12 @@ export class GoalkeepersCleanSheetsService {
     return side === 'HOME' ? awayGoals : homeGoals;
   }
 
+  /**
+   * Ustala bramkarza lub bramkarzy odpowiadających za daną stronę meczu
+   * Priorytet:
+   * 1. lineup (homeGKIds / awayGKIds)
+   * 2. pierwszy GK z rosteru drużyny
+   */
   private resolveGKsForSide(
     m: CoreMatch,
     side: 'HOME' | 'AWAY',
@@ -104,6 +119,9 @@ export class GoalkeepersCleanSheetsService {
     return fallback ? [fallback] : [];
   }
 
+  /**
+   * Pobiera bramkarzy wskazanych w lineup
+   */
   private pickGoalkeeperIdsFromLineup(
     m: CoreMatch,
     side: 'HOME' | 'AWAY'
@@ -112,6 +130,10 @@ export class GoalkeepersCleanSheetsService {
     return (ids ?? []).filter(Boolean) as string[];
   }
 
+  /**
+   * Fallback — znajduje domyślnego bramkarza drużyny
+   * Jeśli jest kilku to wybiera tego z najmniejszym numerem na koszulce
+   */
   private pickDefaultGoalkeeperFromRoster(
     teamId: string,
     playerMap: Map<string, CorePlayer>

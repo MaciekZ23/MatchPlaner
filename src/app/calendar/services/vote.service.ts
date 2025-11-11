@@ -1,21 +1,7 @@
 import { Inject, Injectable } from '@angular/core';
 import { BehaviorSubject, catchError, Observable, tap, throwError } from 'rxjs';
-import {
-  PlayerId,
-  MatchId,
-  VotingStatus,
-  Position,
-  HealthStatus,
-} from '../../core/types';
-import {
-  VotingState,
-  VotingSeed,
-  VotingCandidate,
-  VoteSummaryEntry,
-  VoteResponse,
-} from '../../core/models';
-import { Player as UiPlayer } from '../../teams/models/team';
-import { deepClone, positionPl, healthPl } from './helpers';
+import { PlayerId, MatchId, VotingStatus } from '../../core/types';
+import { VotingState, VoteResponse } from '../../core/models';
 import { IVotingApi, VOTING_API } from '../../core/api/voting.api';
 
 @Injectable({ providedIn: 'root' })
@@ -24,11 +10,12 @@ export class VoteService {
   private subjects = new Map<MatchId, BehaviorSubject<VotingState>>();
   private timers = new Map<MatchId, any>();
 
+  /** Strumień stanu głosowania (BehaviorSubject w Observable) */
   selectState$(matchId: MatchId): Observable<VotingState> {
     return this.ensureSubject(matchId).asObservable();
   }
 
-  // Pobranie stanu z backendu i zaktualizowanie store
+  /** Pobieranie stanu głosowania z backendu i aktualizacja store */
   fetchState(matchId: MatchId): void {
     this.api
       .getState(matchId)
@@ -45,14 +32,14 @@ export class VoteService {
       .subscribe();
   }
 
-  // Oddanie glosu
+  /** Oddawanie głosu */
   vote(matchId: MatchId, playerId: PlayerId): void {
     this.api
       .vote(matchId, playerId)
       .pipe(
         tap((_res: VoteResponse) => {
           const curr = this.ensureSubject(matchId).value;
-          if (curr.hasVoted) return; // już głosował wg stanu – nic nie rób
+          if (curr.hasVoted) return;
           const next: VotingState = {
             ...curr,
             hasVoted: true,
@@ -73,6 +60,7 @@ export class VoteService {
       .subscribe();
   }
 
+  /** Ustawienie statusu głosowania na backendzie przez admina */
   setStatus(matchId: MatchId, status: VotingStatus): void {
     this.api
       .setStatus(matchId, status)
@@ -89,6 +77,7 @@ export class VoteService {
       .subscribe();
   }
 
+  /** Zapewnienie istnienia BehaviorSubject dla meczu */
   private ensureSubject(matchId: MatchId): BehaviorSubject<VotingState> {
     let subj = this.subjects.get(matchId);
     if (!subj) {
@@ -105,11 +94,12 @@ export class VoteService {
     return subj;
   }
 
+  /** Wysłanie stanu do obserwujących (z deep clone dla bezpieczeństwa referencji) */
   private push(matchId: MatchId, state: VotingState) {
-    // structuredClone: bezpiecznie oddzielamy referencje
     this.ensureSubject(matchId).next(structuredClone(state));
   }
 
+  /** Automatyczne zamknięcie głosowania po czasie wskazanym w backendzie */
   private scheduleAutoClose(matchId: MatchId, closesAtISO?: string) {
     if (!closesAtISO) return;
 
@@ -133,13 +123,17 @@ export class VoteService {
   }
 }
 
+/** Podbijanie liczby głosów dla konkretnego zawodnika */
 function bumpSummary(
   summary: VotingState['summary'],
   playerId: PlayerId
 ): VotingState['summary'] {
   const copy = summary.map((x) => ({ ...x }));
   const idx = copy.findIndex((x) => x.playerId === playerId);
-  if (idx >= 0) copy[idx].votes += 1;
-  else copy.push({ playerId, votes: 1 });
+  if (idx >= 0) {
+    copy[idx].votes += 1;
+  } else {
+    copy.push({ playerId, votes: 1 });
+  }
   return copy;
 }

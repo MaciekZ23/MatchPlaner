@@ -7,6 +7,11 @@ export class DefaultRouteGuard implements CanActivate {
   private router = inject(Router);
   private store = inject(TournamentStore);
 
+  /**
+   * Sprawdzanie, czy użytkownik ma wybrany turniej
+   * Jeśli tak → przekierowanie na stronę turnieju `/tid/home`
+   * Jeśli nie → przekierowanie na listę turniejów `/tournaments`
+   */
   canActivate(): UrlTree {
     const tid = this.store.getSelectedIdSync();
     return tid

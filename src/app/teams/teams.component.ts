@@ -84,6 +84,10 @@ export class TeamsComponent implements OnInit {
   editPlayerFormFields: FormField[] = this.getEmptyPlayerFields();
   private editingPlayerId?: string;
 
+  /**
+   * Pobiera dane drużyn i wybraną drużynę na podstawie parametrów URL
+   * Inicjuje strumienie teams$ oraz selectedTeam$
+   */
   ngOnInit(): void {
     this.isLoading = true;
     this.teams$ = this.teamService.getTeams$().pipe(
@@ -109,12 +113,19 @@ export class TeamsComponent implements OnInit {
     );
   }
 
+  /**
+   * Obsługa kliknięcia na kartę drużyny — przechodzi do jej szczegółów
+   */
   onTeamClick(team: Team): void {
     this.isLoading = true;
     const tid = this.route.snapshot.paramMap.get('tid');
     this.router.navigate(['/', tid, 'teams', team.id]);
   }
 
+  /**
+   * Powrót z widoku składu drużyny do listy drużyn
+   * Ponownie pobiera listę drużyn z backendu
+   */
   onBackClick(): void {
     this.isLoading = true;
     const tid = this.route.snapshot.paramMap.get('tid');
@@ -130,10 +141,17 @@ export class TeamsComponent implements OnInit {
     });
   }
 
+  /**
+   * Zapisuje wybrany plik loga drużyny (z input type="file")
+   */
   onLogoSelected(file?: File) {
     this.selectedLogoFile = file;
   }
 
+  /**
+   * Otwiera formularz dodawania nowej drużyny
+   * oraz ładuje dynamicznie listę grup z TournamentStore
+   */
   onAddTeam() {
     this.resetAddTeamFormFields();
     this.store.groups$.pipe(take(1)).subscribe((groups) => {
@@ -154,6 +172,10 @@ export class TeamsComponent implements OnInit {
     });
   }
 
+  /**
+   * Obsługa submitu formularza tworzenia drużyny
+   * Konstruuje payload, wysyła na backend, opcjonalnie uploaduje logo
+   */
   onAddTeamFormSubmitted(fields: FormField[]): void {
     const f = this.reduceFields<{
       name: unknown;
@@ -206,12 +228,19 @@ export class TeamsComponent implements OnInit {
       });
   }
 
+  /**
+   * Otwiera modal dodawania zawodnika w kontekście konkretnej drużyny
+   */
   onAddPlayer(team: Team): void {
     this.addPlayerForTeamId = team.id;
     this.addPlayerFormFields = this.getEmptyPlayerFields();
     this.openAddPlayerFormModal = true;
   }
 
+  /**
+   * Obsługa submitu formularza dodawania zawodnika
+   * Tworzy gracza i przypisuje go do drużyny
+   */
   onAddPlayerFormSubmitted(fields: FormField[]): void {
     if (!this.addPlayerForTeamId) {
       return;
@@ -283,6 +312,9 @@ export class TeamsComponent implements OnInit {
       });
   }
 
+  /**
+   * Otwiera modal edycji drużyny — ładuje dane istniejącej drużyny do formularza
+   */
   onEditTeam(team: Team) {
     this.teamService
       .getCoreTeamIdByUiId$(team.id)
@@ -310,15 +342,12 @@ export class TeamsComponent implements OnInit {
                 ...groups.map((g) => ({ label: g.name, value: g.id })),
               ];
 
-              /** 🔥 TU ustawiamy wartość dopiero gdy options istnieją */
               fGroup.value = team.groupId ?? '';
 
-              /** 🔥 dopiero teraz przekazujemy fields do dynamic-form */
               this.editTeamFormFields = [...fields];
               this.openEditTeamFormModal = true;
             });
           } else {
-            /** select nie istnieje → normalnie otwieramy */
             this.editTeamFormFields = [...fields];
             this.openEditTeamFormModal = true;
           }
@@ -328,6 +357,10 @@ export class TeamsComponent implements OnInit {
       });
   }
 
+  /**
+   * Obsługa submitu formularza edycji drużyny
+   * Aktualizuje drużynę i logo (tekstowe lub plik)
+   */
   onEditTeamFormSubmitted(fields: FormField[]) {
     if (!this.editingTeamCoreId) {
       return;
@@ -379,6 +412,9 @@ export class TeamsComponent implements OnInit {
       });
   }
 
+  /**
+   * Wyświetla modal potwierdzenia i usuwa drużynę z backendu
+   */
   async onDeleteTeam(team: Team) {
     const ok = await this.teamConfirmModal.open({
       title: 'Usuń drużynę',
@@ -418,6 +454,10 @@ export class TeamsComponent implements OnInit {
       });
   }
 
+  /**
+   * Otwiera formularz edycji zawodnika, wyszukuje jego ID w Core po:
+   * numerze koszulki lub nazwie
+   */
   onEditPlayer(player: any) {
     const idStr = this.route.snapshot.paramMap.get('id');
     const uiTeamId = idStr ? Number(idStr) : NaN;
@@ -499,6 +539,10 @@ export class TeamsComponent implements OnInit {
       });
   }
 
+  /**
+   * Obsługa submitu formularza edycji zawodnika
+   * Wysyła zmiany na backend i resetuje formularz
+   */
   onEditPlayerFormSubmitted(fields: FormField[]) {
     if (!this.editingPlayerId) {
       return;
@@ -559,6 +603,10 @@ export class TeamsComponent implements OnInit {
       });
   }
 
+  /**
+   * Wyświetla modal potwierdzenia usunięcia zawodnika
+   * i usuwa go z backendu po znalezieniu CorePlayerId
+   */
   async onDeletePlayer(player: any) {
     const ok = await this.playerConfirmModal.open({
       title: 'Usuń zawodnika',
@@ -615,7 +663,7 @@ export class TeamsComponent implements OnInit {
               }
 
               if (!found) {
-                throw new Error('Nie znaleziono zawodnika (Core).');
+                throw new Error('Nie znaleziono zawodnika.');
               }
               return String(found.id);
             })
@@ -636,6 +684,9 @@ export class TeamsComponent implements OnInit {
       });
   }
 
+  /**
+   * Mapuje nazwę pozycji z UI na wartości wykorzystywane przez backend
+   */
   private positionCoreFromUi(ui: string): 'GK' | 'DEF' | 'MID' | 'FWD' {
     switch ((ui ?? '').toLowerCase()) {
       case 'bramkarz':
@@ -651,10 +702,17 @@ export class TeamsComponent implements OnInit {
     }
   }
 
+  /**
+   * Mapuje status zdrowia z UI na wartości backendowe
+   */
   private healthCoreFromUi(ui: string): 'HEALTHY' | 'INJURED' {
     return (ui ?? '').toLowerCase() === 'zdrowy' ? 'HEALTHY' : 'INJURED';
   }
 
+  /**
+   * Tworzy pusty układ pól formularza dla drużyny,
+   * wspólne dla dodawania i edycji
+   */
   private getEmptyTeamFields(): FormField[] {
     return [
       {
@@ -690,6 +748,9 @@ export class TeamsComponent implements OnInit {
     ];
   }
 
+  /**
+   * Tworzy pusty układ pól formularza dla zawodnika
+   */
   private getEmptyPlayerFields(): FormField[] {
     return [
       {
@@ -741,10 +802,16 @@ export class TeamsComponent implements OnInit {
     ];
   }
 
+  /**
+   * Resetuje formularz dodawania drużyny do stanu początkowego
+   */
   private resetAddTeamFormFields(): void {
     this.addTeamFormFields = this.getEmptyTeamFields();
   }
 
+  /**
+   * Zamienia tablicę FormField[] na zwykły obiekt { name: value }
+   */
   private reduceFields<
     T extends Record<string, unknown> = Record<string, unknown>
   >(fields: FormField[]): T {

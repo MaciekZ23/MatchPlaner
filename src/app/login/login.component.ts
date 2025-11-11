@@ -2,7 +2,6 @@ import { AfterViewInit, Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { stringsLogin } from './misc';
-import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../core/auth/auth.service';
 import { NotificationService } from '../core/notifications/notification.service';
 
@@ -24,26 +23,39 @@ export class LoginComponent implements OnInit, AfterViewInit {
 
   private router = inject(Router);
   private route = inject(ActivatedRoute);
-  //private http = inject(HttpClient);
   private appAuth = inject(AuthService);
   private notificationService = inject(NotificationService);
 
   loading = false;
   errorMsg = '';
 
+  /** Wyświetlanie aktualnego roku w stopce */
   currentYear = new Date().getFullYear();
 
+  /** Google client ID (integracja OAuth) */
   private readonly CLIENT_ID =
     '23616475933-lb3r0o8kjt0mll98dlrvcmj5ekq1r4kc.apps.googleusercontent.com';
 
+  /** Flaga inicjalizacji Google Identity Services */
   private gisInitialized = false;
 
   ngOnInit(): void {}
 
+  /**
+   * Po renderowaniu komponentu:
+   * - inicjalizowanie przycisku logowania Google
+   * - próba renderowania guzika Google (GIS)
+   */
   ngAfterViewInit(): void {
     this.initGoogle();
   }
 
+  /**
+   * Inicjalizowanie Google Identity Services
+   * - podpinanie callbacku
+   * - renderowanie przycisku Google w kontenerze HTML
+   * - obsługa fallbacku w przypadku opóźnienia ładowania scriptu GIS
+   */
   private initGoogle() {
     const render = () => {
       try {
@@ -73,9 +85,11 @@ export class LoginComponent implements OnInit, AfterViewInit {
       }
     };
 
+    // Jeśli GIS już dostępny to render
     if (window.google?.accounts?.id) {
       render();
     } else {
+      // Jeśli ładuje się script to czekamy max 10s
       const t = setInterval(() => {
         if (window.google?.accounts?.id) {
           clearInterval(t);
@@ -86,6 +100,12 @@ export class LoginComponent implements OnInit, AfterViewInit {
     }
   }
 
+  /**
+   * Uruchamianie logowania Google, wyświetlanie popupu
+   * Obsługuje sytuacje:
+   * - popup zablokowany przez przeglądarkę
+   * - GIS jeszcze się ładuje
+   */
   signInWithGoogle(): void {
     this.errorMsg = '';
     this.loading = true;
@@ -109,7 +129,6 @@ export class LoginComponent implements OnInit, AfterViewInit {
     if (this.gisInitialized) {
       tryPrompt();
     } else {
-      // jeśli jeszcze się nie zdążyło zainicjalizować – zainicjalizuj i dopiero prompt
       this.initGoogle();
       const wait = setInterval(() => {
         if (this.gisInitialized) {
@@ -128,6 +147,12 @@ export class LoginComponent implements OnInit, AfterViewInit {
     }
   }
 
+  /**
+   * Przetwarzanie danych z Google OAuth, odbieranie idToken
+   * - logowanie do backendu
+   * - zapis sesji (accessToken + refreshToken + awatar)
+   * - powiadomienie użytkownika po zalogowaniu
+   */
   private onGoogleCredential(resp: any) {
     const idToken: string | undefined = resp?.credential;
     if (!idToken) {
@@ -165,6 +190,10 @@ export class LoginComponent implements OnInit, AfterViewInit {
     });
   }
 
+  /**
+   * Wyciągnięcie URL zdjęcia użytkownika z tokenu Google (fallback,
+   * gdy backend nie zwróci avatarUrl)
+   */
   private extractGooglePicture(idToken: string): string | null {
     try {
       const [, payloadB64] = idToken.split('.');
@@ -178,6 +207,11 @@ export class LoginComponent implements OnInit, AfterViewInit {
     }
   }
 
+  /**
+   * Logowanie jako gość
+   * - backend tworzy tymczasowego użytkownika powiązanego z deviceId
+   * - zapis accessToken + refreshToken
+   */
   continueAsGuest(): void {
     this.loading = true;
     this.errorMsg = '';
@@ -196,6 +230,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
     });
   }
 
+  /** Wylogowanie użytkownika i przechodzenie do ekranu logowania */
   signOut(): void {
     this.appAuth.logout();
     try {
@@ -204,19 +239,9 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this.router.navigateByUrl('/login');
   }
 
+  /** Nawigowanie po zalogowaniu na listę turniejów */
   private navigateAfterLogin() {
     this.loading = false;
     this.router.navigateByUrl('/tournaments');
-  }
-
-  private ensureDeviceId(): string {
-    let id = localStorage.getItem('deviceId');
-    if (!id) {
-      id = (crypto as any)?.randomUUID
-        ? crypto.randomUUID()
-        : `${Date.now()}-${Math.random()}`;
-      localStorage.setItem('deviceId', id);
-    }
-    return id;
   }
 }

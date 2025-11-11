@@ -57,20 +57,24 @@ export class TournamentPickerComponent {
 
   isLoading = false;
 
+  /** Strumień pobierający listę turniejów z backendu */
   tournaments$ = this.reload$.pipe(
     switchMap(() => this.api.getTournaments()),
     shareReplay({ bufferSize: 1, refCount: true })
   );
 
+  /** Odswieżanie listy turniejów */
   refresh() {
     this.reload$.next();
   }
 
+  /** Wybranie turnieju i przejście do widoku turnieju */
   selectTournament(id: string) {
     this.store.setTournament(id);
     this.router.navigate(['/', id, 'home']);
   }
 
+  /** Przetwarzanie drużyny na opcje selectowe w formularzu */
   teamsOptions$ = this.store.teams$.pipe(
     map((teams) => teams.map((t) => ({ label: t.name, value: t.id }))),
     shareReplay({ bufferSize: 1, refCount: true })
@@ -89,6 +93,7 @@ export class TournamentPickerComponent {
   private editStagesInitialIds: Set<string> = new Set<string>();
   private editingId = '';
 
+  /** Zwracanie nazwy trybu turnieju */
   modeLabel(mode?: string | null): string {
     if (!mode) {
       return '-';
@@ -96,6 +101,7 @@ export class TournamentPickerComponent {
     return this.moduleStrings.modeLabel[mode] ?? mode;
   }
 
+  /** Zwracanie sformatowanego zakresu dat turnieju */
   dateRange(t: Tournament): string {
     const tz = t.timezone || 'Europe/Warsaw';
     const start = t.startDate
@@ -107,6 +113,7 @@ export class TournamentPickerComponent {
     return `${start} – ${end}`;
   }
 
+  /** Normalizacja rodzaju etapu turnieju (GROUP / PLAYOFF) */
   private normKind(val: unknown): StageKind {
     const v = Array.isArray(val) ? val[0] : val;
     const raw = String(v ?? '')
@@ -115,6 +122,7 @@ export class TournamentPickerComponent {
     return raw.includes('PLAY') ? 'PLAYOFF' : 'GROUP';
   }
 
+  /** Metoda do otwierania formularza nowego turnieju */
   onAddTournamentClick(): void {
     this.isLoading = true;
     const base: FormField[] = this.getTournamentFields();
@@ -127,6 +135,7 @@ export class TournamentPickerComponent {
     this.isLoading = false;
   }
 
+  /** Metoda do otwierania formularza edycji turnieju, wczytanie danych turnieju do formularza */
   onEditTournamentClick(t: Tournament): void {
     this.editingId = t.id;
     this.isLoading = true;
@@ -195,6 +204,7 @@ export class TournamentPickerComponent {
       });
   }
 
+  /** Metoda do usuwania turnieju po potwierdzeniu w modalu */
   async onDeleteTournamentClick(t: Tournament): Promise<void> {
     const ok = await this.deleteConfirm.open({
       title: 'Usuń turniej',
@@ -231,6 +241,7 @@ export class TournamentPickerComponent {
       });
   }
 
+  /** Metoda do obsługi zapisu dodawanego turnieju z formularza */
   onAddTournamentFormSubmitted(fields: FormField[]): void {
     const f = this.reduceFields(fields);
 
@@ -351,6 +362,7 @@ export class TournamentPickerComponent {
       });
   }
 
+  /** Metoda do obsługi zapisu edytowanego turnieju z formularza */
   onEditTournamentFormSubmitted(fields: FormField[]): void {
     if (!this.editingId) {
       console.warn('Brak ID turnieju do edycji.');
@@ -497,11 +509,13 @@ export class TournamentPickerComponent {
       });
   }
 
+  /** Zamknięcie modalu edycji i resetowanie stanu */
   onEditModalClose(): void {
     this.openEditTournamentFormModal = false;
     this.editingId = '';
   }
 
+  /** Redukowanie listy FormField do obiektu {nazwa: wartość} */
   private reduceFields<
     T extends Record<string, unknown> = Record<string, unknown>
   >(fields: FormField[]): T {
@@ -511,6 +525,7 @@ export class TournamentPickerComponent {
     }, {} as T);
   }
 
+  /** Konwertowanie daty ISO na format akceptowany przez input typu date */
   private toDateInput(iso?: string | null): string {
     if (!iso) {
       return '';
@@ -522,6 +537,7 @@ export class TournamentPickerComponent {
     return d.toISOString().slice(0, 10);
   }
 
+  /** Zwracanie pól formularza turnieju */
   private getTournamentFields(): FormField[] {
     return [
       {
@@ -624,6 +640,7 @@ export class TournamentPickerComponent {
     ];
   }
 
+  /** Tworzenie repeatera dla grup turniejowych */
   private groupsRepeaterFields(name: string, value: any[]): FormField {
     const fields: FormField[] = [
       { name: 'id', label: 'Id', type: 'hidden', value: '' },
@@ -651,6 +668,7 @@ export class TournamentPickerComponent {
     } as FormField;
   }
 
+  /** Tworzenie repeatera dla etapów turniejowych */
   private stagesRepeaterFields(
     name: string,
     value: any[],

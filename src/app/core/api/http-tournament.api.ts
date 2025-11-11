@@ -27,7 +27,7 @@ export class HttpTournamentApi implements ITournamentApi {
 
   constructor(private http: HttpClient) {}
 
-  private readonly base = `${environment.apiUrl}`; // ✅ jedno źródło prawdy
+  private readonly base = `${environment.apiUrl}`;
 
   getTournament(id: string = this.defaultTournamentId): Observable<Tournament> {
     return this.http.get<Tournament>(`${this.base}/tournaments/${id}`);

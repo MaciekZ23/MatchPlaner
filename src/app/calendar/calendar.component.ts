@@ -96,6 +96,9 @@ export class CalendarComponent {
     this.store.groupMap$.subscribe((m) => (this.latestGroupMap = m));
   }
 
+  /**
+   * Tworzy listę opcji drużyn do użycia w formularzach
+   */
   readonly teamsOptions$ = this.teamMap$.pipe(
     map((tm) =>
       Array.from(tm.values()).map((t) => ({
@@ -106,6 +109,9 @@ export class CalendarComponent {
     shareReplay({ bufferSize: 1, refCount: true })
   );
 
+  /**
+   * Tworzy listę opcji zawodników do formularzy (select)
+   */
   readonly playersOptions$ = this.playerMap$.pipe(
     map((pm) =>
       Array.from(pm.values()).map((p) => ({
@@ -116,6 +122,9 @@ export class CalendarComponent {
     shareReplay({ bufferSize: 1, refCount: true })
   );
 
+  /**
+   * Opcje etapów turnieju, stages
+   */
   readonly stagesOptions$ = this.store.tournament$.pipe(
     map((t) =>
       (t?.stages ?? []).map((s) => ({ label: s.name, value: String(s.id) }))
@@ -123,6 +132,9 @@ export class CalendarComponent {
     shareReplay({ bufferSize: 1, refCount: true })
   );
 
+  /**
+   * Opcje grup, groups
+   */
   readonly groupsOptions$ = this.store.tournament$.pipe(
     map((t) =>
       (t?.groups ?? []).map((g) => ({ label: g.name, value: String(g.id) }))
@@ -185,6 +197,9 @@ export class CalendarComponent {
     if (!ok) this.setField(fields, fieldName, { value: '' });
   }
 
+  /**
+   * Otwiera modal z potwierdzeniem głosowania
+   */
   async onRequestVoteConfirm(e: {
     matchId: string;
     playerId: string;
@@ -202,6 +217,10 @@ export class CalendarComponent {
     }
   }
 
+  /**
+   * Otwiera formularz dodawania nowego meczu
+   * Pobiera z API potrzebne dane (drużyny, gracze, etapy, grupy)
+   */
   onAddMatch(): void {
     this.isLoading = true;
     forkJoin({
@@ -224,6 +243,10 @@ export class CalendarComponent {
       });
   }
 
+  /**
+   * Obsługuje submit formularza dodawania meczu
+   * Buduje payload i wysyła do API createMatch$()
+   */
   onAddMatchFormSubmitted(fields: FormField[]): void {
     const f = this.reduceFields(fields);
 
@@ -334,6 +357,10 @@ export class CalendarComponent {
       });
   }
 
+  /**
+   * Aktualizuje stan formularza dodawania meczu
+   * (np. filtruje drużyny po grupie, aktualizuje opcje zawodników itp.).
+   */
   onAddMatchFormChanged(val: Record<string, any>) {
     const fields = this.addMatchFormFields;
 
@@ -414,7 +441,6 @@ export class CalendarComponent {
     eventsVal.forEach((ev: any, i: number) => {
       const type = String(ev?.type ?? '').toUpperCase();
       const shouldEnableCard = type === 'CARD';
-      // użyj referencji do DynamicFormComponent:
       this.addMatchFormRef?.setRepeaterFieldDisabled(
         'events',
         'card',
@@ -433,6 +459,10 @@ export class CalendarComponent {
     );
   }
 
+  /**
+   * Metoda wywoływana, gdy zmienia się formularz edycji meczu
+   * Aktualizuje opcje selectów (drużyny, zawodnicy, bramkarze) oraz pola w repeaterze
+   */
   onEditMatchFormChanged(val: Record<string, any>) {
     if (!this.editingMatch) return;
     const fields = this.editMatchFormFields;
@@ -530,6 +560,10 @@ export class CalendarComponent {
     );
   }
 
+  /**
+   * Otwiera modal edycji istniejącego meczu
+   * Ładuje dane meczu do formularza oraz wypełnia repeater eventami
+   */
   onEditMatch(match: Match): void {
     this.isLoading = true;
     forkJoin({
@@ -566,6 +600,10 @@ export class CalendarComponent {
       });
   }
 
+  /**
+   * Obsługuje submit formularza edycji meczu
+   * Tworzy `UpdateMatchPayload`, porównuje eventy i wysyła patch do backendu
+   */
   onEditMatchFormSubmitted(fields: FormField[]): void {
     if (!this.editingMatch) {
       this.openEditMatchFormModal = false;
@@ -672,6 +710,9 @@ export class CalendarComponent {
       });
   }
 
+  /**
+   * Zwraca listę zawodników dla konkretnej drużyny/drużyn bez filtrowania
+   */
   private playersOptionsForTeams(teamIds: string[]): SelectOption[] {
     const wanted = new Set(teamIds.filter(Boolean));
     return Array.from(this.latestPlayerMap.values())
@@ -679,6 +720,10 @@ export class CalendarComponent {
       .map((p) => ({ label: p.name, value: String(p.id) }));
   }
 
+  /**
+   * Zwraca listę zawodników zawężoną do bramkarzy, którzy faktycznie grali
+   * Używane do filtrowania listy zawodników dla eventów meczu
+   */
   private playersOptionsForTeamsFiltered(
     teamIds: string[],
     homeGKIds: string[],
@@ -691,8 +736,6 @@ export class CalendarComponent {
     return Array.from(this.latestPlayerMap.values())
       .filter((p) => {
         if (!wanted.has(p.teamId) || p.healthStatus !== 'HEALTHY') return false;
-
-        // jeśli bramkarz, to tylko jeśli grał
         if (p.position === 'GK') {
           return allowedGKIds.has(p.id);
         }
@@ -701,6 +744,10 @@ export class CalendarComponent {
       .map((p) => ({ label: p.name, value: String(p.id) }));
   }
 
+  /**
+   * Zwraca zawodników dostępnych dla konkretnego eventu (GOAL/CARD/ASSIST)
+   * Jeśli ustawiony jest `teamId`, zawęża tylko do tej drużyny
+   */
   private playersOptionsForEventTeam(
     teamId: string | null,
     homeTeamId: string | null,
@@ -713,6 +760,10 @@ export class CalendarComponent {
     return this.playersOptionsForTeams(tids);
   }
 
+  /**
+   * Ustawia dynamiczne opcje selectów w repeaterze eventów wg indeksu eventu
+   * Każdy event może mieć inną listę dostępnych zawodników
+   */
   private setRepeaterPlayersOptionsByIndex(
     arr: FormField[],
     repeaterName: string,
@@ -751,88 +802,10 @@ export class CalendarComponent {
     rep.optionsByIndex = byIndex;
   }
 
-  // private diffEvents(baseEvents: any[], editedEvents: any[]) {
-  //   const baseById = new Map<string, any>();
-  //   baseEvents.forEach((e, i) => baseById.set(String(e.id ?? i), e));
-
-  //   const seen = new Set<string>();
-  //   const append: MatchEventInput[] = [];
-  //   const update: Array<{
-  //     id: string;
-  //     minute?: number;
-  //     type?: string;
-  //     playerId?: string;
-  //     teamId?: string;
-  //     card?: string | null;
-  //   }> = [];
-
-  //   const num = (v: any) => {
-  //     const n = Number(v);
-  //     return Number.isFinite(n) ? n : undefined;
-  //   };
-  //   const up = (s: any) =>
-  //     String(s ?? '')
-  //       .trim()
-  //       .toUpperCase();
-
-  //   for (const e of editedEvents) {
-  //     const idRaw = String(e['id'] ?? '').trim();
-  //     const minute = num(e['minute']) ?? 0;
-  //     const type = up(e['type']);
-  //     const playerId = String(e['playerId'] ?? '').trim();
-  //     const teamId = String(e['teamId'] ?? '').trim();
-  //     const card = up(e['card']);
-
-  //     if (!idRaw || !baseById.has(idRaw)) {
-  //       const ev: any = { minute, type, playerId, teamId };
-  //       if (type === 'CARD') ev.card = card || 'YELLOW';
-  //       append.push(ev as MatchEventInput);
-  //     } else {
-  //       seen.add(idRaw);
-  //       const old = baseById.get(idRaw) ?? {};
-  //       const out: any = { id: idRaw };
-  //       let changed = false;
-
-  //       if ((old.minute ?? 0) !== minute) {
-  //         out.minute = minute;
-  //         changed = true;
-  //       }
-  //       if (up(old.type) !== type) {
-  //         out.type = type;
-  //         changed = true;
-  //       }
-  //       if ((old.playerId ?? '') !== playerId) {
-  //         out.playerId = playerId;
-  //         changed = true;
-  //       }
-  //       if ((old.teamId ?? '') !== teamId) {
-  //         out.teamId = teamId;
-  //         changed = true;
-  //       }
-
-  //       const oldCard = up(old.card);
-  //       if (type === 'CARD') {
-  //         if (oldCard !== (card || 'YELLOW')) {
-  //           out.card = card || 'YELLOW';
-  //           changed = true;
-  //         }
-  //       } else if (oldCard) {
-  //         out.card = null;
-  //         changed = true;
-  //       }
-
-  //       if (changed) update.push(out);
-  //     }
-  //   }
-
-  //   const del: string[] = [];
-  //   for (const id of baseById.keys()) {
-  //     if (!seen.has(id)) del.push(id);
-  //   }
-
-  //   return { append, update, del };
-  // }
-
+  /**
+   * Porównuje eventy z formularza z eventami zapisanymi w meczu
+   * Zwraca: które dodać, zmodyfikować i usunąć (append/update/delete)
+   */
   private diffEvents(baseEvents: any[], editedEvents: any[]) {
     const baseById = new Map<string, any>();
     baseEvents.forEach((e, i) => baseById.set(String(e.id ?? i), e));
@@ -904,6 +877,10 @@ export class CalendarComponent {
     return { append, update, del };
   }
 
+  /**
+   * Pokazuje modal potwierdzający usunięcie jednego meczu
+   * Po akceptacji wywołuje API i odświeża listę meczów
+   */
   async onDeleteMatch(match: Match): Promise<void> {
     const ok = await this.deleteMatchConfirm.open({
       title: this.moduleStrings.deleteMatch,
@@ -931,6 +908,9 @@ export class CalendarComponent {
       });
   }
 
+  /**
+   * Usuwa wszystkie mecze z fazy grupowej
+   */
   async onDeleteAllMatches(): Promise<void> {
     const ok = await this.deleteAllMatchesConfirm.open({
       title: this.moduleStrings.deleteAllMatchesByGroup,
@@ -967,6 +947,10 @@ export class CalendarComponent {
       });
   }
 
+  /**
+   * Otwiera modal z formularzem generowania terminarza meczów
+   * Pobiera dane turnieju oraz dostępne grupy
+   */
   onGenerateMatches(): void {
     this.isLoading = true;
     forkJoin({
@@ -983,6 +967,10 @@ export class CalendarComponent {
       });
   }
 
+  /**
+   * Obsługuje submit formularza generowania meczów
+   * Buduje payload i wywołuje generateRoundRobin$()
+   */
   onGenerateFormSubmitted(fields: FormField[]): void {
     const f = this.reduceFields<Record<string, any>>(fields);
 
@@ -1076,6 +1064,10 @@ export class CalendarComponent {
     );
   }
 
+  /**
+   * Dynamicznie dostosowuje formularz generowania meczów grupowych
+   * np. dezaktywuje dayInterval jeśli wybrano roundInSingleDay
+   */
   onGenerateFormChanged(val: Record<string, any>) {
     const HHMM = /^([01]\d|2[0-3]):[0-5]\d$/;
 
@@ -1145,61 +1137,9 @@ export class CalendarComponent {
     }
   }
 
-  // onGenerateFormChanged(val: Record<string, any>) {
-  //   const HHMM = /^([01]\d|2[0-3]):[0-5]\d$/;
-
-  //   const fields = this.generateFormFields;
-  //   const get = (name: string) => fields.find((f) => f.name === name);
-  //   const set = (name: string, patch: Partial<FormField>) =>
-  //     this.setField(fields, name, patch);
-
-  //   const timesRaw: Array<{ time?: string }> = Array.isArray(val['matchTimes'])
-  //     ? val['matchTimes']
-  //     : [];
-  //   const cleanedTimes = Array.from(
-  //     new Set(
-  //       timesRaw
-  //         .map((r) => String(r?.time ?? '').trim())
-  //         .filter((t) => t.length > 0 && HHMM.test(t))
-  //     )
-  //   ).sort((a, b) => a.localeCompare(b));
-
-  //   const mt = get('matchTimes');
-  //   if (
-  //     mt &&
-  //     JSON.stringify(mt.value?.map((x: any) => x.time)) !==
-  //       JSON.stringify(cleanedTimes)
-  //   ) {
-  //     set('matchTimes', { value: cleanedTimes.map((t) => ({ time: t })) });
-  //   }
-
-  //   const hasTimes = cleanedTimes.length > 0;
-
-  //   if (hasTimes) {
-  //     set('matchIntervalMinutes', { value: '' });
-  //     set('firstMatchTime', { value: '' });
-  //   } else {
-  //     const first = String(val['firstMatchTime'] ?? '').trim();
-  //     if (!first || !HHMM.test(first)) {
-  //       set('firstMatchTime', { value: '10:00' });
-  //     }
-
-  //     const mim = Number(val['matchIntervalMinutes']);
-  //     if (!Number.isFinite(mim) || mim < 1) {
-  //       set('matchIntervalMinutes', { value: 120 });
-  //     } else {
-  //       set('matchIntervalMinutes', { value: Math.floor(mim) });
-  //     }
-  //   }
-
-  //   const dayIntRaw = Number(val['dayInterval']);
-  //   if (!Number.isFinite(dayIntRaw) || dayIntRaw < 1) {
-  //     set('dayInterval', { value: 1 });
-  //   } else if (!Number.isInteger(dayIntRaw)) {
-  //     set('dayInterval', { value: Math.floor(dayIntRaw) });
-  //   }
-  // }
-
+  /**
+   * Zmniejsza array `FormField[]` do prostego obiektu {key: value}
+   */
   private reduceFields<
     T extends Record<string, unknown> = Record<string, unknown>
   >(fields: FormField[]): T {
@@ -1209,21 +1149,33 @@ export class CalendarComponent {
     }, {} as T);
   }
 
+  /**
+   * Próbuje sparsować liczbę, zwraca undefined jeśli puste lub NaN
+   */
   private numOrUndefined(v: any): number | undefined {
     if (v === '' || v === null || v === undefined) return undefined;
     const n = Number(v);
     return Number.isFinite(n) ? n : undefined;
   }
 
+  /**
+   * Pobiera wartość pola formularza na podstawie jego nazwy
+   */
   private fieldValue(fields: FormField[], name: string): any {
     return fields.find((f) => f.name === name)?.value;
   }
 
+  /**
+   * Ustawia/patchuje pole formularza
+   */
   private setField(arr: FormField[], name: string, patch: Partial<FormField>) {
     const i = arr.findIndex((f) => f.name === name);
     if (i >= 0) arr[i] = { ...(arr[i] as any), ...(patch as any) } as FormField;
   }
 
+  /**
+   * Ustawia opcje dla pola select
+   */
   private setSelectOptions(
     arr: FormField[],
     fieldName: string,
@@ -1248,6 +1200,10 @@ export class CalendarComponent {
     },
   ];
 
+  /**
+   * Tworzy definicje pól formularza dla tworzenia nowego meczu
+   * Dynamicznie generuje selecty etapów, grup, drużyn, zawodników i repeater eventów
+   */
   private getCreateMatchFields(
     t: Tournament | null | undefined,
     stageOptions: { label: string; value: string }[],
@@ -1398,6 +1354,10 @@ export class CalendarComponent {
     ];
   }
 
+  /**
+   * Tworzy definicje pól formularza dla edycji istniejącego meczu
+   * Zawiera event repeater z uzupełnionymi eventami meczu
+   */
   private getEditMatchFields(
     t: Tournament | null | undefined,
     m: Match,
@@ -1578,6 +1538,10 @@ export class CalendarComponent {
     ];
   }
 
+  /**
+   * Buduje definicję repeatera dla eventów meczu (GOAL / ASSIST / CARD / OWN_GOAL)
+   * Repeater pozwala dynamicznie dodawać wiele eventów do meczu
+   */
   private eventsRepeater(
     name: string,
     value: any[],
@@ -1684,6 +1648,10 @@ export class CalendarComponent {
     } as FormField;
   }
 
+  /**
+   * Tworzy pola formularza do generowania meczów grupowych algorytmem Round Robin.
+   * Używane przy automatycznym rozkładzie terminarza turnieju
+   */
   private getGenerateRoundRobinFields(
     t: Tournament | null | undefined,
     groupOptions: { label: string; value: string }[]
@@ -1812,13 +1780,24 @@ export class CalendarComponent {
     ];
   }
 
+  /**
+   * Otwiera modal ze szczegółami meczu
+   * Ustawia selectedMatch, co aktywuje okno modalne
+   */
   openDetails(match: Match): void {
     this.selectedMatch = match;
   }
 
+  /**
+   * Zamyka modal szczegółów meczu
+   * Zeruje selectedMatch
+   */
   closeDetails(): void {
     this.selectedMatch = null;
   }
 
+  /**
+   * Custom trackBy dla listy dni w kalendarzu — poprawia wydajność *ngFor
+   */
   trackByDate = (_: number, d: CalendarDay) => d.date;
 }

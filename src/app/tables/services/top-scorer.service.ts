@@ -13,6 +13,18 @@ import { TopScorersSortKey } from '../types';
 export class TopScorerService {
   private readonly store = inject(TournamentStore);
 
+  /**
+   * Tworzy ranking najlepszych strzelców (goals + assists + points)
+   * Zbiera wszystkie mecze z TournamentStore i zlicza eventy z typu:
+   *  - GOAL to zwiększa licznik bramek
+   *  - ASSIST to zwiększa licznik asyst
+   *
+   * Następnie mapuje dane na TopScorer[] i sortuje wg kryterium (`goals` / `assists` / `points`)
+   *
+   * @param sortBy - kryterium sortowania wyników
+   * @param dir - kierunek sortowania ('asc' | 'desc')
+   * @returns posortowany ranking zawodników
+   */
   getTopScorers$(
     sortBy: TopScorersSortKey = 'goals',
     dir: 'asc' | 'desc' = 'desc'
@@ -67,6 +79,19 @@ export class TopScorerService {
     );
   }
 
+  /**
+   * Sortuje ranking zawodników
+   *
+   * Logika:
+   *  - najpierw sortuje po `sortBy`
+   *  - gdy remis to sortuje po dwóch kolejnych polach (punkty, gole/asysty)
+   *  - gdy nadal remis to sortuje po nazwisku
+   *
+   * @param rows - lista zawodników z golami/asystami
+   * @param sortBy - główne pole sortowania
+   * @param dir - 'asc' | 'desc'
+   * @returns posortowana lista TopScorer[]
+   */
   private sortRows(
     rows: TopScorer[],
     sortBy: TopScorersSortKey,

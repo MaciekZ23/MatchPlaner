@@ -19,6 +19,10 @@ export class MatchService {
   private readonly store = inject(TournamentStore);
   private readonly api = inject(TOURNAMENT_API);
 
+  /**
+   * Generowanie struktury dni meczowych do widoku kalendarza
+   * Grupowanie meczów wg daty + mapowanie modeli domenowych na UI
+   */
   getCalendarDays$() {
     return combineLatest([
       this.store.tournament$,
@@ -29,6 +33,7 @@ export class MatchService {
       map(([tournament, matchesByStage, teamMap, playerMap]) => {
         const tournamentTz = tournament.timezone ?? 'Europe/Warsaw';
 
+        // Pobranie meczów tylko dla fazy grupowej
         const groupStage = tournament.stages.find((s) => s.kind === 'GROUP');
         const matches: CoreMatch[] = groupStage
           ? matchesByStage.get(groupStage.id) ?? []
@@ -87,26 +92,32 @@ export class MatchService {
     );
   }
 
+  /** Tworzenie nowego meczu w backendzie */
   createMatch$(payload: CreateMatchPayload): Observable<CoreMatch> {
     return this.api.createMatch(payload);
   }
 
+  /** Aktualizowanie meczu */
   updateMatch$(id: string, patch: UpdateMatchPayload): Observable<CoreMatch> {
     return this.api.updateMatch(id, patch);
   }
 
+  /** Usuwanie pojedynczego meczu */
   deleteMatch$(id: string): Observable<void> {
     return this.api.deleteMatch(id);
   }
 
+  /** Usuwanie wszystkich meczów turnieju */
   deleteAllByTournament$(tournamentId: string): Observable<{ count: number }> {
     return this.api.deleteAllMatchesByTournament(tournamentId);
   }
 
+  /** Usuwanie meczów konkretnego etapu */
   deleteAllByStage$(stageId: string): Observable<{ count: number }> {
     return this.api.deleteAllMatchesByStage(stageId);
   }
 
+  /** Generowanie terminarza algorytmem Round Robin */
   generateRoundRobin$(
     tournamentId: string,
     payload: GenerateRoundRobinPayload
@@ -114,6 +125,9 @@ export class MatchService {
     return this.api.generateRoundRobin(tournamentId, payload);
   }
 
+  /**
+   * Mapowanie szczegółów meczu (gole, kartki, asysty) na format UI
+   */
   private toUiDetails(
     m: CoreMatch,
     playerMap: Map<string, CorePlayer>
@@ -191,6 +205,7 @@ export class MatchService {
     return { scoreA, scoreB, details };
   }
 
+  /** Określanie statusu meczu dla UI */
   private computeUiStatus(m: CoreMatch): 'SCHEDULED' | 'FINISHED' {
     return m.status === 'FINISHED' ? 'FINISHED' : 'SCHEDULED';
   }

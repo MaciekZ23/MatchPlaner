@@ -27,21 +27,20 @@ export class AuthService {
   role$ = this.roleSubject.asObservable();
   isAdmin$ = this.role$.pipe(map((r) => r === 'ADMIN'));
 
-  // loginWithGoogle(
-  //   idToken: string
-  // ): Observable<{ token: string; user?: { avatarUrl?: string } }> {
-  //   return this.http.post<{ token: string; user?: { avatarUrl?: string } }>(
-  //     `${this.adminBase}/google/verify`,
-  //     { idToken }
-  //   );
-  // }
-
+  /**
+   * Logowanie poprzez Google (OAuth)
+   * Zwracanie tokenów dostępowych i informacji o użytkowniku
+   */
   loginWithGoogle(idToken: string): Observable<LoginResp> {
     return this.http.post<LoginResp>(`${this.adminBase}/google/verify`, {
       idToken,
     });
   }
 
+  /**
+   * Generowanie i zapisywanie identyfikatora urządzenia
+   * Używane w logowaniu gościa
+   */
   private ensureDeviceId(): string {
     let id = localStorage.getItem('deviceId');
     if (!id) {
@@ -51,19 +50,16 @@ export class AuthService {
     return id;
   }
 
-  // loginAsGuest(): Observable<{ token: string; guestId?: string }> {
-  //   const deviceId = this.ensureDeviceId();
-  //   return this.http.post<{ token: string; guestId?: string }>(
-  //     `${this.authBase}/guest`,
-  //     { deviceId }
-  //   );
-  // }
-
+  /** Logowanie w trybie gościa */
   loginAsGuest(): Observable<LoginResp> {
     const deviceId = this.ensureDeviceId();
     return this.http.post<LoginResp>(`${this.authBase}/guest`, { deviceId });
   }
 
+  /**
+   * Odświeżanie tokenu dostępu access tokenu przy użyciu refresh tokenu
+   * Zwracanie nowego access tokenu i automatyczne zapisanie go w sessionStorage
+   */
   refreshAccessToken(): Observable<{ accessToken: string }> {
     const rt = sessionStorage.getItem('rt');
     return this.http
@@ -72,28 +68,28 @@ export class AuthService {
       })
       .pipe(
         tap(({ accessToken }) => {
-          if (accessToken) sessionStorage.setItem('at', accessToken);
+          if (accessToken) {
+            sessionStorage.setItem('at', accessToken);
+          }
         })
       );
   }
 
-  // saveSession(token: string, avatar?: string): void {
-  //   localStorage.setItem('token', token);
-  //   if (avatar) {
-  //     localStorage.setItem('avatar', avatar);
-  //     this.avatarSubject.next(avatar);
-  //   }
-  //   this.roleSubject.next(this.readRoleFromToken(token) ?? 'USER');
-  // }
-
+  /**
+   * Zapisywanie sesji użytkownika:
+   * - access token
+   * - opcjonalnie awatar
+   * - opcjonalnie refresh token
+   */
   saveSession(
     accessToken: string,
     avatar?: string,
     refreshToken?: string
   ): void {
     sessionStorage.setItem('at', accessToken);
-    if (refreshToken) sessionStorage.setItem('rt', refreshToken);
-
+    if (refreshToken) {
+      sessionStorage.setItem('rt', refreshToken);
+    }
     if (avatar) {
       sessionStorage.setItem('avatar', avatar);
       this.avatarSubject.next(avatar);
@@ -101,14 +97,7 @@ export class AuthService {
     this.roleSubject.next(this.readRoleFromToken(accessToken) ?? 'USER');
   }
 
-  // logout(): void {
-  //   localStorage.removeItem('token');
-  //   localStorage.removeItem('avatar');
-  //   this.avatarSubject.next(null);
-  //   this.roleSubject.next('NONE');
-  //   this.store.clearTournament();
-  // }
-
+  /** Wylogowywanie użytkownika i czyszczenie sesji */
   logout(): void {
     sessionStorage.removeItem('at');
     sessionStorage.removeItem('rt');
@@ -120,6 +109,7 @@ export class AuthService {
     this.store.clearTournament();
   }
 
+  /** Zapisywanie lub czyszczenie awatara użytkownika */
   setAvatar(avatar: string | null) {
     if (avatar) {
       sessionStorage.setItem('avatar', avatar);
@@ -129,10 +119,12 @@ export class AuthService {
     this.avatarSubject.next(avatar);
   }
 
+  /** Pobieranie awatara użytkownika */
   getAvatar(): string | null {
     return sessionStorage.getItem('avatar');
   }
 
+  /** Odczytywanie roli z JWT (ADMIN / USER / GUEST) */
   private readRoleFromToken(token?: string): 'ADMIN' | 'USER' | 'GUEST' | null {
     try {
       const t = token ?? sessionStorage.getItem('at');
@@ -147,6 +139,7 @@ export class AuthService {
     }
   }
 
+  /** Sprawdzanie czy token JWT jest ważny, czy nie wygasł */
   isTokenValid(token?: string): boolean {
     const t = token ?? sessionStorage.getItem('at');
     if (!t) return false;
@@ -155,8 +148,10 @@ export class AuthService {
       const payload = JSON.parse(
         atob(b64.replace(/-/g, '+').replace(/_/g, '/'))
       );
-      const exp = payload?.exp as number | undefined; // sekundy od epoki
-      if (!exp) return true; // brak exp -> traktujemy jako ważny (opcjonalnie: false)
+      const exp = payload?.exp as number | undefined;
+      if (!exp) {
+        return true;
+      }
       const now = Math.floor(Date.now() / 1000);
       return exp > now;
     } catch {
@@ -164,13 +159,16 @@ export class AuthService {
     }
   }
 
+  /** Pobieranie podstawowych danych użytkownika z tokenu */
   getUserInfo(): {
     email: string | null;
     name: string | null;
     role: 'ADMIN' | 'USER' | 'GUEST' | 'NONE';
   } {
     const t = this.getToken();
-    if (!t) return { email: null, name: null, role: 'NONE' };
+    if (!t) {
+      return { email: null, name: null, role: 'NONE' };
+    }
 
     try {
       const [, b64] = t.split('.');
@@ -195,11 +193,13 @@ export class AuthService {
     }
   }
 
+  /** Sprawdzanie czy użytkownik jest zalogowany */
   isLoggedIn(): boolean {
     const t = sessionStorage.getItem('at');
     return !!t && this.isTokenValid(t);
   }
 
+  /** Pobieranie tokenu użytkownika - access tokenu */
   getToken(): string | null {
     return sessionStorage.getItem('at');
   }

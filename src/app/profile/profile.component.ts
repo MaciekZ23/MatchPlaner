@@ -26,6 +26,10 @@ export class ProfileComponent implements OnInit, AfterViewInit {
   role: 'ADMIN' | 'USER' | 'GUEST' | 'NONE' = 'NONE';
   deviceId: string | null = null;
 
+  /**
+   * Inicjalizowanie danych profilu, pobieranie danych użytkownika z tokenu
+   * Jeśli użytkownik jest gościem to mamy generowanie lokalnego deviceId
+   */
   ngOnInit(): void {
     const info = this.auth.getUserInfo();
     this.role = info.role;
@@ -40,6 +44,10 @@ export class ProfileComponent implements OnInit, AfterViewInit {
     }
   }
 
+  /**
+   * Generowanie identyfikatora urządzenia deviceId dla gości,
+   * zapisywane w localStorage - stałe dla przeglądarki użytkownika
+   */
   private ensureDeviceId(): string {
     const KEY = 'deviceId';
     let id = localStorage.getItem(KEY);
@@ -55,6 +63,7 @@ export class ProfileComponent implements OnInit, AfterViewInit {
     return id;
   }
 
+  /** Zwracanie czytelnej nazwy roli użytkownika */
   get roleLabel(): string {
     switch (this.role) {
       case 'ADMIN':
@@ -68,8 +77,16 @@ export class ProfileComponent implements OnInit, AfterViewInit {
     }
   }
 
+  /**
+   * Kopiowanie wartości do schowka oraz pokazywanie tooltipa z komunikatem
+   * Obsługuje to :
+   *  - API `navigator.clipboard` (nowsze przeglądarki)
+   *  - fallback `execCommand('copy')` dla starszych
+   */
   copyToClipboard(text: string, btnEl: HTMLElement, copiedMsg = 'Skopiowano!') {
-    if (!text) return;
+    if (!text) {
+      return;
+    }
     const bs = (window as any).bootstrap;
 
     const original =
@@ -131,14 +148,22 @@ export class ProfileComponent implements OnInit, AfterViewInit {
         })();
   }
 
+  /**
+   * Inicjalizowanie tooltipów Bootstrapa po wyrenderowaniu komponentu
+   */
   ngAfterViewInit(): void {
     const bs = (window as any).bootstrap;
-    if (!bs?.Tooltip) return;
+    if (!bs?.Tooltip) {
+      return;
+    }
     document.querySelectorAll<HTMLElement>('.btn-copy').forEach((el) => {
       bs.Tooltip.getInstance?.(el) ?? new bs.Tooltip(el, { placement: 'top' });
     });
   }
 
+  /**
+   * Wylogowanie użytkownika i przekierowanie do logowania
+   */
   onLogout(): void {
     this.auth.logout();
     this.router.navigateByUrl('/login');

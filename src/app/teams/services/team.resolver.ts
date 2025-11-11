@@ -9,6 +9,10 @@ export class TeamResolver implements Resolve<Team | null> {
   private teamService = inject(TeamService);
   private router = inject(Router);
 
+  /**
+   * Resolver ładuje dane konkretnej drużyny przed aktywacją routingu
+   * Jeśli parametr id nie jest liczbą lub drużyna nie istnieje to redirect na /teams.
+   */
   resolve(route: ActivatedRouteSnapshot): Observable<Team | null> {
     const id = Number(route.paramMap.get('id'));
     if (!Number.isFinite(id)) {

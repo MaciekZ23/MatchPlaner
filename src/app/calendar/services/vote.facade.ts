@@ -11,7 +11,7 @@ import { VotingState } from '../../core/models';
 import { VoteService } from './vote.service';
 import { NotificationService } from '../../core/notifications/notification.service';
 import { AuthService } from '../../core/auth/auth.service';
-import { statusFromMatch, positionPl, healthPl } from './helpers';
+import { positionPl, healthPl } from './helpers';
 import { UiCandidate } from '../models/candidate.model';
 import { UiVoteSummary } from '../models/vote-summary.model';
 
@@ -32,16 +32,17 @@ export class VoteFacade {
     private auth: AuthService
   ) {}
 
+  /** Pobieranie stanu głosowania z backendu */
   load(matchId: MatchId): void {
     this.vote.fetchState(matchId);
   }
 
-  // Strumień całego stanu głosowania dla meczu
+  /** Strumień pełnego stanu głosowania */
   voting$(matchId: MatchId): Observable<VotingState> {
     return this.vote.selectState$(matchId);
   }
 
-  // Strumień kandydatów z mapowanymi polami prezentacyjnymi
+  /** Kandydaci prezentacyjni pod UI */
   candidates$(
     matchId: MatchId,
     match?: MinimalMatch
@@ -70,7 +71,7 @@ export class VoteFacade {
     );
   }
 
-  // Strumień kandydatów należących do drużyny gospodarzy
+  /** Strumień kandydatów należących do drużyny gospodarzy */
   homeCandidates$(
     matchId: MatchId,
     homeTeamId: TeamId,
@@ -81,7 +82,7 @@ export class VoteFacade {
     );
   }
 
-  // Strumień kandydatów należących do drużyny gości
+  /** Strumień kandydatów należących do drużyny gości */
   awayCandidates$(
     matchId: MatchId,
     awayTeamId: TeamId,
@@ -92,7 +93,7 @@ export class VoteFacade {
     );
   }
 
-  // Podsumowanie głosów (nazwy, drużyny, %, zwycięzcy) posortowane malejąco
+  /** Podsumowanie głosów — sortowane po największej liczbie głosów */
   summary$(
     matchId: MatchId,
     teamMap: Map<string, CoreTeam>
@@ -127,7 +128,7 @@ export class VoteFacade {
     );
   }
 
-  // Oddanie głosu na wskazanego zawodnika
+  /** Oddanie głosu i wysłanie powiadomienia */
   voteFor(match: CalendarMatch, playerId: string): void {
     this.vote.vote(match.id, playerId as any);
 
@@ -147,6 +148,10 @@ export class VoteFacade {
   }
 }
 
+/**
+ * Obliczanie liczby straconych goli przez drużynę w meczu
+ * Zwraca ile goli przeciwnik strzelił wskazanej drużynie zależnie od tego, czy była gospodarzem czy gościem
+ */
 function goalsConcededForTeam(match: MinimalMatch, teamId: string): number {
   if ('score' in match && match.score) {
     return teamId === match.homeTeamId ? match.score.away : match.score.home;

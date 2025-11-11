@@ -123,7 +123,6 @@
   </ng-template>
 </div>
 
-<!-- Formularz do dodawania drużyny -->
 <app-dynamic-form
   [formTitle]="formTitleAddTeam"
   [fields]="addTeamFormFields"
@@ -133,7 +132,6 @@
 >
 </app-dynamic-form>
 
-<!-- Formularz do dodawania zawodnika do drużyny -->
 <app-dynamic-form
   [formTitle]="formTitleAddPlayer"
   [fields]="addPlayerFormFields"
@@ -142,7 +140,6 @@
   (close)="openAddPlayerFormModal = false"
 ></app-dynamic-form>
 
-<!-- Formularz do edycji drużyny -->
 <app-dynamic-form
   [formTitle]="formTitleEditTeam"
   [fields]="editTeamFormFields"
@@ -151,7 +148,6 @@
   (close)="openEditTeamFormModal = false"
 ></app-dynamic-form>
 
-<!-- Formularz do edycji zawodnika -->
 <app-dynamic-form
   [formTitle]="formTitleEditPlayer"
   [fields]="editPlayerFormFields"
@@ -160,10 +156,8 @@
   (close)="openEditPlayerFormModal = false"
 ></app-dynamic-form>
 
-<!-- Modal potwierdzający kasowanie drużyny -->
 <app-confirm-modal #teamConfirm idPrefix="team-confirm"></app-confirm-modal>
 
-<!-- Modal potwierdzający kasowanie zawodnika -->
 <app-confirm-modal #playerConfirm idPrefix="player-confirm"></app-confirm-modal>
 
 <app-spinner *ngIf="isLoading"></app-spinner>

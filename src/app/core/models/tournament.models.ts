@@ -13,15 +13,15 @@ export interface Tournament {
   id: string;
   name: string;
   mode: TournamentMode;
-  description?: string; // dłuższy opis turnieju/ligi
-  additionalInfo?: string; // informacje dodatkowe dla widzów/uczestników
-  season?: string; // np. "2025/26" albo "Edycja 2026"
-  startDate?: string; // ISO: "2025-08-01"
-  endDate?: string; // ISO: "2025-12-15"
+  description?: string;
+  additionalInfo?: string;
+  season?: string;
+  startDate?: string;
+  endDate?: string;
   timezone?: string;
-  venue?: string; // nazwa obiektu (np. "Arena Toruń")
-  venueAddress?: string; // adres (np. "ul. Bema 73/89, 87-100 Toruń")
-  venueImageUrl?: string; // zdjęcie obiektu
+  venue?: string;
+  venueAddress?: string;
+  venueImageUrl?: string;
   groups: Group[];
   stages: Stage[];
 }
@@ -181,14 +181,14 @@ export interface UpdateMatchPayload {
 }
 
 export interface GenerateRoundRobinPayload {
-  startDate: string; // 'YYYY-MM-DD'
-  matchTimes?: string[]; // np. ['14:00','16:00','18:00']
-  dayInterval?: number; // co ile dni nowa kolejka
-  doubleRound?: boolean; // dwie rundy (mecz i rewanż)
-  groupIds?: string[]; // które grupy generować
-  clearExisting?: boolean; // wyczyść poprzednie mecze z/ dla tych grup (stage GROUP)
-  shuffleTeams?: boolean; // potasuj kolejność przed Bergerem
-  matchIntervalMinutes?: number; // alternatywa dla matchTimes (interwał w minutach)
-  firstMatchTime?: string; // start pierwszego meczu (gdy używasz interwału)
-  roundInSingleDay?: boolean; // czy cała kolejka ma się zmieścić jednego dnia
+  startDate: string;
+  matchTimes?: string[];
+  dayInterval?: number;
+  doubleRound?: boolean;
+  groupIds?: string[];
+  clearExisting?: boolean;
+  shuffleTeams?: boolean;
+  matchIntervalMinutes?: number;
+  firstMatchTime?: string;
+  roundInSingleDay?: boolean;
 }

@@ -19,22 +19,35 @@ export class TeamService {
   private readonly store = inject(TournamentStore);
   private readonly api = inject(HttpTournamentApi);
 
+  /**
+   * Zwraca strumień listy drużyn w formacie UI (zawodnicy są zmapowani do drużyn)
+   */
   getTeams$() {
     return combineLatest([this.store.teams$, this.store.players$]).pipe(
       map(([teams, players]) => this.mapToUiTeams(teams, players))
     );
   }
 
+  /**
+   * Pobiera UI drużynę po ID UI
+   */
   getTeamById$(id: number) {
     return this.getTeams$().pipe(
       map((list) => list.find((t) => t.id === id) ?? null)
     );
   }
 
+  /**
+   * Zwraca listę wszystkich Core Players bez mapowania do UI
+   */
   getCorePlayers$() {
     return this.store.players$;
   }
 
+  /**
+   * Tworzy nową drużynę w API i odświeża store
+   * Jeśli nie podano tournamentId to pobieramy aktualny z TournamentStore
+   */
   createTeam$(team: CreateTeamPayload, tournamentId?: string) {
     const tid$ = tournamentId
       ? of(tournamentId)
@@ -49,12 +62,19 @@ export class TeamService {
     );
   }
 
+  /**
+   * Aktualizuje dane drużyny na backendzie
+   * Po zapisie odświeża store
+   */
   updateTeam$(teamId: string, patch: UpdateTeamPayload) {
     return this.api
       .updateTeam(teamId, patch)
       .pipe(tap(() => this.store.refreshTeams()));
   }
 
+  /**
+   * Usuwa drużynę i wymusza odświeżenie listy drużyn i zawodników
+   */
   deleteTeam$(teamId: string) {
     return this.api.deleteTeam(teamId).pipe(
       tap(() => {
@@ -64,6 +84,10 @@ export class TeamService {
     );
   }
 
+  /**
+   * Tworzy zawodnika na podstawie nazwy drużyny
+   * Odświeża store teams + players po zapisie
+   */
   createPlayer$(teamName: string, player: CreatePlayerPayload) {
     return this.store.teams$.pipe(
       take(1),
@@ -86,12 +110,18 @@ export class TeamService {
     );
   }
 
+  /**
+   * Aktualizuje dane zawodnika
+   */
   updatePlayer$(playerId: string, patch: UpdatePlayerPayload) {
     return this.api
       .updatePlayer(playerId, patch)
       .pipe(tap(() => this.store.refreshPlayers?.()));
   }
 
+  /**
+   * Usuwa zawodnika i odświeża dane w store
+   */
   deletePlayer$(playerId: string) {
     return this.api.deletePlayer(playerId).pipe(
       tap(() => {
@@ -101,6 +131,9 @@ export class TeamService {
     );
   }
 
+  /**
+   * Zwraca Core ID drużyny na podstawie jej UI ID
+   */
   getCoreTeamIdByUiId$(uiId: number) {
     return combineLatest([this.getTeamById$(uiId), this.store.teams$]).pipe(
       take(1),
@@ -121,6 +154,9 @@ export class TeamService {
     );
   }
 
+  /**
+   * Wgrywa logo drużyny do backendu
+   */
   uploadLogo$(teamId: string, file: File) {
     const formData = new FormData();
     formData.append('file', file);
@@ -130,6 +166,11 @@ export class TeamService {
       .pipe(tap(() => this.store.refreshTeams?.()));
   }
 
+  /**
+   * Mapuje CoreTeam i CorePlayers na obiekt UI:
+   * - generuje UI id
+   * - grupuje zawodników w drużynie
+   */
   private mapToUiTeams(
     coreTeams: CoreTeam[],
     corePlayers: CorePlayer[]
@@ -150,6 +191,9 @@ export class TeamService {
     }));
   }
 
+  /**
+   * Mapuje zawodnika Core do UI, tłumaczy pola tekstowe
+   */
   private mapPlayerToUi = (p: CorePlayer): UiPlayer => ({
     name: p.name,
     position: this.positionPl(p.position),
@@ -157,6 +201,9 @@ export class TeamService {
     healthStatus: p.healthStatus === 'HEALTHY' ? 'Zdrowy' : 'Kontuzjowany',
   });
 
+  /**
+   * Mapuje pozycję zawodnika z Core enum na tekst w UI
+   */
   private positionPl(pos: CorePlayer['position']): UiPlayer['position'] {
     switch (pos) {
       case 'GK':

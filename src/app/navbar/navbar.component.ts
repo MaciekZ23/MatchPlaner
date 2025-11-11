@@ -20,7 +20,16 @@ import { TournamentStore } from '../core/services/tournament-store.service';
 })
 export class NavbarComponent {
   moduleStrings = stringsNavbar;
+
+  /** Sterowanie stanem otwarcia sidebaru */
   @Input() isOpen: boolean = true;
+
+  /**
+   * Emitowanie zdarzeń zmiany stanu sidebaru
+   * - `manual` → użytkownik kliknął przycisk
+   * - `resize` → sidebar zmieniony przez zmianę szerokości okna
+   * - `close` → zamykanie sidebaru automatycznie (np. po wyborze opcji w mobile)
+   */
   @Output() toggleSidebar = new EventEmitter<'manual' | 'resize' | 'close'>();
 
   private store = inject(TournamentStore);
@@ -29,8 +38,13 @@ export class NavbarComponent {
   tid$ = this.store.selectedId$;
   hasTid$ = this.store.hasTournament$;
 
+  /** Zapamiętywanie ostatniej szerokości okna dla wykrywania zmiany */
   private lastWidth = window.innerWidth;
 
+  /**
+   * Reagowanie na zmianę rozmiaru okna — automatyczne otwieranie / zamykanie sidebaru
+   * w zależności od breakpointu 768px
+   */
   @HostListener('window:resize')
   onWindowResize() {
     if (window.innerWidth === this.lastWidth) {
@@ -43,14 +57,21 @@ export class NavbarComponent {
     this.lastWidth = window.innerWidth;
   }
 
+  /** Emitowanie zdarzenia ręcznego otwierania lub zamykania sidebaru */
   onToggleSidebar() {
     this.toggleSidebar.emit('manual');
   }
 
+  /** Sprawdzanie, czy użytkownik jest na urządzeniu mobilnym */
   isMobile(): boolean {
     return window.innerWidth < 768;
   }
 
+  /**
+   * Nawigowanie do strony turnieju lub przekierowanie do wyboru turnieju,
+   * w zależności od tego, czy `tid` jest dostępny
+   * W mobile sidebar automatycznie się zamyka
+   */
   goOrPick(tid: string | null, segments: string[]) {
     if (!tid) {
       this.router.navigate(['/tournaments']);

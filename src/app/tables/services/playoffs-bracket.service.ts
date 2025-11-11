@@ -190,7 +190,6 @@ export class PlayoffsBracketService {
     const [nameA, logoA] = this.nameLogoFromSlot(bm.home, teamMap, bmById);
     const [nameB, logoB] = this.nameLogoFromSlot(bm.away, teamMap, bmById);
 
-    // ⬇️ policz szczegóły do timeline (tak jak w Calendar)
     const details = this.detailsFromEvents(bm, playerMap);
 
     return {
@@ -239,7 +238,6 @@ export class PlayoffsBracketService {
       .slice()
       .sort((a: any, b: any) => a.minute - b.minute);
 
-    // realne teamId ze slotów (TEAM -> teamId/ref; WINNER/LOSER -> ref do meczu poprzedniego – timeline i tak pokaże po teamId eventu)
     const homeId = (bm.home as any).teamId ?? bm.home?.ref ?? null;
     const awayId = (bm.away as any).teamId ?? bm.away?.ref ?? null;
 

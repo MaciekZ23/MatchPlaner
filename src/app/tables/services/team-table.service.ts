@@ -3,12 +3,7 @@ import { combineLatest, map, Observable } from 'rxjs';
 import { TournamentStore } from '../../core/services/tournament-store.service';
 import { Match as CoreMatch, Team as CoreTeam } from '../../core/models';
 import { TeamStats, PointsTableGroup, TablesVM } from '../models';
-import {
-  getScore,
-  buildDisciplineIndex,
-  buildAwayWinsIndex,
-  makeStandingsComparator,
-} from './helpers';
+import { getScore } from './helpers';
 
 @Injectable({ providedIn: 'root' })
 export class TeamTableService {
@@ -163,7 +158,6 @@ export class TeamTableService {
 
     for (const row of base.values()) row.diff = row.bz - row.bs;
 
-    // --- sortowanie: klastry remisu
     const table = Array.from(base.entries()).map(([teamId, row]) => ({
       teamId,
       row,
@@ -196,7 +190,6 @@ export class TeamTableService {
           if (B.row.diff !== A.row.diff) return B.row.diff - A.row.diff;
           if (B.row.bz !== A.row.bz) return B.row.bz - A.row.bz;
           if (B.row.w !== A.row.w) return B.row.w - A.row.w;
-          // proxy na away-wins: policz z meczów
           const awA = this.countAwayWins(A.teamId, withTeams);
           const awB = this.countAwayWins(B.teamId, withTeams);
           if (awB !== awA) return awB - awA;
@@ -223,7 +216,6 @@ export class TeamTableService {
   ): number {
     if (a.pkt !== b.pkt) return b.pkt - a.pkt;
 
-    // H2H między a-b
     let aPts = 0,
       bPts = 0,
       aGD = 0,
