@@ -34,20 +34,32 @@ export class TeamTableComponent implements OnDestroy, OnChanges, AfterViewInit {
 
   constructor(private host: ElementRef<HTMLElement>) {}
 
+  /**
+   * Po wyrenderowaniu widoku inicjalizuje tooltips Bootstrapa
+   */
   ngAfterViewInit(): void {
     this.initTooltips();
   }
 
+  /**
+   * Re-inicjalizuje tooltips np. po zmianie listy graczy
+   */
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['players'] || changes['canManage']) {
       queueMicrotask(() => this.reinitTooltips());
     }
   }
 
+  /**
+   * Czyści instancje tooltipów po zniszczeniu komponentu
+   */
   ngOnDestroy(): void {
     this.disposeTooltips();
   }
 
+  /**
+   * Tworzy instancje tooltipów dla wszystkich elementów z atrybutem `data-bs-toggle="tooltip"`
+   */
   private initTooltips(): void {
     const bs = (window as any).bootstrap;
     if (!bs?.Tooltip) return;
@@ -63,16 +75,25 @@ export class TeamTableComponent implements OnDestroy, OnChanges, AfterViewInit {
     );
   }
 
+  /**
+   * Usuwa wszystkie instancje tooltipów
+   */
   private disposeTooltips(): void {
     this.tooltipInstances.forEach((t) => t?.dispose?.());
     this.tooltipInstances = [];
   }
 
+  /**
+   * Resetuje wszystkie tooltips, najpierw usuwa, potem tworzy na nowo
+   */
   private reinitTooltips(): void {
     this.disposeTooltips();
     this.initTooltips();
   }
 
+  /**
+   * Ukrywa tooltipa dla danego elementu np. po kliknięciu
+   */
   hideTooltip(ev: Event, blur = true) {
     const el = ev.currentTarget as HTMLElement;
     const bs = (window as any).bootstrap;
@@ -86,6 +107,9 @@ export class TeamTableComponent implements OnDestroy, OnChanges, AfterViewInit {
   sortColumn: string = 'name';
   sortDirection: 'asc' | 'desc' = 'asc';
 
+  /**
+   * Sortuje listę graczy po kliknięciu nagłówka tabeli
+   */
   sortData(column: string): void {
     if (this.sortColumn === column) {
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
@@ -108,6 +132,9 @@ export class TeamTableComponent implements OnDestroy, OnChanges, AfterViewInit {
     this.reinitTooltips();
   }
 
+  /**
+   * Zwraca klasy CSS dla badge'a statusu zdrowia zawodnika
+   */
   getHealthBadgeClass(player: { healthStatus: HealthStatus }): string[] {
     const base = ['rounded-pill', 'px-2', 'py-1', 'fs-6'];
     const status = String(player?.healthStatus || '').toLowerCase();
@@ -121,15 +148,24 @@ export class TeamTableComponent implements OnDestroy, OnChanges, AfterViewInit {
     return ['bg-secondary', ...base];
   }
 
+  /**
+   * Emituje akcję powrotu np. do listy drużyn
+   */
   onBackClick(): void {
     this.backClick.emit();
   }
 
+  /**
+   * Emituje zdarzenie edycji gracza, bez propagacji kliknięcia na wiersz
+   */
   onEditPlayer(p: any, ev: MouseEvent) {
     ev.stopPropagation();
     this.editPlayer.emit(p);
   }
 
+  /**
+   * Emituje zdarzenie usunięcia gracza, bez propagacji kliknięcia na wiersz
+   */
   onDeletePlayer(p: any, ev: MouseEvent) {
     ev.stopPropagation();
     this.deletePlayer.emit(p);

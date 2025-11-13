@@ -19,13 +19,7 @@ import { MatchCardComponent } from '../../../calendar/components/match-card/matc
 import { PlayoffsBracketService } from '../../services/playoffs-bracket.service';
 import { BracketMatch } from '../../models';
 import { BracketRoundPipe } from '../../pipes/bracket-round.pipe';
-import {
-  combineLatest,
-  map,
-  Observable,
-  shareReplay,
-  Subscription,
-} from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { Team as CoreTeam, Player as CorePlayer } from '../../../core/models';
 import { stringsPlayoffsBracket } from '../../misc';
 import { Match } from '../../../calendar/models/match.model';
@@ -94,6 +88,9 @@ export class PlayoffsBracketComponent
     this.playerMap$ = this.store.playerMap$;
   }
 
+  /**
+   * Inicjalizuje dane drabinki dla wskazanego etapu, stageId
+   */
   ngOnInit(): void {
     this.bracket.loadByTournament();
     this.matches$ = this.bracket.getMatches$(this.stageId);
@@ -104,6 +101,9 @@ export class PlayoffsBracketComponent
     this.hasBracket$ = this.bracket.hasBracketForStage$(this.stageId);
   }
 
+  /**
+   * Po renderze ustawia obserwator wysokości kart i tooltip rozwijania
+   */
   ngAfterViewInit(): void {
     this.subs.add(
       this.probes.changes.subscribe(() => this.measureCardHeight())
@@ -114,12 +114,18 @@ export class PlayoffsBracketComponent
     this.initCollapseTooltip();
   }
 
+  /**
+   * Czyści subskrypcje, obserwatory i tooltipy przy niszczeniu komponentu
+   */
   ngOnDestroy(): void {
     this.subs.unsubscribe();
     this.ro?.disconnect();
     this.disposeCollapseTooltip();
   }
 
+  /**
+   * Emituje zdarzenie potwierdzenia głosu na zawodnika.
+   */
   onRequestVoteConfirm(e: {
     matchId: string;
     playerId: string;
@@ -128,26 +134,44 @@ export class PlayoffsBracketComponent
     this.voteRequested.emit(e);
   }
 
+  /**
+   * Emituje zdarzenie żądania edycji meczu
+   */
   onRequestEditMatch(match: Match): void {
     this.editMatchRequested.emit(match);
   }
 
+  /**
+   * Emituje zdarzenie żądania usunięcia meczu
+   */
   onRequestDeleteMatch(match: Match): void {
     this.deleteMatchRequested.emit(match);
   }
 
+  /**
+   * Emituje żądanie usunięcia wszystkich meczów w etapie
+   */
   onDeleteAllPlayoffMatches(): void {
     this.deleteAllRequested.emit(this.stageId);
   }
 
+  /**
+   * Emituje żądanie wygenerowania nowej drabinki PlayOffs
+   */
   onGenerateRequested(): void {
     this.generatePlayOffsRequested.emit();
   }
 
+  /**
+   * Emituje kliknięcie meczu w drabince np. otwarcie szczegółów
+   */
   openDetails(m: Match) {
     this.matchClicked.emit(m);
   }
 
+  /**
+   * Przełącza widoczność sekcji (rozwijanie / zwijanie) i aktualizuje tooltip
+   */
   toggleCollapse(): void {
     this.isCollapsed = !this.isCollapsed;
     const el = this.collapseBtn?.nativeElement;
@@ -170,6 +194,9 @@ export class PlayoffsBracketComponent
     }
   }
 
+  /**
+   * Ukrywa tooltip dla elementu np. po kliknięciu przycisku
+   */
   hideTooltip(ev: Event) {
     const el = ev.currentTarget as HTMLElement;
     const bs = (window as any).bootstrap;
@@ -178,14 +205,24 @@ export class PlayoffsBracketComponent
     el.blur();
   }
 
+  /**
+   * Zwraca lewą część meczów w danej rundzie
+   */
   leftHalf(all: BracketMatch[], r: number) {
     return this.bracket.splitRoundForSide(all, r, 'left');
   }
 
+  /**
+   * Zwraca prawą część meczów w danej rundzie
+   */
   rightHalf(all: BracketMatch[], r: number) {
     return this.bracket.splitRoundForSide(all, r, 'right');
   }
 
+  /**
+   * Mierzy wysokość przykładowej karty meczu,
+   * aby dostosować pozycjonowanie w drabince
+   */
   private measureCardHeight(): void {
     const el = this.probes?.first?.nativeElement;
     if (!el) {
@@ -202,6 +239,9 @@ export class PlayoffsBracketComponent
   trackMatch = (_: number, m: BracketMatch | Match) => (m as any).id;
   trackRound = (_: number, r: number) => r;
 
+  /**
+   * Inicjalizuje tooltip przycisku zwijania sekcji
+   */
   private initCollapseTooltip(): void {
     const bs = (window as any).bootstrap;
     if (!bs?.Tooltip) return;
@@ -211,6 +251,9 @@ export class PlayoffsBracketComponent
       bs.Tooltip.getInstance?.(el) ?? new bs.Tooltip(el, { placement: 'top' });
   }
 
+  /**
+   * Niszczy tooltip przycisku rozwijania
+   */
   private disposeCollapseTooltip(): void {
     this.collapseTooltip?.dispose?.();
     this.collapseTooltip = null;

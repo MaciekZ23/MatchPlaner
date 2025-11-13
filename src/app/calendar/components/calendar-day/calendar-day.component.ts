@@ -32,6 +32,9 @@ export class CalendarDayComponent implements AfterViewInit, OnDestroy {
   expanded = false;
   private collapseTt: any | null = null;
 
+  /**
+   * Po renderze inicjalizuje tooltip przycisku rozwijania sekcji
+   */
   ngAfterViewInit(): void {
     const bs = (window as any)?.bootstrap;
     const el = this.toggleBtn?.nativeElement;
@@ -42,11 +45,18 @@ export class CalendarDayComponent implements AfterViewInit, OnDestroy {
     }
   }
 
+  /**
+   * Czyści tooltip przy niszczeniu komponentu
+   */
   ngOnDestroy(): void {
     this.collapseTt?.dispose?.();
     this.collapseTt = null;
   }
 
+  /**
+   * Rozwija lub zwija listę meczów dla dnia
+   * i aktualizuje treść tooltipa
+   */
   toggle() {
     this.expanded = !this.expanded;
     const bs = (window as any)?.bootstrap;
@@ -71,6 +81,9 @@ export class CalendarDayComponent implements AfterViewInit, OnDestroy {
     }
   }
 
+  /**
+   * Ukrywa tooltip np. po kliknięciu przycisku
+   */
   hideTooltip(ev: Event) {
     const el = ev.currentTarget as HTMLElement;
     const bs = (window as any).bootstrap;
@@ -79,17 +92,29 @@ export class CalendarDayComponent implements AfterViewInit, OnDestroy {
     el.blur();
   }
 
+  /**
+   * Emituje zdarzenie kliknięcia w mecz
+   */
   onMatchClick(match: any) {
     this.matchClicked.emit(match);
   }
 
+  /**
+   * Emituje zdarzenie żądania edycji meczu
+   */
   onEditMatch(match: any): void {
     this.editMatch.emit(match);
   }
 
+  /**
+   * Emituje zdarzenie żądania usunięcia meczu
+   */
   onDeleteMatch(match: any): void {
     this.deleteMatch.emit(match);
   }
 
+  /**
+   * trackBy dla *ngFor optymalizuje renderowanie listy meczów
+   */
   trackByMatchId = (_: number, m: Match) => m.id;
 }

@@ -39,14 +39,24 @@ export class MatchCardComponent implements OnInit, OnDestroy {
 
   isAdmin$ = this.auth.isAdmin$;
 
+  /**
+   * Subskrybuje interwał co 30 sekund w celu odświeżenia widoku
+   * np. zmiana statusu meczu na LIVE / FINISHED
+   */
   ngOnInit(): void {
     this.tickSub = interval(30_000).subscribe(() => this.cd.markForCheck());
   }
 
+  /**
+   * Czyści subskrypcję interwału przy niszczeniu komponentu
+   */
   ngOnDestroy(): void {
     this.tickSub?.unsubscribe();
   }
 
+  /**
+   * Obsługuje klawisze Enter i Spacja jako kliknięcie karty meczu
+   */
   @HostListener('keydown', ['$event'])
   onKeyDown(event: KeyboardEvent): void {
     if (event.key === 'Enter' || event.key === ' ') {
@@ -55,23 +65,35 @@ export class MatchCardComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Obsługuje kliknięcie karty.
+   * Jeśli kliknięto wewnątrz przycisku to nie otwiera modala szczegółów
+   */
   onCardClick(event: MouseEvent): void {
     const target = event.target as HTMLElement;
-    // jeśli kliknięto przycisk lub coś w środku przycisku — NIE otwieraj modala
     if (target.closest('button')) return;
 
     this.onClick();
   }
 
+  /**
+   * Emituje zdarzenie otwarcia szczegółów meczu
+   */
   onClick() {
     this.openDetails.emit(this.match);
   }
 
+  /**
+   * Emituje żądanie edycji meczu
+   */
   onEdit(ev: MouseEvent): void {
     ev.stopPropagation();
     this.editMatch.emit(this.match);
   }
 
+  /**
+   * Emituje żądanie usunięcia meczu
+   */
   onDelete(ev: MouseEvent): void {
     ev.stopPropagation();
     this.deleteMatch.emit(this.match);

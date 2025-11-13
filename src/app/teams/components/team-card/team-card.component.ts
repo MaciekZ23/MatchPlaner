@@ -28,6 +28,10 @@ export class TeamCardComponent implements AfterViewInit, OnDestroy {
   private tooltipInstances: any[] = [];
   constructor(private host: ElementRef<HTMLElement>) {}
 
+  /**
+   * Po załadowaniu widoku inicjalizuje tooltips Bootstrapa
+   * dla elementów oznaczonych `data-bs-toggle="tooltip"`
+   */
   ngAfterViewInit(): void {
     const bs = (window as any).bootstrap;
     if (!bs?.Tooltip) {
@@ -43,11 +47,18 @@ export class TeamCardComponent implements AfterViewInit, OnDestroy {
     );
   }
 
+  /**
+   * Usuwa instancje tooltipów po zniszczeniu komponentu,
+   * aby uniknąć wycieków pamięci
+   */
   ngOnDestroy(): void {
     this.tooltipInstances.forEach((t) => t?.dispose?.());
     this.tooltipInstances = [];
   }
 
+  /**
+   * Ukrywa tooltip i usuwa focus z elementu
+   */
   hideTooltip(ev: Event) {
     const el = ev.currentTarget as HTMLElement;
     const bs = (window as any).bootstrap;
@@ -56,15 +67,25 @@ export class TeamCardComponent implements AfterViewInit, OnDestroy {
     el.blur();
   }
 
+  /**
+   * Emituje zdarzenie kliknięcia na kartę drużyny
+   */
   onClick(): void {
     this.teamClick.emit(this.team);
   }
 
+  /**
+   * Emituje zdarzenie edycji, blokując bubbling,
+   * aby kliknięcie ikonki nie aktywowało kliknięcia karty
+   */
   onEdit(ev: MouseEvent) {
     ev.stopPropagation();
     this.editTeam.emit(this.team);
   }
 
+  /**
+   * Emituje zdarzenie usuwania drużyny, blokując bubbling
+   */
   onDelete(ev: MouseEvent) {
     ev.stopPropagation();
     this.deleteTeam.emit(this.team);

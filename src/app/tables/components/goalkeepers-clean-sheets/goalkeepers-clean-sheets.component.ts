@@ -44,6 +44,10 @@ export class GoalkeepersCleanSheetsComponent
     private cdr: ChangeDetectorRef
   ) {}
 
+  /**
+   * Inicjalizuje strumień danych bramkarzy
+   * i sortuje według bieżącego kierunku asc lub desc
+   */
   ngOnInit(): void {
     this.cleanSheetsData$ = combineLatest([
       this.cleanSheetsService.getCleanSheets$(),
@@ -53,16 +57,26 @@ export class GoalkeepersCleanSheetsComponent
     );
   }
 
+  /**
+   * Po wyrenderowaniu widoku inicjalizuje tooltipy Bootstrapa
+   */
   ngAfterViewInit(): void {
     this.initOrUpdateTooltip();
     this.initCollapseTooltip();
   }
 
+  /**
+   * Czyści instancje tooltipów przy niszczeniu komponentu
+   */
   ngOnDestroy(): void {
     this.disposeTooltip();
     this.disposeCollapseTooltip();
   }
 
+  /**
+   * Zmienia kierunek sortowania po kliknięciu w nagłówek tabeli
+   * Aktualizuje tooltip i odświeża widok
+   */
   sortData(column: 'cleanSheets'): void {
     this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
     this.sortDir$.next(this.sortDirection);
@@ -72,6 +86,10 @@ export class GoalkeepersCleanSheetsComponent
     this.refreshSortTooltip();
   }
 
+  /**
+   * Odświeża zawartość tooltipa sortowania
+   * po zmianie kierunku sortowania
+   */
   private refreshSortTooltip(): void {
     const bs = (window as any).bootstrap;
     if (!bs?.Tooltip) {
@@ -90,7 +108,7 @@ export class GoalkeepersCleanSheetsComponent
 
     btn.setAttribute('data-bs-title', title);
     btn.setAttribute('title', title);
-    btn.setAttribute('data-bs-original-title', title); // dla starszych wersji
+    btn.setAttribute('data-bs-original-title', title);
 
     const inst = bs.Tooltip.getInstance?.(btn);
 
@@ -102,6 +120,10 @@ export class GoalkeepersCleanSheetsComponent
     }
   }
 
+  /**
+   * Przełącza widoczność sekcji (rozwijanie / zwijanie)
+   * i aktualizuje tooltip przycisku
+   */
   toggleCollapse(): void {
     this.isCollapsed = !this.isCollapsed;
     const el = this.collapseBtn?.nativeElement;
@@ -124,8 +146,14 @@ export class GoalkeepersCleanSheetsComponent
     }
   }
 
+  /**
+   * Funkcja trackBy dla *ngFor optymalizuje renderowanie listy bramkarzy
+   */
   trackRow = (_: number, r: GoalkeepersCleanSheets) => r.playerId;
 
+  /**
+   * Inicjalizuje tooltip sortowania lub aktualizuje jego treść
+   */
   private initOrUpdateTooltip(): void {
     const bs = (window as any).bootstrap;
     if (!bs?.Tooltip) {
@@ -153,11 +181,17 @@ export class GoalkeepersCleanSheetsComponent
     }
   }
 
+  /**
+   * Niszczy instancję tooltipa sortowania
+   */
   private disposeTooltip(): void {
     this.tooltipInstance?.dispose?.();
     this.tooltipInstance = null;
   }
 
+  /**
+   * Inicjalizuje tooltip dla przycisku zwijania sekcji
+   */
   private initCollapseTooltip(): void {
     const bs = (window as any).bootstrap;
     if (!bs?.Tooltip) {
@@ -173,11 +207,17 @@ export class GoalkeepersCleanSheetsComponent
       bs.Tooltip.getInstance?.(el) ?? new bs.Tooltip(el, { placement: 'top' });
   }
 
+  /**
+   * Niszczy instancję tooltipa przycisku zwijania
+   */
   private disposeCollapseTooltip(): void {
     this.collapseTooltip?.dispose?.();
     this.collapseTooltip = null;
   }
 
+  /**
+   * Ukrywa tooltip dla danego elementu
+   */
   hideTooltip(ev: Event, blur = true) {
     const el = ev.currentTarget as HTMLElement;
     const bs = (window as any).bootstrap;

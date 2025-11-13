@@ -41,16 +41,26 @@ export class TopScorersComponent implements AfterViewInit, OnDestroy {
     private cdr: ChangeDetectorRef
   ) {}
 
+  /**
+   * Po wyrenderowaniu komponentu inicjalizuje tooltipy
+   * dla kolumn sortowalnych oraz przycisku zwijania
+   */
   ngAfterViewInit(): void {
     this.initSortTooltips();
     this.initCollapseTooltip();
   }
 
+  /**
+   * Usuwa instancje tooltipów po zniszczeniu komponentu
+   */
   ngOnDestroy(): void {
     this.disposeSortTooltips();
     this.disposeCollapseTooltip();
   }
 
+  /**
+   * Zmienia aktywne sortowanie tabeli
+   */
   sortData(column: TopScorersSortKey): void {
     if (this.sortColumn === column) {
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
@@ -70,6 +80,10 @@ export class TopScorersComponent implements AfterViewInit, OnDestroy {
     queueMicrotask(() => this.refreshSortTooltips());
   }
 
+  /**
+   * Zmienia stan sekcji (rozwinięta / zwinięta)
+   * i aktualizuje tooltip przycisku
+   */
   toggleCollapse(): void {
     this.isCollapsed = !this.isCollapsed;
     const btn = this.host.nativeElement.querySelector<HTMLElement>(
@@ -93,6 +107,9 @@ export class TopScorersComponent implements AfterViewInit, OnDestroy {
     }
   }
 
+  /**
+   * Inicjalizuje tooltipy dla wszystkich przycisków sortowania w nagłówku tabeli
+   */
   private initSortTooltips(): void {
     const bs = (window as any)?.bootstrap;
     if (!bs?.Tooltip) return;
@@ -110,6 +127,9 @@ export class TopScorersComponent implements AfterViewInit, OnDestroy {
     });
   }
 
+  /**
+   * Odświeża treść tooltipów po zmianie kierunku sortowania
+   */
   private refreshSortTooltips(): void {
     const bs = (window as any)?.bootstrap;
     if (!bs?.Tooltip) return;
@@ -136,11 +156,17 @@ export class TopScorersComponent implements AfterViewInit, OnDestroy {
     });
   }
 
+  /**
+   * Usuwa wszystkie instancje tooltipów sortowania
+   */
   private disposeSortTooltips(): void {
     this.sortTooltips.forEach((t) => t?.dispose?.());
     this.sortTooltips = [];
   }
 
+  /**
+   * Inicjalizuje tooltip przycisku rozwijania sekcji
+   */
   private initCollapseTooltip(): void {
     const bs = (window as any)?.bootstrap;
     if (!bs?.Tooltip) {
@@ -157,11 +183,17 @@ export class TopScorersComponent implements AfterViewInit, OnDestroy {
       new bs.Tooltip(btn, { placement: 'top' });
   }
 
+  /**
+   * Usuwa tooltip przycisku rozwijania sekcji
+   */
   private disposeCollapseTooltip(): void {
     this.collapseTooltip?.dispose?.();
     this.collapseTooltip = null;
   }
 
+  /**
+   * Ukrywa tooltip dla klikniętego elementu np. po zmianie sortowania
+   */
   hideTooltip(ev: Event, blur = true) {
     const el = ev.currentTarget as HTMLElement;
     const bs = (window as any).bootstrap;

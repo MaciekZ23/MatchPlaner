@@ -70,6 +70,9 @@ export class MatchDetailsModalComponent
 
   private facade = inject(VoteFacade);
 
+  /**
+   * Inicjalizuje modal Bootstrap po wyrenderowaniu i ustawia obserwacje danych meczu
+   */
   ngAfterViewInit(): void {
     this.modalInstance = bootstrap.Modal.getOrCreateInstance(
       this.modalRef.nativeElement,
@@ -92,6 +95,9 @@ export class MatchDetailsModalComponent
     }
   }
 
+  /**
+   * Reaguje na zmiany wejściowych danych meczu lub map drużyn/zawodników
+   */
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['match'] || changes['teamMap'] || changes['playerMap']) {
       if (this.match) {
@@ -110,12 +116,22 @@ export class MatchDetailsModalComponent
     }
   }
 
+  /**
+   * Czyści instancję modala przy niszczeniu komponentu
+   */
   ngOnDestroy(): void {
     try {
       this.modalInstance?.dispose?.();
     } catch {}
   }
 
+  /**
+   * Konfiguruje wszystkie strumienie danych dla głosowania:
+   * - status głosowania,
+   * - kandydatów (home/away),
+   * - podsumowanie głosów,
+   * - odliczanie czasu
+   */
   private setupVotingStreams(match: Match): void {
     this.voting$ = this.facade.voting$(match.id);
 
@@ -216,6 +232,9 @@ export class MatchDetailsModalComponent
       this.selectedPlayerId === playerId ? null : playerId;
   }
 
+  /**
+   * Potwierdza wybór zawodnika i emituje zdarzenie głosowania
+   */
   onVoteConfirm() {
     if (!this.match || !this.selectedPlayerId) {
       return;
@@ -230,7 +249,9 @@ export class MatchDetailsModalComponent
     });
   }
 
-  // Wyświetlenie w timeline tylko goli, samobóji i kartek (bez ASSIST)
+  /**
+   * Zwraca listę wydarzeń do wyświetlenia w timeline (gole, samobóje, kartki)
+   */
   get detailsForTimeline() {
     const allowed = new Set(['GOAL', 'OWN_GOAL', 'CARD'] as const);
     return (this.match?.details ?? []).filter((d) =>
@@ -275,6 +296,7 @@ export class MatchDetailsModalComponent
     return `${this.goalsA} - ${this.goalsB}`;
   }
 
+  /** trackBy dla listy kandydatów */
   trackByPlayerId(_: number, c: UiCandidate) {
     return c.playerId;
   }
