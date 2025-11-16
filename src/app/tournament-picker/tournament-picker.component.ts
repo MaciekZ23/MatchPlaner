@@ -27,7 +27,11 @@ import {
 } from '../core/models';
 import { TournamentMode, StageKind } from '../core/types';
 import { stringsTournamentPicker } from './misc/strings-picker';
-import { capitalizeFirst, formatFullDate } from '../core/utils';
+import {
+  capitalizeFirst,
+  formatDateRange,
+  formatFullDate,
+} from '../core/utils';
 
 @Component({
   selector: 'app-tournament-picker',
@@ -104,13 +108,7 @@ export class TournamentPickerComponent {
   /** Zwracanie sformatowanego zakresu dat turnieju */
   dateRange(t: Tournament): string {
     const tz = t.timezone || 'Europe/Warsaw';
-    const start = t.startDate
-      ? capitalizeFirst(formatFullDate(t.startDate, tz))
-      : '—';
-    const end = t.endDate
-      ? capitalizeFirst(formatFullDate(t.endDate, tz))
-      : '—';
-    return `${start} – ${end}`;
+    return formatDateRange(t.startDate, t.endDate, tz);
   }
 
   /** Normalizacja rodzaju etapu turnieju (GROUP / PLAYOFF) */

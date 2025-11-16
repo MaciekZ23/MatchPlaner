@@ -1,3 +1,5 @@
+import { capitalizeFirst } from './capitalize-first';
+
 /**
  * Konwertowanie daty ISO na czas unix (milisekundy od 1970-01-01)
  */
@@ -128,4 +130,36 @@ export function parseApiDate(input?: string | null): Date | null {
 
   const d = new Date(s);
   return isNaN(d.getTime()) ? null : d;
+}
+
+/**
+ * Formatowanie zakresu dat:
+ * - jeśli jest tylko start to wyświetlamy tylko start
+ * - jeśli jest start i end to wyświetlamy "start – end"
+ * - jeśli tylko end to wyświetlamy tylko end
+ * - jeśli brak obu → ""
+ */
+export function formatDateRange(
+  startIso?: string | null,
+  endIso?: string | null,
+  timeZone: string = 'Europe/Warsaw',
+  locale: string = 'pl-PL'
+): string {
+  const start = startIso
+    ? capitalizeFirst(formatFullDate(startIso, timeZone, locale))
+    : null;
+  const end = endIso
+    ? capitalizeFirst(formatFullDate(endIso, timeZone, locale))
+    : null;
+
+  if (start && end) {
+    return `${start} – ${end}`;
+  }
+  if (start && !end) {
+    return start;
+  }
+  if (!start && end) {
+    return end;
+  }
+  return '';
 }
