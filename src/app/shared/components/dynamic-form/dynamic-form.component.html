@@ -177,6 +177,7 @@
                 [label]="field.label"
                 [buttonText]="field.buttonText"
                 (fileSelected)="form.get(field.name)?.setValue($event)"
+                [resetTrigger]="form.get(field.name)?.value"
               ></app-file-upload>
               } @case('repeater') {
               <div [formArrayName]="field.name" class="repeater">

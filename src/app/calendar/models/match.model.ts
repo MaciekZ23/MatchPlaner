@@ -11,6 +11,7 @@ export interface Match {
   id: MatchId;
   stageId: string;
   groupId?: string | null;
+  groupName?: string | null;
   round?: number | null;
   index?: number | null;
   date: string;

@@ -29,8 +29,9 @@ export class MatchService {
       this.store.matchesByStage$,
       this.store.teamMap$,
       this.store.playerMap$,
+      this.store.groupMap$,
     ]).pipe(
-      map(([tournament, matchesByStage, teamMap, playerMap]) => {
+      map(([tournament, matchesByStage, teamMap, playerMap, groupMap]) => {
         const tournamentTz = tournament.timezone ?? 'Europe/Warsaw';
 
         // Pobranie meczów tylko dla fazy grupowej
@@ -52,6 +53,7 @@ export class MatchService {
             id: m.id,
             stageId: m.stageId,
             groupId: m.groupId ?? null,
+            groupName: m.groupId ? groupMap.get(m.groupId)?.name ?? null : null,
             round: m.round ?? null,
             index: m.index ?? null,
             date: m.date,
