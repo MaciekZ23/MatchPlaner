@@ -152,6 +152,19 @@ export function formatDateRange(
     ? capitalizeFirst(formatFullDate(endIso, timeZone, locale))
     : null;
 
+  if (startIso && endIso) {
+    const s = new Date(startIso);
+    const e = new Date(endIso);
+    const sameDay =
+      s.getFullYear() === e.getFullYear() &&
+      s.getMonth() === e.getMonth() &&
+      s.getDate() === e.getDate();
+
+    if (sameDay) {
+      return start ?? '';
+    }
+  }
+
   if (start && end) {
     return `${start} – ${end}`;
   }
