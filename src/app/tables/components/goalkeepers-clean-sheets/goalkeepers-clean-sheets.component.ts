@@ -53,7 +53,10 @@ export class GoalkeepersCleanSheetsComponent
       this.cleanSheetsService.getCleanSheets$(),
       this.sortDir$,
     ]).pipe(
-      map(([rows, dir]) => (dir === 'desc' ? rows : rows.slice().reverse()))
+      map(([rows, dir]) => {
+        const sorted = [...rows].sort((a, b) => a.cleanSheets - b.cleanSheets);
+        return dir === 'asc' ? sorted : sorted.reverse();
+      })
     );
   }
 
