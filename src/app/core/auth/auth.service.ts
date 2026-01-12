@@ -5,6 +5,7 @@ import { TournamentStore } from '../services/tournament-store.service';
 import { environment } from '../../../environments/environment';
 import { LoginResp } from './types';
 import { NotificationService } from '../notifications/notification.service';
+import { decodeJwtPayload } from '../utils';
 
 @Injectable({
   providedIn: 'root',
@@ -130,9 +131,7 @@ export class AuthService {
       const t = token ?? sessionStorage.getItem('at');
       if (!t) return null;
       const [, b64] = t.split('.');
-      const payload = JSON.parse(
-        atob(b64.replace(/-/g, '+').replace(/_/g, '/'))
-      );
+      const payload = decodeJwtPayload(b64);
       return payload?.role ?? null;
     } catch {
       return null;
@@ -145,9 +144,7 @@ export class AuthService {
     if (!t) return false;
     try {
       const [, b64] = t.split('.');
-      const payload = JSON.parse(
-        atob(b64.replace(/-/g, '+').replace(/_/g, '/'))
-      );
+      const payload = decodeJwtPayload(b64);
       const exp = payload?.exp as number | undefined;
       if (!exp) {
         return true;
@@ -172,9 +169,7 @@ export class AuthService {
 
     try {
       const [, b64] = t.split('.');
-      const payload = JSON.parse(
-        atob(b64.replace(/-/g, '+').replace(/_/g, '/'))
-      );
+      const payload = decodeJwtPayload(b64);
 
       const email: string | null =
         payload?.email ?? payload?.upn ?? payload?.sub ?? null;

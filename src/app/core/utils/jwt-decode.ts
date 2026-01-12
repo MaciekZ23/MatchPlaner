@@ -1,0 +1,8 @@
+export function decodeJwtPayload(b64Url: string): any {
+  const base64 = b64Url.replace(/-/g, '+').replace(/_/g, '/');
+
+  const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+  const json = new TextDecoder('utf-8').decode(bytes);
+
+  return JSON.parse(json);
+}
